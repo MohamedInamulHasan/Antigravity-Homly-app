@@ -1,0 +1,48 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Home from './pages/Home';
+import Shop from './pages/Shop';
+import ProductDetails from './pages/ProductDetails';
+import StoreProducts from './pages/StoreProducts';
+import Profile from './pages/Profile';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import Orders from './pages/Orders';
+import OrderDetails from './pages/OrderDetails';
+import OrderConfirmation from './pages/OrderConfirmation';
+import News from './pages/News';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import MobileFooter from './components/MobileFooter';
+import { CartProvider } from './context/CartContext';
+
+function App() {
+    return (
+        <CartProvider>
+            <Router>
+                <div className="flex flex-col min-h-screen bg-gray-50">
+                    <Navbar />
+                    <main className="flex-grow pb-16 md:pb-0">
+                        <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/store" element={<Shop />} />
+                            <Route path="/store/:id" element={<StoreProducts />} />
+                            <Route path="/profile" element={<Profile />} />
+                            <Route path="/product/:id" element={<ProductDetails />} />
+                            <Route path="/cart" element={<Cart />} />
+                            <Route path="/checkout" element={<Checkout />} />
+                            <Route path="/orders" element={<Orders />} />
+                            <Route path="/orders/:id" element={<OrderDetails />} />
+                            <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                            <Route path="/news" element={<News />} />
+                            <Route path="/admin" element={<AdminDashboard />} />
+                        </Routes>
+                    </main>
+
+                    <MobileFooter />
+                </div>
+            </Router>
+        </CartProvider>
+    );
+}
+
+export default App;
