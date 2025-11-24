@@ -27,7 +27,7 @@ const StoreProducts = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
             <div className="mb-8">
                 <Link to="/store" className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 mb-4 transition-colors">
                     <ArrowLeft className="h-4 w-4 mr-1" />
@@ -41,7 +41,7 @@ const StoreProducts = () => {
             </div>
 
             {storeProducts.length > 0 ? (
-                <div className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                     {storeProducts.map((product) => (
                         <ProductCard key={product.id} product={product} />
                     ))}

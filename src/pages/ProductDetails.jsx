@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Plus, ArrowLeft, Minus, ShoppingBag, ShoppingCart, ChevronLeft, ChevronRight, Star, Share2, Heart } from 'lucide-react';
 
 const ProductDetails = () => {
@@ -9,6 +10,7 @@ const ProductDetails = () => {
     const navigate = useNavigate();
     const { addToCart, cartItems, updateQuantity } = useCart();
     const { products } = useData();
+    const { t } = useLanguage();
 
     const [product, setProduct] = useState(null);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -28,35 +30,40 @@ const ProductDetails = () => {
         if (!cartItem) {
             addToCart(product);
         }
-        navigate('/cart');
+        navigate('/checkout');
     };
 
-    const nextImage = () => {
-        if (product?.images) {
-            setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
-        }
+    const handleScroll = (e) => {
+        const container = e.target;
+        const slideIndex = Math.round(container.scrollLeft / container.clientWidth);
+        setCurrentImageIndex(slideIndex);
     };
 
-    const prevImage = () => {
-        if (product?.images) {
-            setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+    const scrollToImage = (index) => {
+        const container = document.getElementById('product-slider');
+        if (container) {
+            container.scrollTo({
+                left: index * container.clientWidth,
+                behavior: 'smooth'
+            });
+            setCurrentImageIndex(index);
         }
     };
 
     if (!product) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 text-center px-4 transition-colors duration-200">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Product not found</h2>
-                <Link to="/store" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">Return to Store</Link>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t('Product not found')}</h2>
+                <Link to="/store" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">{t('Return to Store')}</Link>
             </div>
         );
     }
 
     const images = product.images || [product.image];
-    const totalPrice = (product.price * (quantity || 1)).toFixed(2);
+    const totalPrice = (Number(product.price) * (quantity || 1)).toFixed(0);
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 pb-24 transition-colors duration-200">
             <div className="max-w-7xl mx-auto">
                 {/* Navigation Header */}
                 <div className="flex items-center justify-between mb-8">
@@ -77,38 +84,49 @@ const ProductDetails = () => {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                         {/* Image Slider Section */}
-                        <div className="relative bg-gray-100 dark:bg-gray-700 aspect-square lg:aspect-auto lg:h-[600px] group">
-                            <img
-                                src={images[currentImageIndex]}
-                                alt={`${product.title} - View ${currentImageIndex + 1}`}
-                                className="w-full h-full object-cover transition-opacity duration-300"
-                            />
+                        <div className="relative aspect-square lg:aspect-auto lg:h-[600px] group">
+                            <div
+                                id="product-slider"
+                                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide h-full w-full"
+                                onScroll={handleScroll}
+                                style={{ scrollBehavior: 'smooth' }}
+                            >
+                                {images.map((img, idx) => (
+                                    <div key={idx} className="min-w-full h-full snap-center flex items-center justify-center">
+                                        <img
+                                            src={img}
+                                            alt={`${product.title} - View ${idx + 1}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
 
                             {/* Slider Controls */}
                             {images.length > 1 && (
                                 <>
                                     <button
-                                        onClick={prevImage}
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-black/50 backdrop-blur-sm p-2 rounded-full text-gray-800 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black/70"
+                                        onClick={() => scrollToImage(currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1)}
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-black/50 backdrop-blur-sm p-2 rounded-full text-gray-800 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black/70 z-10"
                                     >
                                         <ChevronLeft size={24} />
                                     </button>
                                     <button
-                                        onClick={nextImage}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-black/50 backdrop-blur-sm p-2 rounded-full text-gray-800 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black/70"
+                                        onClick={() => scrollToImage(currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 dark:bg-black/50 backdrop-blur-sm p-2 rounded-full text-gray-800 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white dark:hover:bg-black/70 z-10"
                                     >
                                         <ChevronRight size={24} />
                                     </button>
 
                                     {/* Dots */}
-                                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+                                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                                         {images.map((_, idx) => (
                                             <button
                                                 key={idx}
-                                                onClick={() => setCurrentImageIndex(idx)}
+                                                onClick={() => scrollToImage(idx)}
                                                 className={`w-2.5 h-2.5 rounded-full transition-all ${currentImageIndex === idx
                                                     ? 'bg-blue-600 w-6'
                                                     : 'bg-white/60 hover:bg-white/80'
@@ -133,12 +151,12 @@ const ProductDetails = () => {
                                     </div>
                                 </div>
 
-                                <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
+                                <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
                                     {product.title}
                                 </h1>
 
-                                <div className="text-4xl font-bold text-gray-900 dark:text-white mb-8 flex items-baseline gap-2">
-                                    ₹{product.price.toFixed(2)}
+                                <div className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8 flex items-baseline gap-2">
+                                    ₹{Number(product.price).toFixed(0)}
                                     <span className="text-lg text-gray-500 dark:text-gray-400 font-normal">/ unit</span>
                                 </div>
 
@@ -147,67 +165,96 @@ const ProductDetails = () => {
                                         {product.description}
                                     </p>
                                 </div>
-                            </div>
 
-                            {/* Action Area */}
-                            <div className="mt-8 pt-8 border-t border-gray-100 dark:border-gray-700">
-                                {quantity > 0 ? (
-                                    <div className="space-y-6">
-                                        {/* Quantity Control */}
-                                        <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl">
-                                            <span className="font-medium text-gray-700 dark:text-gray-200">Quantity</span>
-                                            <div className="flex items-center gap-4">
-                                                <button
-                                                    onClick={() => updateQuantity(product.id, quantity - 1)}
-                                                    className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-gray-600 text-gray-600 dark:text-gray-200 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                                                >
-                                                    <Minus size={18} />
-                                                </button>
-                                                <span className="w-8 text-center font-bold text-xl text-gray-900 dark:text-white">{quantity}</span>
-                                                <button
-                                                    onClick={() => updateQuantity(product.id, quantity + 1)}
-                                                    className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-gray-600 text-gray-600 dark:text-gray-200 shadow-sm hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                                                >
-                                                    <Plus size={18} />
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Total and Checkout */}
-                                        <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-2xl border border-blue-100 dark:border-blue-800/30">
-                                            <div className="flex justify-between items-end mb-6">
-                                                <div>
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Price</p>
-                                                    <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                                                        ₹{totalPrice}
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Items</p>
-                                                    <p className="font-bold text-gray-900 dark:text-white">{quantity} pcs</p>
-                                                </div>
-                                            </div>
+                                {/* Quantity & Total Section */}
+                                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-6 mb-8">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <span className="text-gray-900 dark:text-white font-medium">{t('Quantity')}</span>
+                                        <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
                                             <button
-                                                onClick={handleCheckout}
-                                                className="w-full bg-blue-600 text-white py-4 px-6 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-blue-500/25 flex items-center justify-center gap-2"
+                                                onClick={() => {
+                                                    if (cartItem) {
+                                                        updateQuantity(product.id, Math.max(0, quantity - 1));
+                                                    }
+                                                }}
+                                                className={`w-10 h-10 flex items-center justify-center text-gray-600 dark:text-gray-400 transition-colors ${quantity <= 0 ? 'opacity-50 cursor-not-allowed' : 'hover:text-blue-600 dark:hover:text-blue-400'}`}
+                                                disabled={quantity <= 0}
                                             >
-                                                <ShoppingBag size={20} />
-                                                Proceed to Checkout
+                                                <Minus size={18} />
+                                            </button>
+                                            <span className="w-12 text-center font-bold text-gray-900 dark:text-white">{quantity}</span>
+                                            <button
+                                                onClick={() => {
+                                                    if (cartItem) {
+                                                        updateQuantity(product.id, quantity + 1);
+                                                    } else {
+                                                        addToCart(product);
+                                                    }
+                                                }}
+                                                className="w-10 h-10 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                            >
+                                                <Plus size={18} />
                                             </button>
                                         </div>
                                     </div>
-                                ) : (
+                                    <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
+                                        <span className="text-lg font-bold text-gray-900 dark:text-white">{t('Total')}</span>
+                                        <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">₹{Number(totalPrice).toFixed(0)}</span>
+                                    </div>
+                                </div>
+
+                                {/* Desktop Action Button */}
+                                <div className="hidden md:block">
                                     <button
-                                        onClick={() => addToCart(product)}
-                                        className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 py-4 px-8 rounded-xl font-bold text-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all transform hover:scale-[1.02] shadow-xl flex items-center justify-center gap-3"
+                                        onClick={quantity > 0 ? handleCheckout : () => addToCart(product)}
+                                        className={`w-full py-4 px-6 rounded-xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 transition-all transform hover:-translate-y-1 ${quantity > 0
+                                            ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200 dark:shadow-none'
+                                            : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100'
+                                            }`}
                                     >
-                                        <ShoppingCart size={24} />
-                                        Add to Cart
+                                        {quantity > 0 ? (
+                                            <>
+                                                <ShoppingBag size={22} />
+                                                {t('Proceed to Checkout')}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <ShoppingCart size={22} />
+                                                {t('Add to Cart')}
+                                            </>
+                                        )}
                                     </button>
-                                )}
+                                </div>
                             </div>
+
                         </div>
                     </div>
+                </div>
+            </div>
+
+
+            {/* Sticky Action Footer - Mobile Only */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 md:hidden">
+                <div className="max-w-7xl mx-auto">
+                    <button
+                        onClick={quantity > 0 ? handleCheckout : () => addToCart(product)}
+                        className={`w-full py-4 px-6 rounded-xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 transition-all transform hover:-translate-y-1 ${quantity > 0
+                            ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200 dark:shadow-none'
+                            : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100'
+                            }`}
+                    >
+                        {quantity > 0 ? (
+                            <>
+                                <ShoppingBag size={22} />
+                                Proceed to Checkout
+                            </>
+                        ) : (
+                            <>
+                                <ShoppingCart size={22} />
+                                Add to Cart
+                            </>
+                        )}
+                    </button>
                 </div>
             </div>
         </div>

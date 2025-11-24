@@ -19,26 +19,26 @@ const ProductCard = ({ product }) => {
                     />
                 </div>
                 <div className="p-4 pb-0">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{t(product, 'title')}</h3>
+                    <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-white mb-1 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{t(product, 'title')}</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">{t(product, 'description')}</p>
                 </div>
             </Link>
             <div className="p-4 pt-2 mt-auto">
                 <div className="flex flex-col gap-3">
-                    <span className="text-xl font-bold text-blue-600 dark:text-blue-400">₹{Number(product.price || 0).toFixed(2)}</span>
+                    <span className="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-400">₹{Number(product.price || 0).toFixed(2)}</span>
                     {cartItem ? (
-                        <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 rounded-full w-full" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between w-full gap-2" onClick={(e) => e.stopPropagation()}>
                             <button
                                 onClick={() => updateQuantity(product.id, cartItem.quantity - 1)}
-                                className="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white hover:bg-blue-700 focus:outline-none rounded-full transition-colors shadow-sm"
                                 aria-label="Decrease quantity"
                             >
                                 <Minus size={16} />
                             </button>
-                            <span className="px-2 font-medium text-gray-900 dark:text-white text-center flex-1">{cartItem.quantity}</span>
+                            <span className="font-bold text-gray-900 dark:text-white text-lg">{cartItem.quantity}</span>
                             <button
                                 onClick={() => updateQuantity(product.id, cartItem.quantity + 1)}
-                                className="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white hover:bg-blue-700 focus:outline-none rounded-full transition-colors shadow-sm"
                                 aria-label="Increase quantity"
                             >
                                 <Plus size={16} />

@@ -220,6 +220,25 @@ export const DataProvider = ({ children }) => {
         }
     });
 
+    // Ads State
+    const [ads, setAds] = useState(() => {
+        try {
+            const saved = localStorage.getItem('ads');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) return parsed;
+            }
+            return [
+                { id: 1, image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070&auto=format&fit=crop', title: 'Special Offer' },
+                { id: 2, image: 'https://images.unsplash.com/photo-1607082349566-187342175e2f?q=80&w=2070&auto=format&fit=crop', title: 'New Collection' },
+                { id: 3, image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop', title: 'Best Sellers' }
+            ];
+        } catch (e) {
+            console.error("Failed to parse ads from local storage", e);
+            return [];
+        }
+    });
+
     // Sync with localStorage
     useEffect(() => {
         localStorage.setItem('products', JSON.stringify(products));
@@ -237,6 +256,10 @@ export const DataProvider = ({ children }) => {
         localStorage.setItem('news', JSON.stringify(news));
     }, [news]);
 
+    useEffect(() => {
+        localStorage.setItem('ads', JSON.stringify(ads));
+    }, [ads]);
+
     // Actions
     const addProduct = (product) => {
         setProducts(prev => [...prev, { ...product, id: prev.length + 1 }]);
@@ -244,6 +267,10 @@ export const DataProvider = ({ children }) => {
 
     const updateProduct = (updatedProduct) => {
         setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+    };
+
+    const deleteProduct = (id) => {
+        setProducts(prev => prev.filter(p => p.id !== id));
     };
 
     const addStore = (store) => {
@@ -266,18 +293,46 @@ export const DataProvider = ({ children }) => {
         setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
     };
 
+    const addOrder = (order) => {
+        setOrders(prev => [order, ...prev]);
+    };
+
+    const addAd = (ad) => {
+        setAds(prev => [...prev, { ...ad, id: Date.now() }]);
+    };
+
+    const deleteAd = (id) => {
+        setAds(prev => prev.filter(ad => ad.id !== id));
+    };
+
+    const deleteStore = (id) => {
+        setStores(prev => prev.filter(s => s.id !== id));
+    };
+
+    const deleteNews = (id) => {
+        setNews(prev => prev.filter(n => n.id !== id));
+    };
+
     const value = {
         products,
         stores,
         orders,
         news,
+        ads,
         addProduct,
         updateProduct,
+        deleteProduct,
         addStore,
         updateStore,
+        deleteStore,
         addNews,
         updateNews,
-        updateOrder
+        deleteNews,
+
+        updateOrder,
+        addOrder,
+        addAd,
+        deleteAd,
     };
 
     return (

@@ -21,7 +21,9 @@ import {
     X,
     Edit2,
     Save,
-    Trash2
+
+    Trash2,
+    Image as ImageIcon
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 
@@ -41,6 +43,8 @@ const AdminDashboard = () => {
                 return <OrderManagement />;
             case 'users':
                 return <UserManagement />;
+            case 'ads':
+                return <AdsManagement />;
             default:
                 return <ProductManagement />;
         }
@@ -109,6 +113,12 @@ const AdminDashboard = () => {
                         active={activeTab === 'users'}
                         onClick={() => { setActiveTab('users'); setIsMobileMenuOpen(false); }}
                     />
+                    <SidebarItem
+                        icon={<ImageIcon size={20} />}
+                        label="Ads Slider"
+                        active={activeTab === 'ads'}
+                        onClick={() => { setActiveTab('ads'); setIsMobileMenuOpen(false); }}
+                    />
                 </nav>
             </div>
 
@@ -138,7 +148,7 @@ const SidebarItem = ({ icon, label, active, onClick }) => (
 // --- Sub-Components ---
 
 const ProductManagement = () => {
-    const { products, addProduct, updateProduct } = useData();
+    const { products, addProduct, updateProduct, deleteProduct } = useData();
     const [view, setView] = useState('list'); // 'list' or 'form'
     const [editingProduct, setEditingProduct] = useState(null);
     const [formData, setFormData] = useState({
@@ -149,8 +159,29 @@ const ProductManagement = () => {
         category_ta: '',
         description: '',
         description_ta: '',
-        image: ''
+        image: '',
+        sliderImages: []
     });
+
+    const handleImageUpload = (e, isSlider = false) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            if (isSlider) {
+                const newImages = files.map(file => URL.createObjectURL(file));
+                setFormData(prev => ({ ...prev, sliderImages: [...prev.sliderImages, ...newImages] }));
+            } else {
+                const imageUrl = URL.createObjectURL(files[0]);
+                setFormData(prev => ({ ...prev, image: imageUrl }));
+            }
+        }
+    };
+
+    const removeSliderImage = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            sliderImages: prev.sliderImages.filter((_, i) => i !== index)
+        }));
+    };
 
     const handleEdit = (product) => {
         setEditingProduct(product);
@@ -162,23 +193,35 @@ const ProductManagement = () => {
             category_ta: product.category_ta || '',
             description: product.description,
             description_ta: product.description_ta || '',
-            image: product.image || (product.images && product.images[0]) || ''
+            image: product.image || (product.images && product.images[0]) || '',
+            sliderImages: product.images || []
         });
         setView('form');
     };
 
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure you want to delete this product?')) {
+            deleteProduct(id);
+            alert('Product deleted successfully!');
+        }
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        const productData = {
+            ...formData,
+            price: parseFloat(formData.price),
+            images: formData.sliderImages.length > 0 ? formData.sliderImages : [formData.image]
+        };
+
         if (editingProduct) {
-            // Update existing product
-            updateProduct({ ...editingProduct, ...formData, images: [formData.image] });
+            updateProduct({ ...editingProduct, ...productData });
             alert('Product updated successfully!');
         } else {
-            // Add new product
-            addProduct({ ...formData, images: [formData.image] });
+            addProduct(productData);
             alert('Product uploaded successfully!');
         }
-        setFormData({ title: '', title_ta: '', price: '', category: '', category_ta: '', description: '', description_ta: '', image: '' });
+        setFormData({ title: '', title_ta: '', price: '', category: '', category_ta: '', description: '', description_ta: '', image: '', sliderImages: [] });
         setEditingProduct(null);
         setView('list');
     };
@@ -193,7 +236,7 @@ const ProductManagement = () => {
                     onClick={() => {
                         if (view === 'list') {
                             setEditingProduct(null);
-                            setFormData({ title: '', title_ta: '', price: '', category: '', category_ta: '', description: '', description_ta: '', image: '' });
+                            setFormData({ title: '', title_ta: '', price: '', category: '', category_ta: '', description: '', description_ta: '', image: '', sliderImages: [] });
                             setView('form');
                         } else {
                             setView('list');
@@ -229,12 +272,20 @@ const ProductManagement = () => {
                                         <td className="p-4 text-gray-500 dark:text-gray-400">{product.category}</td>
                                         <td className="p-4 font-medium text-gray-900 dark:text-white">${product.price}</td>
                                         <td className="p-4">
-                                            <button
-                                                onClick={() => handleEdit(product)}
-                                                className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                            >
-                                                <Edit2 size={18} />
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleEdit(product)}
+                                                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                >
+                                                    <Edit2 size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(product.id)}
+                                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -294,15 +345,50 @@ const ProductManagement = () => {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Image URL</label>
-                                <input
-                                    type="url"
-                                    value={formData.image}
-                                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder="https://..."
-                                    required
-                                />
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Main Image</label>
+                                <div className="flex items-center gap-4">
+                                    {formData.image && (
+                                        <img src={formData.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
+                                    )}
+                                    <label className="flex-1 cursor-pointer">
+                                        <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
+                                            <Upload size={20} />
+                                            <span>Upload Image</span>
+                                        </div>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => handleImageUpload(e, false)}
+                                            className="hidden"
+                                            required={!formData.image}
+                                        />
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="col-span-1 md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Slider Images (Optional)</label>
+                                <div className="space-y-4">
+                                    <div className="flex flex-wrap gap-4">
+                                        {formData.sliderImages.map((img, idx) => (
+                                            <div key={idx} className="relative w-20 h-20 group">
+                                                <img src={img} alt={`Slider ${idx}`} className="w-full h-full rounded-lg object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeSliderImage(idx)}
+                                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <label className="cursor-pointer">
+                                            <div className="w-20 h-20 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center">
+                                                <Plus size={24} />
+                                            </div>
+                                            <input type="file" accept="image/*" multiple onChange={(e) => handleImageUpload(e, true)} className="hidden" />
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -343,34 +429,77 @@ const ProductManagement = () => {
 };
 
 const StoreManagement = () => {
-    const { stores, addStore, updateStore, addProduct } = useData();
-    const [view, setView] = useState('list'); // 'list', 'form', 'addProductToStore'
+    const { stores, products, addStore, updateStore, addProduct, updateProduct, deleteProduct, deleteStore } = useData();
+    const [view, setView] = useState('list'); // 'list', 'form', 'storeProducts', 'addProductToStore', 'editProduct'
     const [selectedStore, setSelectedStore] = useState(null);
     const [editingStore, setEditingStore] = useState(null);
+    const [editingProduct, setEditingProduct] = useState(null);
     const [storeForm, setStoreForm] = useState({
         name: '',
         name_ta: '',
-        owner: '',
-        email: '',
-        phone: '',
         location: '',
         location_ta: '',
-        image: ''
+        image: '',
+        rating: 4.5
     });
+    const [productForm, setProductForm] = useState({
+        title: '',
+        title_ta: '',
+        price: '',
+        category: '',
+        category_ta: '',
+        description: '',
+        description_ta: '',
+        image: '',
+        sliderImages: []
+    });
+
+    const handleStoreImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const imageUrl = URL.createObjectURL(file);
+            setStoreForm({ ...storeForm, image: imageUrl });
+        }
+    };
+
+    const handleProductImageUpload = (e, isSlider = false) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            if (isSlider) {
+                const newImages = files.map(file => URL.createObjectURL(file));
+                setProductForm(prev => ({ ...prev, sliderImages: [...prev.sliderImages, ...newImages] }));
+            } else {
+                const imageUrl = URL.createObjectURL(files[0]);
+                setProductForm(prev => ({ ...prev, image: imageUrl }));
+            }
+        }
+    };
+
+    const removeSliderImage = (index) => {
+        setProductForm(prev => ({
+            ...prev,
+            sliderImages: prev.sliderImages.filter((_, i) => i !== index)
+        }));
+    };
 
     const handleEditStore = (store) => {
         setEditingStore(store);
         setStoreForm({
             name: store.name,
             name_ta: store.name_ta || '',
-            owner: 'John Doe', // Mock data
-            email: 'store@example.com', // Mock data
-            phone: '123-456-7890', // Mock data
             location: store.location,
             location_ta: store.location_ta || '',
-            image: store.image
+            image: store.image,
+            rating: store.rating
         });
         setView('form');
+    };
+
+    const handleDeleteStore = (id) => {
+        if (window.confirm('Are you sure you want to delete this store?')) {
+            deleteStore(id);
+            alert('Store deleted successfully!');
+        }
     };
 
     const handleStoreSubmit = (e) => {
@@ -382,93 +511,127 @@ const StoreManagement = () => {
             addStore(storeForm);
             alert('Store added successfully!');
         }
-        setStoreForm({ name: '', name_ta: '', owner: '', email: '', phone: '', location: '', location_ta: '', image: '' });
+        setStoreForm({ name: '', name_ta: '', location: '', location_ta: '', image: '', rating: 4.5 });
         setEditingStore(null);
         setView('list');
     };
 
-    const handleAddProductToStore = (e) => {
+    const handleManageProducts = (store) => {
+        setSelectedStore(store);
+        setView('storeProducts');
+    };
+
+    const handleAddProductToStore = () => {
+        setProductForm({ title: '', title_ta: '', price: '', category: '', category_ta: '', description: '', description_ta: '', image: '', sliderImages: [] });
+        setEditingProduct(null);
+        setView('addProductToStore');
+    };
+
+    const handleEditProduct = (product) => {
+        setEditingProduct(product);
+        setProductForm({
+            title: product.title,
+            title_ta: product.title_ta || '',
+            price: product.price,
+            category: product.category,
+            category_ta: product.category_ta || '',
+            description: product.description,
+            description_ta: product.description_ta || '',
+            image: product.image,
+            sliderImages: product.images || []
+        });
+        setView('addProductToStore'); // Reusing the add form for editing
+    };
+
+    const handleDeleteProduct = (productId) => {
+        if (window.confirm('Are you sure you want to delete this product?')) {
+            deleteProduct(productId);
+            alert('Product deleted successfully!');
+        }
+    };
+
+    const handleProductSubmit = (e) => {
         e.preventDefault();
-        // Here we would typically add the product with the storeId
-        // For now, we'll just use the addProduct function from context
-        // You might want to extend addProduct to accept a storeId if your data model supports it
-        alert(`Product added to ${selectedStore.name} successfully! (Mock - logic needs storeId support)`);
-        setView('list');
-        setSelectedStore(null);
+        const productData = {
+            ...productForm,
+            price: parseFloat(productForm.price),
+            storeId: selectedStore.id,
+            images: productForm.sliderImages.length > 0 ? productForm.sliderImages : [productForm.image] // Use slider images if available, else main image
+        };
+
+        if (editingProduct) {
+            updateProduct({ ...editingProduct, ...productData });
+            alert('Product updated successfully!');
+        } else {
+            addProduct(productData);
+            alert('Product added to store successfully!');
+        }
+        setView('storeProducts');
     };
 
     return (
         <div className="max-w-6xl">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {view === 'list' ? 'Store Management' : view === 'form' ? (editingStore ? 'Edit Store' : 'Register New Store') : `Add Product to ${selectedStore?.name}`}
-                </h2>
-                {view === 'list' && (
-                    <button
-                        onClick={() => {
-                            setEditingStore(null);
-                            setStoreForm({ name: '', name_ta: '', owner: '', email: '', phone: '', location: '', location_ta: '', image: '' });
-                            setView('form');
-                        }}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-                    >
-                        <Plus size={20} />
-                        Register Store
-                    </button>
-                )}
-                {view !== 'list' && (
-                    <button
-                        onClick={() => setView('list')}
-                        className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2"
-                    >
-                        <ArrowLeft size={20} />
-                        Back to List
-                    </button>
-                )}
-            </div>
-
             {view === 'list' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {stores.map(store => (
-                        <div key={store.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col group relative">
-                            <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); handleEditStore(store); }}
-                                    className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-blue-600 hover:text-blue-700 shadow-sm"
-                                >
-                                    <Edit2 size={18} />
-                                </button>
-                            </div>
-                            <div className="h-48 overflow-hidden">
-                                <img src={store.image} alt={store.name} className="w-full h-full object-cover" />
-                            </div>
-                            <div className="p-6 flex-1 flex flex-col">
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{store.name}</h3>
-                                <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 flex items-center gap-2">
-                                    <MapPin size={16} />
-                                    {store.location}
-                                </p>
-                                <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex gap-3">
+                <>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Store Management</h2>
+                        <button
+                            onClick={() => setView('form')}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm md:text-base"
+                        >
+                            <Plus size={20} />
+                            Add Store
+                        </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {stores.map(store => (
+                            <div key={store.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden group">
+                                <div className="h-48 overflow-hidden relative">
+                                    <img src={store.image} alt={store.name} className="w-full h-full object-cover" />
+                                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                        <button
+                                            onClick={() => handleEditStore(store)}
+                                            className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-blue-600 hover:text-blue-700 shadow-sm"
+                                        >
+                                            <Edit2 size={18} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteStore(store.id)}
+                                            className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-red-600 hover:text-red-700 shadow-sm"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="p-6">
+                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{store.name}</h3>
+                                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 flex items-center gap-2">
+                                        <MapPin size={16} />
+                                        {store.location}
+                                    </p>
                                     <button
-                                        onClick={() => {
-                                            setSelectedStore(store);
-                                            setView('addProductToStore');
-                                        }}
-                                        className="flex-1 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg font-medium hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors flex items-center justify-center gap-2"
+                                        onClick={() => handleManageProducts(store)}
+                                        className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
                                     >
-                                        <Plus size={18} />
-                                        Add Product
+                                        Manage Products
                                     </button>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                </>
             )}
 
             {view === 'form' && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                    <div className="flex items-center gap-4 mb-6">
+                        <button onClick={() => setView('list')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                            <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
+                        </button>
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{editingStore ? 'Edit Store' : 'Add New Store'}</h2>
+                    </div>
                     <form onSubmit={handleStoreSubmit} className="space-y-6">
+                        {/* Store Form Fields */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Store Name</label>
@@ -487,108 +650,244 @@ const StoreManagement = () => {
                                     value={storeForm.name_ta}
                                     onChange={(e) => setStoreForm({ ...storeForm, name_ta: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder="e.g., ஷாப்ஈஸ்"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Owner Name</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
                                 <input
                                     type="text"
-                                    value={storeForm.owner}
-                                    onChange={(e) => setStoreForm({ ...storeForm, owner: e.target.value })}
+                                    value={storeForm.location}
+                                    onChange={(e) => setStoreForm({ ...storeForm, location: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location (Tamil)</label>
                                 <input
-                                    type="email"
-                                    value={storeForm.email}
-                                    onChange={(e) => setStoreForm({ ...storeForm, email: e.target.value })}
+                                    type="text"
+                                    value={storeForm.location_ta}
+                                    onChange={(e) => setStoreForm({ ...storeForm, location_ta: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    required
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone</label>
-                                <input
-                                    type="tel"
-                                    value={storeForm.phone}
-                                    onChange={(e) => setStoreForm({ ...storeForm, phone: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    required
-                                />
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Store Image</label>
+                                <div className="flex items-center gap-4">
+                                    {storeForm.image && (
+                                        <img src={storeForm.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
+                                    )}
+                                    <label className="flex-1 cursor-pointer">
+                                        <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
+                                            <Upload size={20} />
+                                            <span>Upload Image</span>
+                                        </div>
+                                        <input type="file" accept="image/*" onChange={handleStoreImageUpload} className="hidden" required={!storeForm.image} />
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Store Address</label>
-                            <textarea
-                                rows="3"
-                                value={storeForm.location}
-                                onChange={(e) => setStoreForm({ ...storeForm, location: e.target.value })}
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                required
-                            ></textarea>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Store Address (Tamil)</label>
-                            <textarea
-                                rows="3"
-                                value={storeForm.location_ta}
-                                onChange={(e) => setStoreForm({ ...storeForm, location_ta: e.target.value })}
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder="Store address in Tamil..."
-                            ></textarea>
                         </div>
                         <div className="flex justify-end">
                             <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
-                                {editingStore ? <Save size={20} /> : <Store size={20} />}
-                                {editingStore ? 'Update Store' : 'Register Store'}
+                                <Save size={20} />
+                                {editingStore ? 'Update Store' : 'Add Store'}
                             </button>
                         </div>
                     </form>
                 </div>
             )}
 
-            {view === 'addProductToStore' && selectedStore && (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                    <form onSubmit={handleAddProductToStore} className="space-y-6">
-                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl mb-6">
-                            <p className="text-blue-800 dark:text-blue-300 font-medium">Adding product to: {selectedStore.name}</p>
+            {view === 'storeProducts' && selectedStore && (
+                <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => setView('list')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                            <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
+                        </button>
+                        <div>
+                            <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{selectedStore.name}</h2>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">Manage Products</p>
                         </div>
-                        {/* ... (Product Form fields same as ProductManagement) ... */}
+                        <button
+                            onClick={handleAddProductToStore}
+                            className="ml-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm md:text-base"
+                        >
+                            <Plus size={20} />
+                            Add Product
+                        </button>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-50 dark:bg-gray-700/50">
+                                    <tr>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Image</th>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Title</th>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Price</th>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                                    {products.filter(p => p.storeId === selectedStore.id).map(product => (
+                                        <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                            <td className="p-4">
+                                                <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
+                                            </td>
+                                            <td className="p-4 font-medium text-gray-900 dark:text-white">{product.title}</td>
+                                            <td className="p-4 font-medium text-gray-900 dark:text-white">${product.price}</td>
+                                            <td className="p-4">
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleEditProduct(product)}
+                                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        <Edit2 size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteProduct(product.id)}
+                                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {products.filter(p => p.storeId === selectedStore.id).length === 0 && (
+                                        <tr>
+                                            <td colSpan="4" className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                                No products found in this store. Add one to get started!
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {view === 'addProductToStore' && (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                    <div className="flex items-center gap-4 mb-6">
+                        <button onClick={() => setView('storeProducts')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                            <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
+                        </button>
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                            {editingProduct ? 'Edit Product' : `Add Product to ${selectedStore?.name}`}
+                        </h2>
+                    </div>
+                    <form onSubmit={handleProductSubmit} className="space-y-6">
+                        {/* Product Form Fields - Similar to ProductManagement but with slider images */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Title</label>
-                                <input type="text" className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" required />
+                                <input
+                                    type="text"
+                                    value={productForm.title}
+                                    onChange={(e) => setProductForm({ ...productForm, title: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Title (Tamil)</label>
+                                <input
+                                    type="text"
+                                    value={productForm.title_ta}
+                                    onChange={(e) => setProductForm({ ...productForm, title_ta: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Price ($)</label>
-                                <input type="number" className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" required />
+                                <input
+                                    type="number"
+                                    value={productForm.price}
+                                    onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required
+                                />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
-                                <select className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" required>
-                                    <option>Electronics</option>
-                                    <option>Fashion</option>
-                                    <option>Home</option>
-                                    <option>Beauty</option>
+                                <select
+                                    value={productForm.category}
+                                    onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required
+                                >
+                                    <option value="">Select Category</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Fashion">Fashion</option>
+                                    <option value="Home">Home</option>
+                                    <option value="Beauty">Beauty</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Image URL</label>
-                                <input type="url" className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" required />
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Main Image</label>
+                                <div className="flex items-center gap-4">
+                                    {productForm.image && (
+                                        <img src={productForm.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
+                                    )}
+                                    <label className="flex-1 cursor-pointer">
+                                        <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
+                                            <Upload size={20} />
+                                            <span>Upload Image</span>
+                                        </div>
+                                        <input type="file" accept="image/*" onChange={(e) => handleProductImageUpload(e, false)} className="hidden" required={!productForm.image} />
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="col-span-1 md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Slider Images (Optional)</label>
+                                <div className="space-y-4">
+                                    <div className="flex flex-wrap gap-4">
+                                        {productForm.sliderImages.map((img, idx) => (
+                                            <div key={idx} className="relative w-20 h-20 group">
+                                                <img src={img} alt={`Slider ${idx}`} className="w-full h-full rounded-lg object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeSliderImage(idx)}
+                                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <label className="cursor-pointer">
+                                            <div className="w-20 h-20 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center">
+                                                <Plus size={24} />
+                                            </div>
+                                            <input type="file" accept="image/*" multiple onChange={(e) => handleProductImageUpload(e, true)} className="hidden" />
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
-                            <textarea rows="4" className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" required></textarea>
+                            <textarea
+                                value={productForm.description}
+                                onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                                rows="4"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                required
+                            ></textarea>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description (Tamil)</label>
+                            <textarea
+                                value={productForm.description_ta}
+                                onChange={(e) => setProductForm({ ...productForm, description_ta: e.target.value })}
+                                rows="4"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                            ></textarea>
                         </div>
                         <div className="flex justify-end">
                             <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
                                 <Plus size={20} />
-                                Add Product to Store
+                                {editingProduct ? 'Update Product' : 'Add Product to Store'}
                             </button>
                         </div>
                     </form>
@@ -599,7 +898,7 @@ const StoreManagement = () => {
 };
 
 const NewsManagement = () => {
-    const { news, addNews, updateNews } = useData();
+    const { news, addNews, updateNews, deleteNews } = useData();
     const [view, setView] = useState('list'); // 'list' or 'form'
     const [editingNews, setEditingNews] = useState(null);
     const [newsForm, setNewsForm] = useState({
@@ -611,6 +910,14 @@ const NewsManagement = () => {
         content: '',
         content_ta: ''
     });
+
+    const handleNewsImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const imageUrl = URL.createObjectURL(file);
+            setNewsForm({ ...newsForm, image: imageUrl });
+        }
+    };
 
     const handleEditNews = (item) => {
         setEditingNews(item);
@@ -624,6 +931,13 @@ const NewsManagement = () => {
             content_ta: item.description_ta || ''
         });
         setView('form');
+    };
+
+    const handleDeleteNews = (id) => {
+        if (window.confirm('Are you sure you want to delete this post?')) {
+            deleteNews(id);
+            alert('Post deleted successfully!');
+        }
     };
 
     const handleSubmit = (e) => {
@@ -678,12 +992,18 @@ const NewsManagement = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {news.map(item => (
                         <div key={item.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col group relative">
-                            <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleEditNews(item); }}
                                     className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-blue-600 hover:text-blue-700 shadow-sm"
                                 >
                                     <Edit2 size={18} />
+                                </button>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteNews(item.id); }}
+                                    className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-red-600 hover:text-red-700 shadow-sm"
+                                >
+                                    <Trash2 size={18} />
                                 </button>
                             </div>
                             <div className="h-48 overflow-hidden">
@@ -750,14 +1070,25 @@ const NewsManagement = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Image URL</label>
-                                <input
-                                    type="url"
-                                    value={newsForm.image}
-                                    onChange={(e) => setNewsForm({ ...newsForm, image: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    required
-                                />
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Post Image</label>
+                                <div className="flex items-center gap-4">
+                                    {newsForm.image && (
+                                        <img src={newsForm.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
+                                    )}
+                                    <label className="flex-1 cursor-pointer">
+                                        <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
+                                            <Upload size={20} />
+                                            <span>Upload Image</span>
+                                        </div>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleNewsImageUpload}
+                                            className="hidden"
+                                            required={!newsForm.image}
+                                        />
+                                    </label>
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -920,6 +1251,98 @@ const UserManagement = () => {
                         <div className="text-right">
                             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{user.orders}</div>
                             <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Orders</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const AdsManagement = () => {
+    const { ads, addAd, deleteAd } = useData();
+    const [newAdUrl, setNewAdUrl] = useState('');
+    const [newAdTitle, setNewAdTitle] = useState('');
+
+    const handleAdImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const imageUrl = URL.createObjectURL(file);
+            setNewAdUrl(imageUrl);
+        }
+    };
+
+    const handleAddAd = (e) => {
+        e.preventDefault();
+        if (newAdUrl) {
+            addAd({ image: newAdUrl, title: newAdTitle || 'Ad' });
+            setNewAdUrl('');
+            setNewAdTitle('');
+        }
+    };
+
+    return (
+        <div className="max-w-6xl">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Ads Slider Management</h2>
+
+            {/* Add New Ad Form */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Add New Ad Image</h3>
+                <form onSubmit={handleAddAd} className="flex flex-col md:flex-row gap-4 items-end">
+                    <div className="flex-1 w-full">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ad Image</label>
+                        <div className="flex items-center gap-4">
+                            {newAdUrl && (
+                                <img src={newAdUrl} alt="Preview" className="w-12 h-12 rounded-lg object-cover" />
+                            )}
+                            <label className="flex-1 cursor-pointer">
+                                <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
+                                    <Upload size={20} />
+                                    <span>Upload Image</span>
+                                </div>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleAdImageUpload}
+                                    className="hidden"
+                                    required={!newAdUrl}
+                                />
+                            </label>
+                        </div>
+                    </div>
+                    <div className="flex-1 w-full">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title (Optional)</label>
+                        <input
+                            type="text"
+                            value={newAdTitle}
+                            onChange={(e) => setNewAdTitle(e.target.value)}
+                            className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                            placeholder="Ad Title"
+                        />
+                    </div>
+                    <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 h-[42px]">
+                        <Plus size={20} /> Add
+                    </button>
+                </form>
+            </div>
+
+            {/* Ads List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {ads.map(ad => (
+                    <div key={ad.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden group relative">
+                        <div className="aspect-video relative">
+                            <img src={ad.image} alt={ad.title} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <button
+                                    onClick={() => deleteAd(ad.id)}
+                                    className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                                >
+                                    <Trash2 size={20} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-4">
+                            <p className="font-medium text-gray-900 dark:text-white">{ad.title}</p>
                         </div>
                     </div>
                 ))}

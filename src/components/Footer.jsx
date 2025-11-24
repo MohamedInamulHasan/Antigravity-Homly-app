@@ -1,7 +1,10 @@
 import { ShoppingBag, MapPin, Phone, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { useLanguage } from '../context/LanguageContext';
+
 const Footer = () => {
+    const { t } = useLanguage();
     return (
         <footer className="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 pt-16 pb-8 transition-colors duration-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,13 +36,13 @@ const Footer = () => {
                     </div>
 
                     <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-6">Quick Links</h3>
+                        <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-6">{t('Quick Links')}</h3>
                         <ul className="space-y-4">
-                            {['Home', 'Shop', 'About Us', 'Contact'].map((item) => (
+                            {['Home', 'Shop', 'About Us', 'Contact', 'Cart', 'Checkout', 'Orders'].map((item) => (
                                 <li key={item}>
-                                    <Link to="/" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-2 group">
+                                    <Link to={item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`} className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-2 group">
                                         <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-blue-600 dark:group-hover:bg-blue-400 transition-colors" />
-                                        {item}
+                                        {t(item)}
                                     </Link>
                                 </li>
                             ))}
@@ -47,13 +50,13 @@ const Footer = () => {
                     </div>
 
                     <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-6">Customer Service</h3>
+                        <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-6">{t('Customer Service')}</h3>
                         <ul className="space-y-4">
                             {['FAQ', 'Shipping Policy', 'Returns & Refunds', 'Privacy Policy'].map((item) => (
                                 <li key={item}>
                                     <Link to="/" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-2 group">
                                         <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-blue-600 dark:group-hover:bg-blue-400 transition-colors" />
-                                        {item}
+                                        {t(item)}
                                     </Link>
                                 </li>
                             ))}
@@ -61,7 +64,7 @@ const Footer = () => {
                     </div>
 
                     <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-6">Contact Us</h3>
+                        <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-6">{t('Contact Us')}</h3>
                         <ul className="space-y-4">
                             <li className="flex items-start gap-3 text-gray-500 dark:text-gray-400">
                                 <MapPin className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
@@ -81,12 +84,12 @@ const Footer = () => {
 
                 <div className="border-t border-gray-100 dark:border-gray-800 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-gray-500 dark:text-gray-400 text-sm text-center md:text-left">
-                        © {new Date().getFullYear()} ShopEase. All rights reserved.
+                        © {new Date().getFullYear()} ShopEase. {t('All rights reserved')}.
                     </p>
                     <div className="flex gap-6">
-                        <Link to="/" className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Terms</Link>
-                        <Link to="/" className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Privacy</Link>
-                        <Link to="/" className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Cookies</Link>
+                        <Link to="/" className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{t('Terms')}</Link>
+                        <Link to="/" className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{t('Privacy')}</Link>
+                        <Link to="/" className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{t('Cookies')}</Link>
                     </div>
                 </div>
             </div>

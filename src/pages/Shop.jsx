@@ -73,13 +73,13 @@ const Shop = () => {
                                         </div>
                                         <div className="flex items-center text-gray-600 dark:text-gray-300 text-sm">
                                             <Phone size={16} className="mr-2 text-blue-500" />
-                                            <span>{store.phone}</span>
+                                            <span>{store.mobile}</span>
                                         </div>
                                     </div>
 
                                     <Link
                                         to={`/store/${store.id}`}
-                                        className="block w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-center py-3 rounded-lg font-medium hover:bg-blue-600 hover:text-white dark:hover:bg-blue-500 transition-all duration-300"
+                                        className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-md hover:shadow-lg"
                                     >
                                         Visit Store
                                     </Link>
