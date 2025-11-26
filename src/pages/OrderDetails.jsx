@@ -9,7 +9,7 @@ const OrderDetails = () => {
     const { t } = useLanguage();
     const { orders } = useData();
 
-    const order = orders.find(o => o.id === id);
+    const order = orders.find(o => String(o.id) === id);
 
     if (!order) {
         return (

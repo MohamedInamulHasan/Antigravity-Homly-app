@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import ProductList from '../components/ProductList';
 import { useData } from '../context/DataContext.jsx';
+import { useLanguage } from '../context/LanguageContext';
 
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -10,6 +11,7 @@ const Home = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { products: allProducts, ads } = useData();
+    const { t } = useLanguage();
 
     const categoryFilter = searchParams.get('category');
     const searchQuery = searchParams.get('search');
@@ -19,20 +21,20 @@ const Home = () => {
         {
             id: 1,
             image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop',
-            title: 'Summer Collection 2024',
-            subtitle: 'Discover the latest trends in fashion.'
+            title: t('Summer Collection 2024'),
+            subtitle: t('Discover the latest trends in fashion.')
         },
         {
             id: 2,
             image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=2071&auto=format&fit=crop',
-            title: 'Modern Electronics',
-            subtitle: 'Upgrade your lifestyle with new tech.'
+            title: t('Modern Electronics'),
+            subtitle: t('Upgrade your lifestyle with new tech.')
         },
         {
             id: 3,
             image: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4f9d?q=80&w=2070&auto=format&fit=crop',
-            title: 'Cozy Home Living',
-            subtitle: 'Make your home your sanctuary.'
+            title: t('Cozy Home Living'),
+            subtitle: t('Make your home your sanctuary.')
         }
     ];
 
@@ -132,9 +134,9 @@ const Home = () => {
     };
 
     const getSectionTitle = () => {
-        if (searchQuery) return `Search Results for "${searchQuery}"`;
-        if (categoryFilter === 'All' || !categoryFilter) return 'All Products';
-        return `${categoryFilter} Products`;
+        if (searchQuery) return `${t('Search Results for')} "${searchQuery}"`;
+        if (categoryFilter === 'All' || !categoryFilter) return t('All Products');
+        return `${t(categoryFilter)} ${t('Products')}`;
     };
 
     const isAllSelected = !categoryFilter || categoryFilter === 'All';
@@ -163,12 +165,12 @@ const Home = () => {
                                     <h2 className="text-4xl md:text-6xl font-bold mb-4 transform translate-y-0 transition-transform duration-700">
                                         {slide.title}
                                     </h2>
-                                    <p className="text-xl md:text-2xl mb-8">{slide.subtitle || 'Shop the latest trends'}</p>
+                                    <p className="text-xl md:text-2xl mb-8">{slide.subtitle || t('Shop the latest trends')}</p>
                                     <Link
                                         to="/store"
                                         className="bg-white text-gray-900 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors"
                                     >
-                                        Shop Now
+                                        {t('Shop Now')}
                                     </Link>
                                 </div>
                             </div>
@@ -211,7 +213,7 @@ const Home = () => {
                             onClick={() => navigate('/')}
                             className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium"
                         >
-                            Clear Filters
+                            {t('Clear Filters')}
                         </button>
                     )}
                 </div>
@@ -229,7 +231,7 @@ const Home = () => {
                                     }`}
                             >
                                 <span className="font-medium whitespace-nowrap text-sm md:text-base">
-                                    {category.name}
+                                    {t(category.name)}
                                 </span>
                             </div>
                         );
@@ -244,7 +246,7 @@ const Home = () => {
                     <form onSubmit={handleMobileSearch} className="relative">
                         <input
                             type="text"
-                            placeholder="Search products..."
+                            placeholder={t('Search products...')}
                             value={mobileSearchTerm}
                             onChange={(e) => setMobileSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
@@ -262,12 +264,12 @@ const Home = () => {
                     <ProductList products={displayedProducts} />
                 ) : (
                     <div className="text-center py-12">
-                        <p className="text-xl text-gray-500 dark:text-gray-400">No products found.</p>
+                        <p className="text-xl text-gray-500 dark:text-gray-400">{t('No products found')}</p>
                         <button
                             onClick={() => navigate('/')}
                             className="mt-4 text-blue-600 dark:text-blue-400 hover:underline"
                         >
-                            Clear filters
+                            {t('Clear filters')}
                         </button>
                     </div>
                 )}

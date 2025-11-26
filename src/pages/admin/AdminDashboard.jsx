@@ -26,10 +26,12 @@ import {
     Image as ImageIcon
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('products');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { t } = useLanguage();
 
     const renderContent = () => {
         switch (activeTab) {
@@ -79,43 +81,43 @@ const AdminDashboard = () => {
                 <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <LayoutDashboard className="text-blue-600 dark:text-blue-400" />
-                        Admin Panel
+                        {t('Admin Panel')}
                     </h1>
                 </div>
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                     <SidebarItem
                         icon={<Package size={20} />}
-                        label="Products"
+                        label={t('Products')}
                         active={activeTab === 'products'}
                         onClick={() => { setActiveTab('products'); setIsMobileMenuOpen(false); }}
                     />
                     <SidebarItem
                         icon={<Store size={20} />}
-                        label="Stores"
+                        label={t('Stores')}
                         active={activeTab === 'stores'}
                         onClick={() => { setActiveTab('stores'); setIsMobileMenuOpen(false); }}
                     />
                     <SidebarItem
                         icon={<Newspaper size={20} />}
-                        label="News & Offers"
+                        label={t('News & Offers')}
                         active={activeTab === 'news'}
                         onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }}
                     />
                     <SidebarItem
                         icon={<ShoppingBag size={20} />}
-                        label="Orders"
+                        label={t('Orders')}
                         active={activeTab === 'orders'}
                         onClick={() => { setActiveTab('orders'); setIsMobileMenuOpen(false); }}
                     />
                     <SidebarItem
                         icon={<Users size={20} />}
-                        label="Users"
+                        label={t('Users')}
                         active={activeTab === 'users'}
                         onClick={() => { setActiveTab('users'); setIsMobileMenuOpen(false); }}
                     />
                     <SidebarItem
                         icon={<ImageIcon size={20} />}
-                        label="Ads Slider"
+                        label={t('Ads Slider')}
                         active={activeTab === 'ads'}
                         onClick={() => { setActiveTab('ads'); setIsMobileMenuOpen(false); }}
                     />
@@ -149,6 +151,7 @@ const SidebarItem = ({ icon, label, active, onClick }) => (
 
 const ProductManagement = () => {
     const { products, addProduct, updateProduct, deleteProduct } = useData();
+    const { t } = useLanguage();
     const [view, setView] = useState('list'); // 'list' or 'form'
     const [editingProduct, setEditingProduct] = useState(null);
     const [formData, setFormData] = useState({
@@ -200,9 +203,9 @@ const ProductManagement = () => {
     };
 
     const handleDelete = (id) => {
-        if (window.confirm('Are you sure you want to delete this product?')) {
+        if (window.confirm(t('Are you sure you want to delete this product?'))) {
             deleteProduct(id);
-            alert('Product deleted successfully!');
+            alert(t('Product deleted successfully!'));
         }
     };
 
@@ -216,10 +219,10 @@ const ProductManagement = () => {
 
         if (editingProduct) {
             updateProduct({ ...editingProduct, ...productData });
-            alert('Product updated successfully!');
+            alert(t('Product updated successfully!'));
         } else {
             addProduct(productData);
-            alert('Product uploaded successfully!');
+            alert(t('Product uploaded successfully!'));
         }
         setFormData({ title: '', title_ta: '', price: '', category: '', category_ta: '', description: '', description_ta: '', image: '', sliderImages: [] });
         setEditingProduct(null);
@@ -230,7 +233,7 @@ const ProductManagement = () => {
         <div className="max-w-6xl">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {view === 'list' ? 'Product Inventory' : editingProduct ? 'Edit Product' : 'Add New Product'}
+                    {view === 'list' ? t('Product Inventory') : editingProduct ? t('Edit Product') : t('Add New Product')}
                 </h2>
                 <button
                     onClick={() => {
@@ -245,7 +248,7 @@ const ProductManagement = () => {
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
                     {view === 'list' ? <Plus size={20} /> : <List size={20} />}
-                    {view === 'list' ? 'Add Product' : 'View List'}
+                    {view === 'list' ? t('Add Product') : t('View List')}
                 </button>
             </div>
 
@@ -255,11 +258,11 @@ const ProductManagement = () => {
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 dark:bg-gray-700/50">
                                 <tr>
-                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Image</th>
-                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Title</th>
-                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Category</th>
-                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Price</th>
-                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Image')}</th>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Title')}</th>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Category')}</th>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Price')}</th>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -298,28 +301,28 @@ const ProductManagement = () => {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Title</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Product Title')}</label>
                                 <input
                                     type="text"
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder="e.g., Wireless Headphones"
+                                    placeholder={t('e.g., Wireless Headphones')}
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Title (Tamil)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Product Title (Tamil)')}</label>
                                 <input
                                     type="text"
                                     value={formData.title_ta}
                                     onChange={(e) => setFormData({ ...formData, title_ta: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder="e.g., வயர்லெஸ் ஹெட்ஃபோன்கள்"
+                                    placeholder={t('e.g., வயர்லெஸ் ஹெட்ஃபோன்கள்')}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Price ($)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Price')}</label>
                                 <input
                                     type="number"
                                     value={formData.price}
@@ -330,22 +333,22 @@ const ProductManagement = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Category')}</label>
                                 <select
                                     value={formData.category}
                                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                     required
                                 >
-                                    <option value="">Select Category</option>
-                                    <option value="Electronics">Electronics</option>
-                                    <option value="Fashion">Fashion</option>
-                                    <option value="Home">Home</option>
-                                    <option value="Beauty">Beauty</option>
+                                    <option value="">{t('Select Category')}</option>
+                                    <option value="Electronics">{t('Electronics')}</option>
+                                    <option value="Fashion">{t('Fashion')}</option>
+                                    <option value="Home">{t('Home')}</option>
+                                    <option value="Beauty">{t('Beauty')}</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Main Image</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Main Image')}</label>
                                 <div className="flex items-center gap-4">
                                     {formData.image && (
                                         <img src={formData.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
@@ -353,7 +356,7 @@ const ProductManagement = () => {
                                     <label className="flex-1 cursor-pointer">
                                         <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
                                             <Upload size={20} />
-                                            <span>Upload Image</span>
+                                            <span>{t('Upload Image')}</span>
                                         </div>
                                         <input
                                             type="file"
@@ -366,7 +369,7 @@ const ProductManagement = () => {
                                 </div>
                             </div>
                             <div className="col-span-1 md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Slider Images (Optional)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Slider Images (Optional)')}</label>
                                 <div className="space-y-4">
                                     <div className="flex flex-wrap gap-4">
                                         {formData.sliderImages.map((img, idx) => (
@@ -392,24 +395,24 @@ const ProductManagement = () => {
                             </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Description')}</label>
                             <textarea
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 rows="4"
                                 className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder="Product description..."
+                                placeholder={t('Product description...')}
                                 required
                             ></textarea>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description (Tamil)</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Description (Tamil)')}</label>
                             <textarea
                                 value={formData.description_ta}
                                 onChange={(e) => setFormData({ ...formData, description_ta: e.target.value })}
                                 rows="4"
                                 className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder="Product description in Tamil..."
+                                placeholder={t('Product description in Tamil...')}
                             ></textarea>
                         </div>
                         <div className="flex justify-end">
@@ -418,7 +421,7 @@ const ProductManagement = () => {
                                 className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
                             >
                                 {editingProduct ? <Save size={20} /> : <Plus size={20} />}
-                                {editingProduct ? 'Update Product' : 'Add Product'}
+                                {editingProduct ? t('Update Product') : t('Add Product')}
                             </button>
                         </div>
                     </form>
@@ -430,6 +433,7 @@ const ProductManagement = () => {
 
 const StoreManagement = () => {
     const { stores, products, addStore, updateStore, addProduct, updateProduct, deleteProduct, deleteStore } = useData();
+    const { t } = useLanguage();
     const [view, setView] = useState('list'); // 'list', 'form', 'storeProducts', 'addProductToStore', 'editProduct'
     const [selectedStore, setSelectedStore] = useState(null);
     const [editingStore, setEditingStore] = useState(null);
@@ -440,7 +444,10 @@ const StoreManagement = () => {
         location: '',
         location_ta: '',
         image: '',
-        rating: 4.5
+        rating: 4.5,
+        hours: '',
+        hours_ta: '',
+        mobile: ''
     });
     const [productForm, setProductForm] = useState({
         title: '',
@@ -490,15 +497,18 @@ const StoreManagement = () => {
             location: store.location,
             location_ta: store.location_ta || '',
             image: store.image,
-            rating: store.rating
+            rating: store.rating,
+            hours: store.hours || '',
+            hours_ta: store.hours_ta || '',
+            mobile: store.mobile || ''
         });
         setView('form');
     };
 
     const handleDeleteStore = (id) => {
-        if (window.confirm('Are you sure you want to delete this store?')) {
+        if (window.confirm(t('Are you sure you want to delete this store?'))) {
             deleteStore(id);
-            alert('Store deleted successfully!');
+            alert(t('Store deleted successfully!'));
         }
     };
 
@@ -506,12 +516,12 @@ const StoreManagement = () => {
         e.preventDefault();
         if (editingStore) {
             updateStore({ ...editingStore, ...storeForm });
-            alert('Store updated successfully!');
+            alert(t('Store updated successfully!'));
         } else {
             addStore(storeForm);
-            alert('Store added successfully!');
+            alert(t('Store added successfully!'));
         }
-        setStoreForm({ name: '', name_ta: '', location: '', location_ta: '', image: '', rating: 4.5 });
+        setStoreForm({ name: '', name_ta: '', location: '', location_ta: '', image: '', rating: 4.5, hours: '', hours_ta: '', mobile: '' });
         setEditingStore(null);
         setView('list');
     };
@@ -544,9 +554,9 @@ const StoreManagement = () => {
     };
 
     const handleDeleteProduct = (productId) => {
-        if (window.confirm('Are you sure you want to delete this product?')) {
+        if (window.confirm(t('Are you sure you want to delete this product?'))) {
             deleteProduct(productId);
-            alert('Product deleted successfully!');
+            alert(t('Product deleted successfully!'));
         }
     };
 
@@ -561,10 +571,10 @@ const StoreManagement = () => {
 
         if (editingProduct) {
             updateProduct({ ...editingProduct, ...productData });
-            alert('Product updated successfully!');
+            alert(t('Product updated successfully!'));
         } else {
             addProduct(productData);
-            alert('Product added to store successfully!');
+            alert(t('Product added to store successfully!'));
         }
         setView('storeProducts');
     };
@@ -574,13 +584,13 @@ const StoreManagement = () => {
             {view === 'list' && (
                 <>
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Store Management</h2>
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{t('Store Management')}</h2>
                         <button
                             onClick={() => setView('form')}
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm md:text-base"
                         >
                             <Plus size={20} />
-                            Add Store
+                            {t('Add Store')}
                         </button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -613,7 +623,7 @@ const StoreManagement = () => {
                                         onClick={() => handleManageProducts(store)}
                                         className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
                                     >
-                                        Manage Products
+                                        {t('Manage Products')}
                                     </button>
                                 </div>
                             </div>
@@ -628,13 +638,13 @@ const StoreManagement = () => {
                         <button onClick={() => setView('list')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
                             <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
                         </button>
-                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{editingStore ? 'Edit Store' : 'Add New Store'}</h2>
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{editingStore ? t('Edit Store') : t('Add New Store')}</h2>
                     </div>
                     <form onSubmit={handleStoreSubmit} className="space-y-6">
                         {/* Store Form Fields */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Store Name</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Store Name')}</label>
                                 <input
                                     type="text"
                                     value={storeForm.name}
@@ -644,7 +654,7 @@ const StoreManagement = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Store Name (Tamil)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Store Name (Tamil)')}</label>
                                 <input
                                     type="text"
                                     value={storeForm.name_ta}
@@ -653,7 +663,7 @@ const StoreManagement = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Location')}</label>
                                 <input
                                     type="text"
                                     value={storeForm.location}
@@ -663,7 +673,7 @@ const StoreManagement = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location (Tamil)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Location (Tamil)')}</label>
                                 <input
                                     type="text"
                                     value={storeForm.location_ta}
@@ -671,8 +681,40 @@ const StoreManagement = () => {
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Timing')}</label>
+                                <input
+                                    type="text"
+                                    value={storeForm.hours}
+                                    onChange={(e) => setStoreForm({ ...storeForm, hours: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder="e.g., 9:00 AM - 9:00 PM"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Timing (Tamil)')}</label>
+                                <input
+                                    type="text"
+                                    value={storeForm.hours_ta}
+                                    onChange={(e) => setStoreForm({ ...storeForm, hours_ta: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder={t('e.g., காலை 9:00 - இரவு 9:00')}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Mobile Number')}</label>
+                                <input
+                                    type="tel"
+                                    value={storeForm.mobile}
+                                    onChange={(e) => setStoreForm({ ...storeForm, mobile: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder={t('Enter mobile number')}
+                                    required
+                                />
+                            </div>
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Store Image</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Store Image')}</label>
                                 <div className="flex items-center gap-4">
                                     {storeForm.image && (
                                         <img src={storeForm.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
@@ -680,7 +722,7 @@ const StoreManagement = () => {
                                     <label className="flex-1 cursor-pointer">
                                         <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
                                             <Upload size={20} />
-                                            <span>Upload Image</span>
+                                            <span>{t('Upload Image')}</span>
                                         </div>
                                         <input type="file" accept="image/*" onChange={handleStoreImageUpload} className="hidden" required={!storeForm.image} />
                                     </label>
@@ -690,215 +732,220 @@ const StoreManagement = () => {
                         <div className="flex justify-end">
                             <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
                                 <Save size={20} />
-                                {editingStore ? 'Update Store' : 'Add Store'}
+                                {editingStore ? t('Update Store') : t('Add Store')}
                             </button>
                         </div>
                     </form>
-                </div>
+                </div >
             )}
 
-            {view === 'storeProducts' && selectedStore && (
-                <div className="space-y-6">
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => setView('list')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                            <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
-                        </button>
-                        <div>
-                            <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{selectedStore.name}</h2>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm">Manage Products</p>
+            {
+                view === 'storeProducts' && selectedStore && (
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => setView('list')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                                <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
+                            </button>
+                            <div>
+                                <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{selectedStore.name}</h2>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm">{t('Manage Products')}</p>
+                            </div>
+                            <button
+                                onClick={handleAddProductToStore}
+                                className="ml-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm md:text-base"
+                            >
+                                <Plus size={20} />
+                                {t('Add Product')}
+                            </button>
                         </div>
-                        <button
-                            onClick={handleAddProductToStore}
-                            className="ml-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm md:text-base"
-                        >
-                            <Plus size={20} />
-                            Add Product
-                        </button>
-                    </div>
 
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-gray-50 dark:bg-gray-700/50">
-                                    <tr>
-                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Image</th>
-                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Title</th>
-                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Price</th>
-                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                    {products.filter(p => p.storeId === selectedStore.id).map(product => (
-                                        <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                            <td className="p-4">
-                                                <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
-                                            </td>
-                                            <td className="p-4 font-medium text-gray-900 dark:text-white">{product.title}</td>
-                                            <td className="p-4 font-medium text-gray-900 dark:text-white">${product.price}</td>
-                                            <td className="p-4">
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => handleEditProduct(product)}
-                                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                                    >
-                                                        <Edit2 size={18} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteProduct(product.id)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {products.filter(p => p.storeId === selectedStore.id).length === 0 && (
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead className="bg-gray-50 dark:bg-gray-700/50">
                                         <tr>
-                                            <td colSpan="4" className="p-8 text-center text-gray-500 dark:text-gray-400">
-                                                No products found in this store. Add one to get started!
-                                            </td>
+                                            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Image')}</th>
+                                            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Title')}</th>
+                                            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Price')}</th>
+                                            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Actions')}</th>
                                         </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                                        {products.filter(p => p.storeId === selectedStore.id).map(product => (
+                                            <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                                <td className="p-4">
+                                                    <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
+                                                </td>
+                                                <td className="p-4 font-medium text-gray-900 dark:text-white">{product.title}</td>
+                                                <td className="p-4 font-medium text-gray-900 dark:text-white">${product.price}</td>
+                                                <td className="p-4">
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => handleEditProduct(product)}
+                                                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                        >
+                                                            <Edit2 size={18} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteProduct(product.id)}
+                                                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {products.filter(p => p.storeId === selectedStore.id).length === 0 && (
+                                            <tr>
+                                                <td colSpan="4" className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                                    {t('No products found in this store. Add one to get started!')}
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-            {view === 'addProductToStore' && (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                    <div className="flex items-center gap-4 mb-6">
-                        <button onClick={() => setView('storeProducts')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                            <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
-                        </button>
-                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
-                            {editingProduct ? 'Edit Product' : `Add Product to ${selectedStore?.name}`}
-                        </h2>
-                    </div>
-                    <form onSubmit={handleProductSubmit} className="space-y-6">
-                        {/* Product Form Fields - Similar to ProductManagement but with slider images */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Title</label>
-                                <input
-                                    type="text"
-                                    value={productForm.title}
-                                    onChange={(e) => setProductForm({ ...productForm, title: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Product Title (Tamil)</label>
-                                <input
-                                    type="text"
-                                    value={productForm.title_ta}
-                                    onChange={(e) => setProductForm({ ...productForm, title_ta: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Price ($)</label>
-                                <input
-                                    type="number"
-                                    value={productForm.price}
-                                    onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
-                                <select
-                                    value={productForm.category}
-                                    onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    required
-                                >
-                                    <option value="">Select Category</option>
-                                    <option value="Electronics">Electronics</option>
-                                    <option value="Fashion">Fashion</option>
-                                    <option value="Home">Home</option>
-                                    <option value="Beauty">Beauty</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Main Image</label>
-                                <div className="flex items-center gap-4">
-                                    {productForm.image && (
-                                        <img src={productForm.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
-                                    )}
-                                    <label className="flex-1 cursor-pointer">
-                                        <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
-                                            <Upload size={20} />
-                                            <span>Upload Image</span>
-                                        </div>
-                                        <input type="file" accept="image/*" onChange={(e) => handleProductImageUpload(e, false)} className="hidden" required={!productForm.image} />
-                                    </label>
+            {
+                view === 'addProductToStore' && (
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                        <div className="flex items-center gap-4 mb-6">
+                            <button onClick={() => setView('storeProducts')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                                <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
+                            </button>
+                            <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                                {editingProduct ? t('Edit Product') : `${t('Add Product to')} ${selectedStore?.name}`}
+                            </h2>
+                        </div>
+                        <form onSubmit={handleProductSubmit} className="space-y-6">
+                            {/* Product Form Fields - Similar to ProductManagement but with slider images */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Product Title')}</label>
+                                    <input
+                                        type="text"
+                                        value={productForm.title}
+                                        onChange={(e) => setProductForm({ ...productForm, title: e.target.value })}
+                                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                        required
+                                    />
                                 </div>
-                            </div>
-                            <div className="col-span-1 md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Slider Images (Optional)</label>
-                                <div className="space-y-4">
-                                    <div className="flex flex-wrap gap-4">
-                                        {productForm.sliderImages.map((img, idx) => (
-                                            <div key={idx} className="relative w-20 h-20 group">
-                                                <img src={img} alt={`Slider ${idx}`} className="w-full h-full rounded-lg object-cover" />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeSliderImage(idx)}
-                                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                >
-                                                    <X size={12} />
-                                                </button>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Product Title (Tamil)')}</label>
+                                    <input
+                                        type="text"
+                                        value={productForm.title_ta}
+                                        onChange={(e) => setProductForm({ ...productForm, title_ta: e.target.value })}
+                                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Price ($)</label>
+                                    <input
+                                        type="number"
+                                        value={productForm.price}
+                                        onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Category')}</label>
+                                    <select
+                                        value={productForm.category}
+                                        onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+                                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                        required
+                                    >
+                                        <option value="">{t('Select Category')}</option>
+                                        <option value="Electronics">{t('Electronics')}</option>
+                                        <option value="Fashion">{t('Fashion')}</option>
+                                        <option value="Home">{t('Home')}</option>
+                                        <option value="Beauty">{t('Beauty')}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Main Image')}</label>
+                                    <div className="flex items-center gap-4">
+                                        {productForm.image && (
+                                            <img src={productForm.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
+                                        )}
+                                        <label className="flex-1 cursor-pointer">
+                                            <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
+                                                <Upload size={20} />
+                                                <span>{t('Upload Image')}</span>
                                             </div>
-                                        ))}
-                                        <label className="cursor-pointer">
-                                            <div className="w-20 h-20 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center">
-                                                <Plus size={24} />
-                                            </div>
-                                            <input type="file" accept="image/*" multiple onChange={(e) => handleProductImageUpload(e, true)} className="hidden" />
+                                            <input type="file" accept="image/*" onChange={(e) => handleProductImageUpload(e, false)} className="hidden" required={!productForm.image} />
                                         </label>
                                     </div>
                                 </div>
+                                <div className="col-span-1 md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Slider Images (Optional)')}</label>
+                                    <div className="space-y-4">
+                                        <div className="flex flex-wrap gap-4">
+                                            {productForm.sliderImages.map((img, idx) => (
+                                                <div key={idx} className="relative w-20 h-20 group">
+                                                    <img src={img} alt={`Slider ${idx}`} className="w-full h-full rounded-lg object-cover" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeSliderImage(idx)}
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <X size={12} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            <label className="cursor-pointer">
+                                                <div className="w-20 h-20 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center">
+                                                    <Plus size={24} />
+                                                </div>
+                                                <input type="file" accept="image/*" multiple onChange={(e) => handleProductImageUpload(e, true)} className="hidden" />
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
-                            <textarea
-                                value={productForm.description}
-                                onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
-                                rows="4"
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                required
-                            ></textarea>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description (Tamil)</label>
-                            <textarea
-                                value={productForm.description_ta}
-                                onChange={(e) => setProductForm({ ...productForm, description_ta: e.target.value })}
-                                rows="4"
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                            ></textarea>
-                        </div>
-                        <div className="flex justify-end">
-                            <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
-                                <Plus size={20} />
-                                {editingProduct ? 'Update Product' : 'Add Product to Store'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            )}
-        </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Description')}</label>
+                                <textarea
+                                    value={productForm.description}
+                                    onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                                    rows="4"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required
+                                ></textarea>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Description (Tamil)')}</label>
+                                <textarea
+                                    value={productForm.description_ta}
+                                    onChange={(e) => setProductForm({ ...productForm, description_ta: e.target.value })}
+                                    rows="4"
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                ></textarea>
+                            </div>
+                            <div className="flex justify-end">
+                                <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                    <Plus size={20} />
+                                    {editingProduct ? t('Update Product') : t('Add Product to Store')}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
 const NewsManagement = () => {
     const { news, addNews, updateNews, deleteNews } = useData();
+    const { t } = useLanguage();
     const [view, setView] = useState('list'); // 'list' or 'form'
     const [editingNews, setEditingNews] = useState(null);
     const [newsForm, setNewsForm] = useState({
@@ -934,9 +981,9 @@ const NewsManagement = () => {
     };
 
     const handleDeleteNews = (id) => {
-        if (window.confirm('Are you sure you want to delete this post?')) {
+        if (window.confirm(t('Are you sure you want to delete this post?'))) {
             deleteNews(id);
-            alert('Post deleted successfully!');
+            alert(t('Post deleted successfully!'));
         }
     };
 
@@ -955,10 +1002,10 @@ const NewsManagement = () => {
 
         if (editingNews) {
             updateNews({ ...editingNews, ...newsItem });
-            alert('News updated successfully!');
+            alert(t('News updated successfully!'));
         } else {
             addNews(newsItem);
-            alert('News published successfully!');
+            alert(t('News published successfully!'));
         }
         setNewsForm({ headline: '', headline_ta: '', type: 'Offer', type_ta: '', image: '', content: '', content_ta: '' });
         setEditingNews(null);
@@ -969,7 +1016,7 @@ const NewsManagement = () => {
         <div className="max-w-6xl">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {view === 'list' ? 'News & Offers' : editingNews ? 'Edit Post' : 'Publish News & Offers'}
+                    {view === 'list' ? t('News & Offers') : editingNews ? t('Edit Post') : t('Publish News & Offers')}
                 </h2>
                 <button
                     onClick={() => {
@@ -984,7 +1031,7 @@ const NewsManagement = () => {
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
                     {view === 'list' ? <Plus size={20} /> : <List size={20} />}
-                    {view === 'list' ? 'Add Post' : 'View List'}
+                    {view === 'list' ? t('Add Post') : t('View List')}
                 </button>
             </div>
 
@@ -1027,7 +1074,7 @@ const NewsManagement = () => {
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Headline</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Headline')}</label>
                             <input
                                 type="text"
                                 value={newsForm.headline}
@@ -1037,40 +1084,40 @@ const NewsManagement = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Headline (Tamil)</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Headline (Tamil)')}</label>
                             <input
                                 type="text"
                                 value={newsForm.headline_ta}
                                 onChange={(e) => setNewsForm({ ...newsForm, headline_ta: e.target.value })}
                                 className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder="Headline in Tamil..."
+                                placeholder={t('Headline in Tamil...')}
                             />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Type')}</label>
                                 <select
                                     value={newsForm.type}
                                     onChange={(e) => setNewsForm({ ...newsForm, type: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 >
-                                    <option>Offer</option>
-                                    <option>News</option>
-                                    <option>Deal</option>
+                                    <option>{t('Offer')}</option>
+                                    <option>{t('News')}</option>
+                                    <option>{t('Deal')}</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type (Tamil)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Type (Tamil)')}</label>
                                 <input
                                     type="text"
                                     value={newsForm.type_ta}
                                     onChange={(e) => setNewsForm({ ...newsForm, type_ta: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder="e.g., சலுகை"
+                                    placeholder={t('e.g., சலுகை')}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Post Image</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Post Image')}</label>
                                 <div className="flex items-center gap-4">
                                     {newsForm.image && (
                                         <img src={newsForm.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
@@ -1078,7 +1125,7 @@ const NewsManagement = () => {
                                     <label className="flex-1 cursor-pointer">
                                         <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
                                             <Upload size={20} />
-                                            <span>Upload Image</span>
+                                            <span>{t('Upload Image')}</span>
                                         </div>
                                         <input
                                             type="file"
@@ -1092,7 +1139,7 @@ const NewsManagement = () => {
                             </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Content')}</label>
                             <textarea
                                 rows="5"
                                 value={newsForm.content}
@@ -1102,19 +1149,19 @@ const NewsManagement = () => {
                             ></textarea>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content (Tamil)</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Content (Tamil)')}</label>
                             <textarea
                                 rows="5"
                                 value={newsForm.content_ta}
                                 onChange={(e) => setNewsForm({ ...newsForm, content_ta: e.target.value })}
                                 className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder="Content in Tamil..."
+                                placeholder={t('Content in Tamil...')}
                             ></textarea>
                         </div>
                         <div className="flex justify-end">
                             <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
                                 {editingNews ? <Save size={20} /> : <Newspaper size={20} />}
-                                {editingNews ? 'Update Post' : 'Publish'}
+                                {editingNews ? t('Update Post') : t('Publish')}
                             </button>
                         </div>
                     </form>
@@ -1126,6 +1173,7 @@ const NewsManagement = () => {
 
 const OrderManagement = () => {
     const { orders, updateOrder } = useData();
+    const { t } = useLanguage();
     const [editingOrder, setEditingOrder] = useState(null);
     const [editAddress, setEditAddress] = useState('');
 
@@ -1151,19 +1199,19 @@ const OrderManagement = () => {
 
     return (
         <div className="max-w-6xl">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Manage Orders</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('Manage Orders')}</h2>
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 dark:bg-gray-700/50">
                             <tr>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Order ID</th>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Customer</th>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Address</th>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Date</th>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Total</th>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Order ID')}</th>
+                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Customer')}</th>
+                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Address')}</th>
+                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Date')}</th>
+                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Total')}</th>
+                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Status')}</th>
+                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -1191,10 +1239,10 @@ const OrderManagement = () => {
                                             onChange={(e) => updateStatus(order.id, e.target.value)}
                                             className="text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
                                         >
-                                            <option>Pending</option>
-                                            <option>Shipped</option>
-                                            <option>Delivered</option>
-                                            <option>Cancelled</option>
+                                            <option>{t('Pending')}</option>
+                                            <option>{t('Shipped')}</option>
+                                            <option>{t('Delivered')}</option>
+                                            <option>{t('Cancelled')}</option>
                                         </select>
                                     </td>
                                     <td className="p-4">
@@ -1220,6 +1268,7 @@ const OrderManagement = () => {
 };
 
 const UserManagement = () => {
+    const { t } = useLanguage();
     const users = [
         { id: 1, name: 'John Doe', email: 'john@example.com', address: '123 Main St, New York, NY', orders: 12 },
         { id: 2, name: 'Jane Smith', email: 'jane@example.com', address: '456 Oak Ave, Los Angeles, CA', orders: 5 },
@@ -1228,7 +1277,7 @@ const UserManagement = () => {
 
     return (
         <div className="max-w-5xl">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">User Database</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('User Database')}</h2>
             <div className="grid gap-6">
                 {users.map(user => (
                     <div key={user.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex items-start justify-between">
@@ -1250,7 +1299,7 @@ const UserManagement = () => {
                         </div>
                         <div className="text-right">
                             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{user.orders}</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Orders</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('Orders')}</div>
                         </div>
                     </div>
                 ))}
@@ -1261,6 +1310,7 @@ const UserManagement = () => {
 
 const AdsManagement = () => {
     const { ads, addAd, deleteAd } = useData();
+    const { t } = useLanguage();
     const [newAdUrl, setNewAdUrl] = useState('');
     const [newAdTitle, setNewAdTitle] = useState('');
 
@@ -1283,14 +1333,14 @@ const AdsManagement = () => {
 
     return (
         <div className="max-w-6xl">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Ads Slider Management</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('Ads Slider Management')}</h2>
 
             {/* Add New Ad Form */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Add New Ad Image</h3>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{t('Add New Ad Image')}</h3>
                 <form onSubmit={handleAddAd} className="flex flex-col md:flex-row gap-4 items-end">
                     <div className="flex-1 w-full">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ad Image</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Ad Image')}</label>
                         <div className="flex items-center gap-4">
                             {newAdUrl && (
                                 <img src={newAdUrl} alt="Preview" className="w-12 h-12 rounded-lg object-cover" />
@@ -1298,7 +1348,7 @@ const AdsManagement = () => {
                             <label className="flex-1 cursor-pointer">
                                 <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
                                     <Upload size={20} />
-                                    <span>Upload Image</span>
+                                    <span>{t('Upload Image')}</span>
                                 </div>
                                 <input
                                     type="file"
@@ -1311,17 +1361,17 @@ const AdsManagement = () => {
                         </div>
                     </div>
                     <div className="flex-1 w-full">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title (Optional)</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Title (Optional)')}</label>
                         <input
                             type="text"
                             value={newAdTitle}
                             onChange={(e) => setNewAdTitle(e.target.value)}
                             className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                            placeholder="Ad Title"
+                            placeholder={t('Ad Title')}
                         />
                     </div>
                     <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 h-[42px]">
-                        <Plus size={20} /> Add
+                        <Plus size={20} /> {t('Add')}
                     </button>
                 </form>
             </div>

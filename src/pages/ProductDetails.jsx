@@ -72,7 +72,7 @@ const ProductDetails = () => {
                         className="flex items-center text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
                     >
                         <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" size={20} />
-                        <span className="font-medium">Back</span>
+                        <span className="font-medium">{t('Back')}</span>
                     </button>
                     <div className="flex gap-4">
                         <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
@@ -98,7 +98,7 @@ const ProductDetails = () => {
                                     <div key={idx} className="min-w-full h-full snap-center flex items-center justify-center">
                                         <img
                                             src={img}
-                                            alt={`${product.title} - View ${idx + 1}`}
+                                            alt={`${product.title} - ${t('View')} ${idx + 1}`}
                                             className="w-full h-full object-cover"
                                         />
                                     </div>
@@ -143,7 +143,7 @@ const ProductDetails = () => {
                             <div className="mb-auto">
                                 <div className="flex items-center gap-2 mb-4">
                                     <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider rounded-full">
-                                        {product.category}
+                                        {t(product, 'category')}
                                     </span>
                                     <div className="flex items-center text-yellow-400 text-sm font-bold">
                                         <Star size={16} className="fill-current" />
@@ -152,7 +152,7 @@ const ProductDetails = () => {
                                 </div>
 
                                 <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
-                                    {product.title}
+                                    {t(product, 'title')}
                                 </h1>
 
                                 <div className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8 flex items-baseline gap-2">
@@ -162,7 +162,7 @@ const ProductDetails = () => {
 
                                 <div className="prose prose-lg dark:prose-invert max-w-none mb-10">
                                     <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                                        {product.description}
+                                        {t(product, 'description')}
                                     </p>
                                 </div>
 
@@ -234,24 +234,24 @@ const ProductDetails = () => {
 
 
             {/* Sticky Action Footer - Mobile Only */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 md:hidden">
+            <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 p-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 md:hidden">
                 <div className="max-w-7xl mx-auto">
                     <button
                         onClick={quantity > 0 ? handleCheckout : () => addToCart(product)}
-                        className={`w-full py-4 px-6 rounded-xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 transition-all transform hover:-translate-y-1 ${quantity > 0
+                        className={`w-full py-2.5 px-4 rounded-xl font-bold text-sm shadow-xl flex items-center justify-center gap-2 transition-all transform hover:-translate-y-1 ${quantity > 0
                             ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200 dark:shadow-none'
                             : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100'
                             }`}
                     >
                         {quantity > 0 ? (
                             <>
-                                <ShoppingBag size={22} />
-                                Proceed to Checkout
+                                <ShoppingBag size={20} />
+                                {t('Proceed to Checkout')}
                             </>
                         ) : (
                             <>
-                                <ShoppingCart size={22} />
-                                Add to Cart
+                                <ShoppingCart size={20} />
+                                {t('Add to Cart')}
                             </>
                         )}
                     </button>

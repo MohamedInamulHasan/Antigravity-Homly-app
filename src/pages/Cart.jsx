@@ -1,19 +1,11 @@
+import { Link } from 'react-router-dom';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 
 const Cart = () => {
     const { cartItems, removeFromCart, updateQuantity, cartTotal } = useCart();
-    const navigate = useNavigate();
     const { t } = useLanguage();
-
-    // Define shipping and tax for the order summary
-    const shipping = 0; // Example: Free shipping
-    const tax = 0;      // Example: No tax
-
-    // Calculate total
-    const total = cartTotal + shipping + tax;
 
     if (cartItems.length === 0) {
         return (
@@ -23,8 +15,8 @@ const Cart = () => {
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{t('Your cart is empty')}</h2>
                 <p className="text-gray-500 dark:text-gray-400 mb-8 text-center max-w-md">
-                    Looks like you haven't added anything to your cart yet.
-                    Explore our products and find something you love.
+                    {t('Looks like you haven\'t added anything to your cart yet.')}
+                    {t('Explore our products and find something you love.')}
                 </p>
                 <Link
                     to="/store"
@@ -43,7 +35,7 @@ const Cart = () => {
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 flex items-center gap-3">
                     <ShoppingBag className="text-blue-600 dark:text-blue-400" />
                     {t('Cart')}
-                    <span className="text-lg font-normal text-gray-500 dark:text-gray-400 ml-2">({cartItems.length} items)</span>
+                    <span className="text-lg font-normal text-gray-500 dark:text-gray-400 ml-2">({cartItems.length} {t('items')})</span>
                 </h1>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -64,10 +56,10 @@ const Cart = () => {
                                         <div>
                                             <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                                                 <Link to={`/product/${item.id}`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                                                    {item.title}
+                                                    {t(item, 'title')}
                                                 </Link>
                                             </h3>
-                                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-1">{item.description}</p>
+                                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-1">{t(item, 'description')}</p>
                                         </div>
                                         <p className="ml-4 text-lg font-medium text-gray-900 dark:text-white">₹{(item.price * item.quantity).toFixed(0)}</p>
                                     </div>
@@ -93,7 +85,7 @@ const Cart = () => {
                                             type="button"
                                             onClick={() => removeFromCart(item.id)}
                                             className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                                            title="Remove item"
+                                            title={t('Remove item')}
                                         >
                                             <Trash2 size={18} />
                                         </button>
@@ -124,23 +116,16 @@ const Cart = () => {
 
                                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4 flex items-center justify-between">
                                     <p className="text-base font-medium text-gray-900 dark:text-white">{t('Total')}</p>
-                                    <p className="text-xl font-bold text-blue-600 dark:text-blue-400">₹{total.toFixed(0)}</p>
+                                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">₹{cartTotal.toFixed(0)}</p>
                                 </div>
                             </div>
 
-                            <button
-                                onClick={() => navigate('/checkout')}
-                                className="mt-6 w-full flex items-center justify-center rounded-xl border border-transparent bg-blue-600 px-4 py-2 text-sm md:px-6 md:py-3 md:text-base font-medium text-white shadow-sm hover:bg-blue-700 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all transform hover:scale-[1.02]"
+                            <Link
+                                to="/checkout"
+                                className="mt-6 w-full flex items-center justify-center px-6 py-3 border border-transparent text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                             >
                                 {t('Proceed to Checkout')}
-                                <ArrowRight className="ml-2 h-5 w-5" />
-                            </button>
-
-                            <div className="mt-6 text-center">
-                                <Link to="/store" className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500">
-                                    {t('Continue Shopping')}
-                                </Link>
-                            </div>
+                            </Link>
                         </div>
                     </div>
                 </div>

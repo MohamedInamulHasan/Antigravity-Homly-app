@@ -26,11 +26,11 @@ const Shop = () => {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Find a Store</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{t('Find a Store')}</h1>
                     <div className="relative max-w-xl">
                         <input
                             type="text"
-                            placeholder="Search by store name or location..."
+                            placeholder={t('Search by store name or location...')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
@@ -69,7 +69,7 @@ const Shop = () => {
                                     <div className="space-y-2 mb-6">
                                         <div className="flex items-center text-gray-600 dark:text-gray-300 text-sm">
                                             <Clock size={16} className="mr-2 text-blue-500" />
-                                            <span>{store.hours}</span>
+                                            <span>{t(store, 'hours')}</span>
                                         </div>
                                         <div className="flex items-center text-gray-600 dark:text-gray-300 text-sm">
                                             <Phone size={16} className="mr-2 text-blue-500" />
@@ -81,7 +81,7 @@ const Shop = () => {
                                         to={`/store/${store.id}`}
                                         className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-md hover:shadow-lg"
                                     >
-                                        Visit Store
+                                        {t('Visit Store')}
                                     </Link>
                                 </div>
                             </div>
@@ -92,8 +92,8 @@ const Shop = () => {
                         <div className="bg-gray-100 dark:bg-gray-800 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                             <Search className="text-gray-400 dark:text-gray-500" size={32} />
                         </div>
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No stores found</h3>
-                        <p className="text-gray-500 dark:text-gray-400">Try adjusting your search terms to find what you're looking for.</p>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('No stores found')}</h3>
+                        <p className="text-gray-500 dark:text-gray-400">{t('Try adjusting your search terms to find what you\'re looking for.')}</p>
                     </div>
                 )}
             </div>

@@ -35,9 +35,9 @@ const News = () => {
                         className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                     >
                         <ArrowLeft className="h-5 w-5 mr-2" />
-                        Back
+                        {t('Back')}
                     </button>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">News & Offers</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('News & Offers')}</h1>
                     <div className="w-5" /> {/* Spacer for alignment */}
                 </div>
 

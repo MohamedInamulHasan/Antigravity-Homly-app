@@ -157,22 +157,82 @@ export const LanguageProvider = ({ children }) => {
         'Shipping Policy': { en: 'Shipping Policy', ta: 'கப்பல் கொள்கை' },
         'Returns & Refunds': { en: 'Returns & Refunds', ta: 'திரும்பப் பெறுதல் & பணத்தைத் திரும்பப் பெறுதல்' },
         'All rights reserved': { en: 'All rights reserved', ta: 'அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை' },
+        'Search by store name or location...': { en: 'Search by store name or location...', ta: 'கடை பெயர் அல்லது இருப்பிடம் மூலம் தேடுங்கள்...' },
+        'Try adjusting your search terms to find what you\'re looking for.': { en: 'Try adjusting your search terms to find what you\'re looking for.', ta: 'நீங்கள் தேடுவதைக் கண்டறிய உங்கள் தேடல் சொற்களைச் சரிசெய்ய முயற்சிக்கவும்.' },
+        'Street Address': { en: 'Street Address', ta: 'தெரு முகவரி' },
+        'State': { en: 'State', ta: 'மாநிலம்' },
+        'Country': { en: 'Country', ta: 'நாடு' },
+        'Including VAT': { en: 'Including VAT', ta: 'VAT உட்பட' },
+        'Back to Edit': { en: 'Back to Edit', ta: 'திருத்தத்திற்குத் திரும்பு' },
+        'City Name': { en: 'City Name', ta: 'நகரத்தின் பெயர்' },
+        'John Doe': { en: 'John Doe', ta: 'ஜான் டோ' },
+        '123 Main St': { en: '123 Main St', ta: '123 மெயின் செயின்ட்' },
+        'Discount': { en: 'Discount', ta: 'தள்ளுபடி' },
+        'more items': { en: 'more items', ta: 'மேலும் பொருட்கள்' },
+        'Total Amount': { en: 'Total Amount', ta: 'மொத்த தொகை' },
+        'Card': { en: 'Card', ta: 'அட்டை' },
+        'ending in': { en: 'ending in', ta: 'முடிவடைகிறது' },
+        'Store Timing': { en: 'Store Timing', ta: 'கடை நேரம்' },
+        'Contact Number': { en: 'Contact Number', ta: 'தொடர்பு எண்' },
+        'Mobile No': { en: 'Mobile No', ta: 'மொபைல் எண்' },
+        'Summer Collection 2024': { en: 'Summer Collection 2024', ta: 'கோடைக்கால சேகரிப்பு 2024' },
+        'Discover the latest trends in fashion.': { en: 'Discover the latest trends in fashion.', ta: 'ஃபேஷனின் சமீபத்திய போக்குகளைக் கண்டறியவும்.' },
+        'Modern Electronics': { en: 'Modern Electronics', ta: 'நவீன எலக்ட்ரானிக்ஸ்' },
+        'Upgrade your lifestyle with new tech.': { en: 'Upgrade your lifestyle with new tech.', ta: 'புதிய தொழில்நுட்பத்துடன் உங்கள் வாழ்க்கை முறையை மேம்படுத்தவும்.' },
+        'Cozy Home Living': { en: 'Cozy Home Living', ta: 'வசதியான வீட்டு வாழ்க்கை' },
+        'Make your home your sanctuary.': { en: 'Make your home your sanctuary.', ta: 'உங்கள் வீட்டை உங்கள் சரணாலயமாக மாற்றவும்.' },
+        'Shop the latest trends': { en: 'Shop the latest trends', ta: 'சமீபத்திய போக்குகளை வாங்கவும்' },
+        'Sports': { en: 'Sports', ta: 'விளையாட்டு' },
+        'Toys': { en: 'Toys', ta: 'பொம்மைகள்' },
+        'Books': { en: 'Books', ta: 'புத்தகங்கள்' },
+        'Automotive': { en: 'Automotive', ta: 'வாகன' },
+        'Manage and track your recent orders': { en: 'Manage and track your recent orders', ta: 'உங்கள் சமீபத்திய ஆர்டர்களை நிர்வகிக்கவும் மற்றும் கண்காணிக்கவும்' },
+        'Search orders...': { en: 'Search orders...', ta: 'ஆர்டர்களைத் தேடுங்கள்...' },
+        'Delete Order': { en: 'Delete Order', ta: 'ஆர்டரை நீக்கு' },
+        'Cancel Order': { en: 'Cancel Order', ta: 'ஆர்டரை ரத்துசெய்' },
+        'Are you sure you want to delete this order? This action cannot be undone.': { en: 'Are you sure you want to delete this order? This action cannot be undone.', ta: 'இந்த ஆர்டரை நிச்சயமாக நீக்க விரும்புகிறீர்களா? இந்த செயலை செயல்தவிர்க்க முடியாது.' },
+        'Delete': { en: 'Delete', ta: 'நீக்கு' },
+        'Headline': { en: 'Headline', ta: 'தலைப்புச் செய்தி' },
+        'Headline (Tamil)': { en: 'Headline (Tamil)', ta: 'தலைப்புச் செய்தி (தமிழ்)' },
+        'Publish News & Offers': { en: 'Publish News & Offers', ta: 'செய்திகள் மற்றும் சலுகைகளை வெளியிடுங்கள்' },
+        'Edit Post': { en: 'Edit Post', ta: 'இடுகையைத் திருத்து' },
+        'Publish': { en: 'Publish', ta: 'வெளியிடு' },
+        'Update Post': { en: 'Update Post', ta: 'இடுகையைப் புதுப்பி' },
+        'Add Post': { en: 'Add Post', ta: 'இடுகையைச் சேர்' },
+        'Manage Orders': { en: 'Manage Orders', ta: 'ஆர்டர்களை நிர்வகி' },
+        'Customer': { en: 'Customer', ta: 'வாடிக்கையாளர்' },
+        'Pending': { en: 'Pending', ta: 'நிலுவையில் உள்ளது' },
+        'User Database': { en: 'User Database', ta: 'பயனர் தரவுத்தளம்' },
+        'Ads Slider Management': { en: 'Ads Slider Management', ta: 'விளம்பர ஸ்லைடர் மேலாண்மை' },
+        'Add New Ad Image': { en: 'Add New Ad Image', ta: 'புதிய விளம்பரப் படத்தைச் சேர்' },
+        'Ad Image': { en: 'Ad Image', ta: 'விளம்பரப் படம்' },
+        'Title (Optional)': { en: 'Title (Optional)', ta: 'தலைப்பு (விரும்பினால்)' },
+        'Ad Title': { en: 'Ad Title', ta: 'விளம்பரத் தலைப்பு' },
+        'Add': { en: 'Add', ta: 'சேர்' },
+        'Offer': { en: 'Offer', ta: 'சலுகை' },
+        'News': { en: 'News', ta: 'செய்தி' },
+        'Deal': { en: 'Deal', ta: 'ஒப்பந்தம்' },
+        'All': { en: 'All', ta: 'அனைத்தும்' },
+        'Active': { en: 'Active', ta: 'செயலில்' },
+        'Completed': { en: 'Completed', ta: 'முடிந்தது' },
+        'Try adjusting your search or filter to find what you\'re looking for.': { en: 'Try adjusting your search or filter to find what you\'re looking for.', ta: 'நீங்கள் தேடுவதைக் கண்டறிய உங்கள் தேடல் அல்லது வடிப்பானைச் சரிசெய்ய முயற்சிக்கவும்.' },
+        'Electronics': { en: 'Electronics', ta: 'எலக்ட்ரானிக்ஸ்' },
+        'Fashion': { en: 'Fashion', ta: 'ஃபேஷன்' },
+        'Beauty': { en: 'Beauty', ta: 'அழகு' },
     };
 
-    // Helper to get translated text
-    // Usage: t(product, 'title') -> returns product.title or product.title_ta
-    // Usage: t('Home') -> returns 'முகப்பு' if lang is ta
-    const t = (obj, key) => {
-        if (typeof obj === 'string') {
-            const translation = translations[obj];
-            if (translation) {
-                return language === 'en' ? translation.en : translation.ta;
-            }
-            return obj; // Fallback to original string if no translation found
+    const t = (key, field = null) => {
+        // Handle data object translation (e.g., t(product, 'title'))
+        if (typeof key === 'object' && key !== null && field) {
+            return (language === 'ta' && key[`${field}_ta`]) ? key[`${field}_ta`] : key[field];
         }
-        if (!obj) return '';
-        if (language === 'en') return obj[key];
-        return obj[`${key}_ta`] || obj[key]; // Fallback to English if translation missing
+
+        // Handle static label translation
+        if (!translations[key]) {
+            console.warn(`Translation missing for key: "${key}"`);
+            return key;
+        }
+        return translations[key][language] || translations[key]['en'] || key;
     };
 
     const value = {

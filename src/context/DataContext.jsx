@@ -313,6 +313,14 @@ export const DataProvider = ({ children }) => {
         setNews(prev => prev.filter(n => n.id !== id));
     };
 
+    const deleteOrder = (id) => {
+        setOrders(prev => prev.filter(o => o.id !== id));
+    };
+
+    const cancelOrder = (id) => {
+        setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'Cancelled' } : o));
+    };
+
     const value = {
         products,
         stores,
@@ -333,6 +341,10 @@ export const DataProvider = ({ children }) => {
         addOrder,
         addAd,
         deleteAd,
+        addAd,
+        deleteAd,
+        deleteOrder,
+        cancelOrder,
     };
 
     return (

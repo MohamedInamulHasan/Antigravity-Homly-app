@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
+import { useLanguage } from '../context/LanguageContext';
 import { CheckCircle, ArrowLeft } from 'lucide-react';
 
 const OrderConfirmation = () => {
@@ -9,6 +10,7 @@ const OrderConfirmation = () => {
     const navigate = useNavigate();
     const { clearCart } = useCart();
     const { addOrder } = useData();
+    const { t } = useLanguage();
     const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
 
     useEffect(() => {
@@ -32,7 +34,7 @@ const OrderConfirmation = () => {
                 name: formData.name,
                 street: formData.address,
                 city: formData.city,
-                state: '', // Not captured in simplified form
+                state: formData.state || '',
                 zip: formData.pincode,
                 country: 'India', // Default
                 mobile: formData.mobile
@@ -65,15 +67,15 @@ const OrderConfirmation = () => {
                     <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 mb-6">
                         <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
                     </div>
-                    <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Order Placed!</h2>
+                    <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">{t('Order Placed!')}</h2>
                     <p className="text-gray-500 dark:text-gray-400 mb-8">
-                        Thank you for your purchase. Your order has been confirmed and will be shipped soon.
+                        {t('Thank you for your purchase. Your order has been confirmed and will be shipped soon.')}
                     </p>
                     <Link
                         to="/"
                         className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg"
                     >
-                        Continue Shopping
+                        {t('Continue Shopping')}
                     </Link>
                 </div>
             </div>
@@ -89,28 +91,28 @@ const OrderConfirmation = () => {
                         className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                     >
                         <ArrowLeft className="h-5 w-5 mr-2" />
-                        Back to Edit
+                        {t('Back to Edit')}
                     </button>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div className="px-6 py-8 sm:p-10">
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Review Your Order</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">{t('Review Your Order')}</h1>
 
                         {/* Shipping Details */}
                         <div className="mb-8">
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Shipping Address</h2>
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('Shipping Address')}</h2>
                             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 text-gray-600 dark:text-gray-300">
                                 <p className="font-medium text-gray-900 dark:text-white">{formData.name}</p>
                                 <p>{formData.address}</p>
                                 <p>{formData.city} - {formData.pincode}</p>
-                                <p className="mt-2 text-gray-500 dark:text-gray-400">Mobile: {formData.mobile}</p>
+                                <p className="mt-2 text-gray-500 dark:text-gray-400">{t('Mobile')}: {formData.mobile}</p>
                             </div>
                         </div>
 
                         {/* Order Items */}
                         <div className="mb-8">
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Order Items</h2>
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('Order Items')}</h2>
                             <ul className="divide-y divide-gray-100 dark:divide-gray-700 border-t border-b border-gray-100 dark:border-gray-700">
                                 {cartItems.map((item) => (
                                     <li key={item.id} className="py-4 flex items-center space-x-4">
@@ -120,8 +122,8 @@ const OrderConfirmation = () => {
                                             className="h-16 w-16 rounded-lg object-cover bg-gray-100 dark:bg-gray-700"
                                         />
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">{item.title}</p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">Qty: {item.quantity}</p>
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">{t(item, 'title')}</p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{t('Qty')}: {item.quantity}</p>
                                         </div>
                                         <p className="text-sm font-medium text-gray-900 dark:text-white">₹{((item.price * item.quantity) || 0).toFixed(2)}</p>
                                     </li>
@@ -132,15 +134,15 @@ const OrderConfirmation = () => {
                         {/* Totals */}
                         <div className="space-y-3 text-gray-600 dark:text-gray-400 mb-8">
                             <div className="flex justify-between">
-                                <span>Subtotal</span>
+                                <span>{t('Subtotal')}</span>
                                 <span>₹{(cartTotal || 0).toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span>Shipping</span>
-                                <span className="text-green-600 dark:text-green-400">Free</span>
+                                <span>{t('Delivery Charge')}</span>
+                                <span className="text-green-600 dark:text-green-400">{t('Free')}</span>
                             </div>
                             <div className="flex justify-between font-bold text-lg text-gray-900 dark:text-white pt-3 border-t border-gray-100 dark:border-gray-700">
-                                <span>Total</span>
+                                <span>{t('Total')}</span>
                                 <span className="text-blue-600 dark:text-blue-400">₹{(cartTotal || 0).toFixed(2)}</span>
                             </div>
                         </div>
@@ -149,9 +151,9 @@ const OrderConfirmation = () => {
                         <div className="hidden md:block mt-8">
                             <button
                                 onClick={handleConfirmOrder}
-                                className="w-full bg-blue-600 text-white py-4 px-6 text-lg rounded-xl font-bold shadow-lg hover:bg-blue-700 dark:hover:bg-blue-500 hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
+                                className="w-full bg-blue-600 text-white py-3 px-6 text-lg rounded-xl font-bold shadow-lg hover:bg-blue-700 dark:hover:bg-blue-500 hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
                             >
-                                Confirm Order
+                                {t('Confirm Order')}
                             </button>
                         </div>
 
@@ -160,13 +162,13 @@ const OrderConfirmation = () => {
             </div>
 
             {/* Sticky Action Footer - Mobile Only */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 md:hidden">
+            <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 p-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 md:hidden">
                 <div className="max-w-7xl mx-auto">
                     <button
                         onClick={handleConfirmOrder}
-                        className="w-full bg-blue-600 text-white py-3 px-4 text-base md:py-4 md:px-6 md:text-lg rounded-xl font-bold shadow-lg hover:bg-blue-700 dark:hover:bg-blue-500 hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
+                        className="w-full bg-blue-600 text-white py-2.5 px-4 text-sm md:py-4 md:px-6 md:text-lg rounded-xl font-bold shadow-lg hover:bg-blue-700 dark:hover:bg-blue-500 hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
                     >
-                        Confirm Order
+                        {t('Confirm Order')}
                     </button>
                 </div>
             </div>

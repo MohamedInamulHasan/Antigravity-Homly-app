@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, Search, ChevronRight, Truck, CheckCircle, Clock, RotateCcw, ShoppingBag } from 'lucide-react';
+import { Package, Search, ChevronRight, Truck, CheckCircle, Clock, RotateCcw, ShoppingBag, Trash2, AlertTriangle, X } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
 
 const Orders = () => {
     const navigate = useNavigate();
-    const { orders } = useData();
+    const { orders, deleteOrder } = useData();
     const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
+    const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, orderId: null });
+
 
     const tabs = ['All', 'Active', 'Completed', 'Cancelled'];
 
@@ -21,8 +23,8 @@ const Orders = () => {
                         activeTab === 'Cancelled' ? order.status === 'Cancelled' : true;
 
         const matchesSearch =
-            order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            order.items.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
+            String(order.id).toLowerCase().includes(searchQuery.toLowerCase()) ||
+            order.items?.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
         return matchesTab && matchesSearch;
     });
@@ -75,8 +77,8 @@ const Orders = () => {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${activeTab === tab
-                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/20'
-                                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700'
+                                ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/20'
+                                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700'
                                 }`}
                         >
                             {t(tab)}
@@ -94,7 +96,7 @@ const Orders = () => {
                                 className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-md transition-all cursor-pointer group"
                             >
                                 <div className="p-6">
-                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                                    <div className="flex justify-between items-start gap-4 mb-4">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400">
                                                 <Package size={20} />
@@ -104,9 +106,21 @@ const Orders = () => {
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">{order.date}</p>
                                             </div>
                                         </div>
-                                        <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}>
-                                            {getStatusIcon(order.status)}
-                                            {t(order.status)}
+                                        <div className="flex items-center gap-3">
+                                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}>
+                                                {getStatusIcon(order.status)}
+                                                {t(order.status)}
+                                            </div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setDeleteConfirmation({ isOpen: true, orderId: order.id });
+                                                }}
+                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                title={t("Delete Order")}
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
                                         </div>
                                     </div>
 
@@ -159,6 +173,52 @@ const Orders = () => {
                     )}
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {deleteConfirmation.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full p-6 transform transition-all scale-100">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
+                                <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full">
+                                    <AlertTriangle size={24} />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('Delete Order')}</h3>
+                            </div>
+                            <button
+                                onClick={() => setDeleteConfirmation({ isOpen: false, orderId: null })}
+                                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">
+                            {t('Are you sure you want to delete this order? This action cannot be undone.')}
+                        </p>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setDeleteConfirmation({ isOpen: false, orderId: null })}
+                                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors"
+                            >
+                                {t('Cancel')}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (deleteConfirmation.orderId) {
+                                        deleteOrder(deleteConfirmation.orderId);
+                                        setDeleteConfirmation({ isOpen: false, orderId: null });
+                                    }
+                                }}
+                                className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-xl font-medium shadow-lg shadow-red-200 dark:shadow-red-900/20 transition-colors"
+                            >
+                                {t('Delete')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

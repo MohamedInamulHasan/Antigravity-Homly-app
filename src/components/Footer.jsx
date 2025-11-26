@@ -19,7 +19,7 @@ const Footer = () => {
                             </span>
                         </Link>
                         <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
-                            Your one-stop destination for premium shopping. Quality products, fast delivery, and exceptional service.
+                            {t('Your one-stop destination for premium shopping. Quality products, fast delivery, and exceptional service.')}
                         </p>
                         <div className="flex gap-4">
                             {['facebook', 'twitter', 'instagram', 'linkedin'].map((social) => (
