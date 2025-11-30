@@ -1,12 +1,20 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { User, Package, Settings, ChevronRight, Globe, LogOut, Moon, Sun, Shield } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import AuthContext from '../context/AuthContext';
 
 const Profile = () => {
     const { theme, toggleTheme } = useTheme();
-    const { language, toggleLanguage, t } = useLanguage();
+    const { language, t } = useLanguage();
+    const { logout } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 transition-colors duration-200">
@@ -134,23 +142,9 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        <div className="p-4 sm:p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer" onClick={toggleLanguage}>
-                            <div className="flex items-center gap-4">
-                                <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-                                    <Globe className="text-indigo-600 dark:text-indigo-400" size={20} />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-gray-900 dark:text-white">{t('Language')}</p>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('Select your preferred language')}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-gray-900 dark:text-white">{language === 'en' ? 'English' : 'Tamil'}</span>
-                                <ChevronRight className="text-gray-400 dark:text-gray-500" size={18} />
-                            </div>
-                        </div>
 
-                        <div className="p-4 sm:p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer text-red-600 dark:text-red-400">
+
+                        <div className="p-4 sm:p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer text-red-600 dark:text-red-400" onClick={handleLogout}>
                             <div className="flex items-center gap-4">
                                 <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
                                     <LogOut className="text-red-600 dark:text-red-400" size={20} />

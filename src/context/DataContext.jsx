@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { products as initialProducts } from '../data/products';
 import { stores as initialStores } from '../data/stores';
+import { apiService } from '../utils/api';
 
 const DataContext = createContext();
 
@@ -37,6 +38,21 @@ export const DataProvider = ({ children }) => {
             console.error("Failed to parse stores from local storage", e);
             return initialStores;
         }
+    });
+
+    // Loading and Error States
+    const [loading, setLoading] = useState({
+        products: false,
+        stores: false,
+        news: false,
+        orders: false,
+    });
+
+    const [error, setError] = useState({
+        products: null,
+        stores: null,
+        news: null,
+        orders: null,
     });
 
     // Orders State
@@ -175,10 +191,7 @@ export const DataProvider = ({ children }) => {
                     description: "Get up to 50% off on all summer collections. Limited time offer.",
                     image: "https://images.unsplash.com/photo-1556906781-9a412961d289?q=80&w=2070&auto=format&fit=crop",
                     date: "Nov 24, 2024",
-                    category: "Offer",
-                    category_ta: "சலுகை",
-                    title_ta: "கோடை விற்பனை கொண்டாட்டம்!",
-                    description_ta: "அனைத்து கோடை சேகரிப்புகளிலும் 50% வரை தள்ளுபடி பெறுங்கள். குறைந்த நேர சலுகை."
+                    category: "Offer"
                 },
                 {
                     id: 2,
@@ -186,10 +199,7 @@ export const DataProvider = ({ children }) => {
                     description: "Check out the latest gadgets and tech accessories just landed in our store.",
                     image: "https://images.unsplash.com/photo-1498049860654-af1a5c5668ba?q=80&w=2070&auto=format&fit=crop",
                     date: "Nov 22, 2024",
-                    category: "News",
-                    category_ta: "செய்திகள்",
-                    title_ta: "புதிய எலக்ட்ரானிக்ஸ் வருகை",
-                    description_ta: "எங்கள் கடையில் வந்து இறங்கிய சமீபத்திய கேஜெட்டுகள் மற்றும் தொழில்நுட்ப பாகங்களைச் சரிபார்க்கவும்."
+                    category: "News"
                 },
                 {
                     id: 3,
@@ -197,10 +207,7 @@ export const DataProvider = ({ children }) => {
                     description: "Exclusive deal for premium members. Buy any accessory and get another one absolutely free!",
                     image: "https://images.unsplash.com/photo-1576158187551-b38898a4616d?q=80&w=2070&auto=format&fit=crop",
                     date: "Nov 20, 2024",
-                    category: "Deal",
-                    category_ta: "ஒப்பந்தம்",
-                    title_ta: "துணைக்கருவிகளில் 1 வாங்கினால் 1 இலவசம்",
-                    description_ta: "பிரீமியம் உறுப்பினர்களுக்கான பிரத்யேக ஒப்பந்தம். ஏதேனும் ஒரு துணைப்பொருளை வாங்கி மற்றொன்றை முற்றிலும் இலவசமாகப் பெறுங்கள்!"
+                    category: "Deal"
                 },
                 {
                     id: 4,
@@ -208,10 +215,7 @@ export const DataProvider = ({ children }) => {
                     description: "Sneak peek into our upcoming holiday collection. Pre-order now to secure your favorites.",
                     image: "https://images.unsplash.com/photo-1512909006721-3d6018887383?q=80&w=2070&auto=format&fit=crop",
                     date: "Nov 18, 2024",
-                    category: "News",
-                    category_ta: "செய்திகள்",
-                    title_ta: "விடுமுறை கால முன்னோட்டம்",
-                    description_ta: "எங்கள் வரவிருக்கும் விடுமுறை சேகரிப்பில் ஒரு முன்னோட்டம். உங்களுக்குப் பிடித்தவைகளைப் பாதுகாக்க இப்போதே முன்கூட்டியே ஆர்டர் செய்யுங்கள்."
+                    category: "News"
                 }
             ];
         } catch (e) {
@@ -239,13 +243,84 @@ export const DataProvider = ({ children }) => {
         }
     });
 
-    // Sync with localStorage
+    // Fetch data from API on mount
     useEffect(() => {
-        localStorage.setItem('products', JSON.stringify(products));
+        const fetchProducts = async () => {
+            setLoading(prev => ({ ...prev, products: true }));
+            setError(prev => ({ ...prev, products: null }));
+            try {
+                const response = await apiService.getProducts();
+                if (response.success && response.data) {
+                    setProducts(response.data);
+                    localStorage.setItem('products', JSON.stringify(response.data));
+                }
+            } catch (err) {
+                console.error('Failed to fetch products:', err);
+                setError(prev => ({ ...prev, products: err.message }));
+                // Keep using localStorage data as fallback
+            } finally {
+                setLoading(prev => ({ ...prev, products: false }));
+            }
+        };
+
+        fetchProducts();
+    }, []);
+
+    useEffect(() => {
+        const fetchStores = async () => {
+            setLoading(prev => ({ ...prev, stores: true }));
+            setError(prev => ({ ...prev, stores: null }));
+            try {
+                const response = await apiService.getStores();
+                if (response.success && response.data) {
+                    setStores(response.data);
+                    localStorage.setItem('stores', JSON.stringify(response.data));
+                }
+            } catch (err) {
+                console.error('Failed to fetch stores:', err);
+                setError(prev => ({ ...prev, stores: err.message }));
+                // Keep using localStorage data as fallback
+            } finally {
+                setLoading(prev => ({ ...prev, stores: false }));
+            }
+        };
+
+        fetchStores();
+    }, []);
+
+    useEffect(() => {
+        const fetchNews = async () => {
+            setLoading(prev => ({ ...prev, news: true }));
+            setError(prev => ({ ...prev, news: null }));
+            try {
+                const response = await apiService.getNews();
+                if (response.success && response.data) {
+                    setNews(response.data);
+                    localStorage.setItem('news', JSON.stringify(response.data));
+                }
+            } catch (err) {
+                console.error('Failed to fetch news:', err);
+                setError(prev => ({ ...prev, news: err.message }));
+                // Keep using localStorage data as fallback
+            } finally {
+                setLoading(prev => ({ ...prev, news: false }));
+            }
+        };
+
+        fetchNews();
+    }, []);
+
+    // Sync with localStorage when data changes
+    useEffect(() => {
+        if (products.length > 0) {
+            localStorage.setItem('products', JSON.stringify(products));
+        }
     }, [products]);
 
     useEffect(() => {
-        localStorage.setItem('stores', JSON.stringify(stores));
+        if (stores.length > 0) {
+            localStorage.setItem('stores', JSON.stringify(stores));
+        }
     }, [stores]);
 
     useEffect(() => {
@@ -261,40 +336,118 @@ export const DataProvider = ({ children }) => {
     }, [ads]);
 
     // Actions
-    const addProduct = (product) => {
-        setProducts(prev => [...prev, { ...product, id: prev.length + 1 }]);
+    const addProduct = async (product) => {
+        try {
+            const response = await apiService.createProduct(product);
+            if (response.success && response.data) {
+                setProducts(prev => [...prev, response.data]);
+                return response.data;
+            }
+        } catch (err) {
+            console.error('Failed to add product:', err);
+            throw err;
+        }
     };
 
-    const updateProduct = (updatedProduct) => {
-        setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+    const updateProduct = async (updatedProduct) => {
+        try {
+            const response = await apiService.updateProduct(updatedProduct._id || updatedProduct.id, updatedProduct);
+            if (response.success && response.data) {
+                setProducts(prev => prev.map(p => (p._id || p.id) === (response.data._id || response.data.id) ? response.data : p));
+                return response.data;
+            }
+        } catch (err) {
+            console.error('Failed to update product:', err);
+            throw err;
+        }
     };
 
-    const deleteProduct = (id) => {
-        setProducts(prev => prev.filter(p => p.id !== id));
+    const deleteProduct = async (id) => {
+        try {
+            await apiService.deleteProduct(id);
+            setProducts(prev => prev.filter(p => (p._id || p.id) !== id));
+        } catch (err) {
+            console.error('Failed to delete product:', err);
+            throw err;
+        }
     };
 
-    const addStore = (store) => {
-        setStores(prev => [...prev, { ...store, id: prev.length + 1 }]);
+    const addStore = async (store) => {
+        try {
+            const response = await apiService.createStore(store);
+            if (response.success && response.data) {
+                setStores(prev => [...prev, response.data]);
+                return response.data;
+            }
+        } catch (err) {
+            console.error('Failed to add store:', err);
+            throw err;
+        }
     };
 
-    const updateStore = (updatedStore) => {
-        setStores(prev => prev.map(s => s.id === updatedStore.id ? updatedStore : s));
+    const updateStore = async (updatedStore) => {
+        try {
+            const response = await apiService.updateStore(updatedStore._id || updatedStore.id, updatedStore);
+            if (response.success && response.data) {
+                setStores(prev => prev.map(s => (s._id || s.id) === (response.data._id || response.data.id) ? response.data : s));
+                return response.data;
+            }
+        } catch (err) {
+            console.error('Failed to update store:', err);
+            throw err;
+        }
     };
 
-    const addNews = (newsItem) => {
-        setNews(prev => [...prev, { ...newsItem, id: prev.length + 1 }]);
+    const addNews = async (newsItem) => {
+        try {
+            const response = await apiService.createNews(newsItem);
+            if (response.success && response.data) {
+                setNews(prev => [...prev, response.data]);
+                return response.data;
+            }
+        } catch (err) {
+            console.error('Failed to add news:', err);
+            throw err;
+        }
     };
 
-    const updateNews = (updatedNews) => {
-        setNews(prev => prev.map(n => n.id === updatedNews.id ? updatedNews : n));
+    const updateNews = async (updatedNews) => {
+        try {
+            const response = await apiService.updateNews(updatedNews._id || updatedNews.id, updatedNews);
+            if (response.success && response.data) {
+                setNews(prev => prev.map(n => (n._id || n.id) === (response.data._id || response.data.id) ? response.data : n));
+                return response.data;
+            }
+        } catch (err) {
+            console.error('Failed to update news:', err);
+            throw err;
+        }
     };
 
-    const updateOrder = (updatedOrder) => {
-        setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
+    const updateOrder = async (updatedOrder) => {
+        try {
+            const response = await apiService.updateOrderStatus(updatedOrder._id || updatedOrder.id, updatedOrder.status);
+            if (response.success && response.data) {
+                setOrders(prev => prev.map(o => (o._id || o.id) === (response.data._id || response.data.id) ? response.data : o));
+                return response.data;
+            }
+        } catch (err) {
+            console.error('Failed to update order:', err);
+            throw err;
+        }
     };
 
-    const addOrder = (order) => {
-        setOrders(prev => [order, ...prev]);
+    const addOrder = async (order) => {
+        try {
+            const response = await apiService.createOrder(order);
+            if (response.success && response.data) {
+                setOrders(prev => [response.data, ...prev]);
+                return response.data;
+            }
+        } catch (err) {
+            console.error('Failed to add order:', err);
+            throw err;
+        }
     };
 
     const addAd = (ad) => {
@@ -305,20 +458,47 @@ export const DataProvider = ({ children }) => {
         setAds(prev => prev.filter(ad => ad.id !== id));
     };
 
-    const deleteStore = (id) => {
-        setStores(prev => prev.filter(s => s.id !== id));
+    const deleteStore = async (id) => {
+        try {
+            await apiService.deleteStore(id);
+            setStores(prev => prev.filter(s => (s._id || s.id) !== id));
+        } catch (err) {
+            console.error('Failed to delete store:', err);
+            throw err;
+        }
     };
 
-    const deleteNews = (id) => {
-        setNews(prev => prev.filter(n => n.id !== id));
+    const deleteNews = async (id) => {
+        try {
+            await apiService.deleteNews(id);
+            setNews(prev => prev.filter(n => (n._id || n.id) !== id));
+        } catch (err) {
+            console.error('Failed to delete news:', err);
+            throw err;
+        }
     };
 
-    const deleteOrder = (id) => {
-        setOrders(prev => prev.filter(o => o.id !== id));
+    const deleteOrder = async (id) => {
+        try {
+            await apiService.deleteOrder(id);
+            setOrders(prev => prev.filter(o => (o._id || o.id) !== id));
+        } catch (err) {
+            console.error('Failed to delete order:', err);
+            throw err;
+        }
     };
 
-    const cancelOrder = (id) => {
-        setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'Cancelled' } : o));
+    const cancelOrder = async (id) => {
+        try {
+            const response = await apiService.updateOrderStatus(id, 'Cancelled');
+            if (response.success && response.data) {
+                setOrders(prev => prev.map(o => (o._id || o.id) === id ? { ...o, status: 'Cancelled' } : o));
+                return response.data;
+            }
+        } catch (err) {
+            console.error('Failed to cancel order:', err);
+            throw err;
+        }
     };
 
     const value = {
@@ -327,6 +507,8 @@ export const DataProvider = ({ children }) => {
         orders,
         news,
         ads,
+        loading,
+        error,
         addProduct,
         updateProduct,
         deleteProduct,

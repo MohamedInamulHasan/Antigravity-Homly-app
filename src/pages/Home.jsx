@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import ProductList from '../components/ProductList';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { useData } from '../context/DataContext.jsx';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -10,7 +11,7 @@ const Home = () => {
     const [displayedProducts, setDisplayedProducts] = useState([]);
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { products: allProducts, ads } = useData();
+    const { products: allProducts, ads, loading, error } = useData();
     const { t } = useLanguage();
 
     const categoryFilter = searchParams.get('category');
@@ -260,7 +261,20 @@ const Home = () => {
 
                 </div>
 
-                {displayedProducts.length > 0 ? (
+                {loading.products ? (
+                    <LoadingSpinner size="lg" message={t('Loading products...')} />
+                ) : error.products ? (
+                    <div className="text-center py-12">
+                        <p className="text-xl text-red-500 dark:text-red-400 mb-4">{t('Failed to load products')}</p>
+                        <p className="text-gray-500 dark:text-gray-400">{error.products}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            {t('Retry')}
+                        </button>
+                    </div>
+                ) : displayedProducts.length > 0 ? (
                     <ProductList products={displayedProducts} />
                 ) : (
                     <div className="text-center py-12">

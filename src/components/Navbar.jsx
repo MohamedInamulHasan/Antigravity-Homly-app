@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Search, ShoppingBag, ShoppingCart, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Search, ShoppingBag, ShoppingCart, LayoutDashboard, User } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-
+import AuthContext from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
 const Navbar = () => {
@@ -10,6 +10,7 @@ const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const { cartCount } = useCart();
+    const { user } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
     const isAdmin = location.pathname.startsWith('/admin');
@@ -75,7 +76,14 @@ const Navbar = () => {
                         <Link to="/" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('Home')}</Link>
                         <Link to="/store" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('Store')}</Link>
                         <Link to="/orders" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('Orders')}</Link>
-                        <Link to="/profile" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('Profile')}</Link>
+
+                        {user ? (
+                            <Link to="/profile" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
+                                {t('Profile')}
+                            </Link>
+                        ) : (
+                            <Link to="/login" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{t('Login')}</Link>
+                        )}
 
                         {!isAdmin && (
                             <Link to="/cart" className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group">
@@ -101,12 +109,19 @@ const Navbar = () => {
                                 )}
                             </Link>
                         )}
-                        {isAdmin && (
+                        {isAdmin ? (
                             <button
                                 onClick={() => setIsOpen(!isOpen)}
                                 className="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                             >
                                 {isOpen ? <X size={24} /> : <LayoutDashboard size={24} />}
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => setIsOpen(!isOpen)}
+                                className="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            >
+                                {isOpen ? <X size={24} /> : <Menu size={24} />}
                             </button>
                         )}
                     </div>
@@ -148,13 +163,24 @@ const Navbar = () => {
                         >
                             {t('Orders')}
                         </Link>
-                        <Link
-                            to="/profile"
-                            className="block px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
-                            onClick={() => setIsOpen(false)}
-                        >
-                            {t('Profile')}
-                        </Link>
+
+                        {user ? (
+                            <Link
+                                to="/profile"
+                                className="block px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                {t('Profile')}
+                            </Link>
+                        ) : (
+                            <Link
+                                to="/login"
+                                className="block px-4 py-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                {t('Login')}
+                            </Link>
+                        )}
                     </div>
                 </div>
             )}

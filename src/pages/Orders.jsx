@@ -102,7 +102,7 @@ const Orders = () => {
                                                 <Package size={20} />
                                             </div>
                                             <div>
-                                                <p className="font-semibold text-gray-900 dark:text-white">#{order.id}</p>
+                                                <p className="text-sm md:text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap">#{order.id}</p>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">{order.date}</p>
                                             </div>
                                         </div>
@@ -146,7 +146,7 @@ const Orders = () => {
                                     <div className="mt-4 pt-4 border-t border-gray-50 dark:border-gray-700 flex justify-between items-center">
                                         <div>
                                             <p className="text-xs text-gray-500 dark:text-gray-400">{t('Total Amount')}</p>
-                                            <p className="font-semibold text-gray-900 dark:text-white">₹{order.total.toFixed(2)}</p>
+                                            <p className="font-semibold text-gray-900 dark:text-white">₹{order.total.toFixed(0)}</p>
                                         </div>
                                         <div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium group-hover:translate-x-1 transition-transform">
                                             {t('View Details')}

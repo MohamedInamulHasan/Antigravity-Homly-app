@@ -150,18 +150,16 @@ const SidebarItem = ({ icon, label, active, onClick }) => (
 // --- Sub-Components ---
 
 const ProductManagement = () => {
-    const { products, addProduct, updateProduct, deleteProduct } = useData();
+    const { products, stores, addProduct, updateProduct, deleteProduct } = useData();
     const { t } = useLanguage();
     const [view, setView] = useState('list'); // 'list' or 'form'
     const [editingProduct, setEditingProduct] = useState(null);
     const [formData, setFormData] = useState({
         title: '',
-        title_ta: '',
         price: '',
         category: '',
-        category_ta: '',
+        storeId: '',
         description: '',
-        description_ta: '',
         image: '',
         sliderImages: []
     });
@@ -169,13 +167,17 @@ const ProductManagement = () => {
     const handleImageUpload = (e, isSlider = false) => {
         const files = Array.from(e.target.files);
         if (files.length > 0) {
-            if (isSlider) {
-                const newImages = files.map(file => URL.createObjectURL(file));
-                setFormData(prev => ({ ...prev, sliderImages: [...prev.sliderImages, ...newImages] }));
-            } else {
-                const imageUrl = URL.createObjectURL(files[0]);
-                setFormData(prev => ({ ...prev, image: imageUrl }));
-            }
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    if (isSlider) {
+                        setFormData(prev => ({ ...prev, sliderImages: [...prev.sliderImages, reader.result] }));
+                    } else {
+                        setFormData(prev => ({ ...prev, image: reader.result }));
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
         }
     };
 
@@ -190,43 +192,65 @@ const ProductManagement = () => {
         setEditingProduct(product);
         setFormData({
             title: product.title,
-            title_ta: product.title_ta || '',
             price: product.price,
             category: product.category,
-            category_ta: product.category_ta || '',
+            storeId: product.storeId || '',
             description: product.description,
-            description_ta: product.description_ta || '',
             image: product.image || (product.images && product.images[0]) || '',
             sliderImages: product.images || []
         });
         setView('form');
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm(t('Are you sure you want to delete this product?'))) {
-            deleteProduct(id);
-            alert(t('Product deleted successfully!'));
+            try {
+                await deleteProduct(id);
+                alert(t('Product deleted successfully!'));
+            } catch (error) {
+                alert(t('Failed to delete product. Please try again.'));
+                console.error('Error deleting product:', error);
+            }
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Prepare the images array
+        const imagesArray = formData.sliderImages.length > 0
+            ? formData.sliderImages
+            : (formData.image ? [formData.image] : []);
+
         const productData = {
-            ...formData,
+            title: formData.title,
+            description: formData.description,
+            category: formData.category,
             price: parseFloat(formData.price),
-            images: formData.sliderImages.length > 0 ? formData.sliderImages : [formData.image]
+            image: formData.image || imagesArray[0], // Main image (required)
+            images: imagesArray // Array of images (optional)
         };
 
-        if (editingProduct) {
-            updateProduct({ ...editingProduct, ...productData });
-            alert(t('Product updated successfully!'));
-        } else {
-            addProduct(productData);
-            alert(t('Product uploaded successfully!'));
+        // Add storeId only if it's not empty
+        if (formData.storeId) {
+            productData.storeId = formData.storeId;
         }
-        setFormData({ title: '', title_ta: '', price: '', category: '', category_ta: '', description: '', description_ta: '', image: '', sliderImages: [] });
-        setEditingProduct(null);
-        setView('list');
+
+        try {
+            if (editingProduct) {
+                await updateProduct({ ...editingProduct, ...productData });
+                alert(t('Product updated successfully!'));
+            } else {
+                await addProduct(productData);
+                alert(t('Product uploaded successfully!'));
+            }
+            setFormData({ title: '', price: '', category: '', storeId: '', description: '', image: '', sliderImages: [] });
+            setEditingProduct(null);
+            setView('list');
+        } catch (error) {
+            alert(t('Failed to save product. Please try again.'));
+            console.error('Error saving product:', error);
+        }
     };
 
     return (
@@ -239,7 +263,7 @@ const ProductManagement = () => {
                     onClick={() => {
                         if (view === 'list') {
                             setEditingProduct(null);
-                            setFormData({ title: '', title_ta: '', price: '', category: '', category_ta: '', description: '', description_ta: '', image: '', sliderImages: [] });
+                            setFormData({ title: '', price: '', category: '', storeId: '', description: '', image: '', sliderImages: [] });
                             setView('form');
                         } else {
                             setView('list');
@@ -267,7 +291,7 @@ const ProductManagement = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {products.map(product => (
-                                    <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                    <tr key={product.id || product._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                         <td className="p-4">
                                             <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
                                         </td>
@@ -283,7 +307,7 @@ const ProductManagement = () => {
                                                     <Edit2 size={18} />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(product.id)}
+                                                    onClick={() => handleDelete(product.id || product._id)}
                                                     className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                                 >
                                                     <Trash2 size={18} />
@@ -311,16 +335,7 @@ const ProductManagement = () => {
                                     required
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Product Title (Tamil)')}</label>
-                                <input
-                                    type="text"
-                                    value={formData.title_ta}
-                                    onChange={(e) => setFormData({ ...formData, title_ta: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder={t('e.g., வயர்லெஸ் ஹெட்ஃபோன்கள்')}
-                                />
-                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Price')}</label>
                                 <input
@@ -341,12 +356,35 @@ const ProductManagement = () => {
                                     required
                                 >
                                     <option value="">{t('Select Category')}</option>
-                                    <option value="Electronics">{t('Electronics')}</option>
+                                    <option value="Vegetables">{t('Vegetables')}</option>
+                                    <option value="Fruits">{t('Fruits')}</option>
+                                    <option value="Dairy">{t('Dairy')}</option>
+                                    <option value="Bakery">{t('Bakery')}</option>
+                                    <option value="Meat">{t('Meat')}</option>
+                                    <option value="Beverages">{t('Beverages')}</option>
+                                    <option value="Snacks">{t('Snacks')}</option>
                                     <option value="Fashion">{t('Fashion')}</option>
-                                    <option value="Home">{t('Home')}</option>
-                                    <option value="Beauty">{t('Beauty')}</option>
+                                    <option value="Electronics">{t('Electronics')}</option>
+                                    <option value="Other">{t('Other')}</option>
                                 </select>
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Store')}</label>
+                                <select
+                                    value={formData.storeId}
+                                    onChange={(e) => setFormData({ ...formData, storeId: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                >
+                                    <option value="">{t('Select Store (Optional)')}</option>
+                                    {stores.map(store => (
+                                        <option key={store.id || store._id} value={store.id || store._id}>
+                                            {t(store, 'name')}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Main Image')}</label>
                                 <div className="flex items-center gap-4">
@@ -405,16 +443,7 @@ const ProductManagement = () => {
                                 required
                             ></textarea>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Description (Tamil)')}</label>
-                            <textarea
-                                value={formData.description_ta}
-                                onChange={(e) => setFormData({ ...formData, description_ta: e.target.value })}
-                                rows="4"
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder={t('Product description in Tamil...')}
-                            ></textarea>
-                        </div>
+
                         <div className="flex justify-end">
                             <button
                                 type="submit"
@@ -440,23 +469,17 @@ const StoreManagement = () => {
     const [editingProduct, setEditingProduct] = useState(null);
     const [storeForm, setStoreForm] = useState({
         name: '',
-        name_ta: '',
         location: '',
-        location_ta: '',
         image: '',
         rating: 4.5,
         hours: '',
-        hours_ta: '',
         mobile: ''
     });
     const [productForm, setProductForm] = useState({
         title: '',
-        title_ta: '',
         price: '',
         category: '',
-        category_ta: '',
         description: '',
-        description_ta: '',
         image: '',
         sliderImages: []
     });
@@ -464,21 +487,28 @@ const StoreManagement = () => {
     const handleStoreImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
-            const imageUrl = URL.createObjectURL(file);
-            setStoreForm({ ...storeForm, image: imageUrl });
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setStoreForm({ ...storeForm, image: reader.result });
+            };
+            reader.readAsDataURL(file);
         }
     };
 
     const handleProductImageUpload = (e, isSlider = false) => {
         const files = Array.from(e.target.files);
         if (files.length > 0) {
-            if (isSlider) {
-                const newImages = files.map(file => URL.createObjectURL(file));
-                setProductForm(prev => ({ ...prev, sliderImages: [...prev.sliderImages, ...newImages] }));
-            } else {
-                const imageUrl = URL.createObjectURL(files[0]);
-                setProductForm(prev => ({ ...prev, image: imageUrl }));
-            }
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    if (isSlider) {
+                        setProductForm(prev => ({ ...prev, sliderImages: [...prev.sliderImages, reader.result] }));
+                    } else {
+                        setProductForm(prev => ({ ...prev, image: reader.result }));
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
         }
     };
 
@@ -493,13 +523,10 @@ const StoreManagement = () => {
         setEditingStore(store);
         setStoreForm({
             name: store.name,
-            name_ta: store.name_ta || '',
             location: store.location,
-            location_ta: store.location_ta || '',
             image: store.image,
             rating: store.rating,
             hours: store.hours || '',
-            hours_ta: store.hours_ta || '',
             mobile: store.mobile || ''
         });
         setView('form');
@@ -512,18 +539,36 @@ const StoreManagement = () => {
         }
     };
 
-    const handleStoreSubmit = (e) => {
+    const handleStoreSubmit = async (e) => {
         e.preventDefault();
-        if (editingStore) {
-            updateStore({ ...editingStore, ...storeForm });
-            alert(t('Store updated successfully!'));
-        } else {
-            addStore(storeForm);
-            alert(t('Store added successfully!'));
+
+        // Map form fields to match Store model schema
+        const storeData = {
+            name: storeForm.name,
+            type: 'General Store', // Default type - can be made dynamic later
+            address: storeForm.location, // Map location to address
+            city: storeForm.location.split(',').pop().trim() || 'Unknown', // Extract city from location or use default
+            timing: storeForm.hours || '9:00 AM - 9:00 PM', // Map hours to timing
+            mobile: storeForm.mobile,
+            image: storeForm.image,
+            rating: storeForm.rating || 4.5
+        };
+
+        try {
+            if (editingStore) {
+                await updateStore({ ...editingStore, ...storeData });
+                alert(t('Store updated successfully!'));
+            } else {
+                await addStore(storeData);
+                alert(t('Store added successfully!'));
+            }
+            setStoreForm({ name: '', location: '', image: '', rating: 4.5, hours: '', mobile: '' });
+            setEditingStore(null);
+            setView('list');
+        } catch (error) {
+            alert(t('Failed to save store. Please try again.'));
+            console.error('Error saving store:', error);
         }
-        setStoreForm({ name: '', name_ta: '', location: '', location_ta: '', image: '', rating: 4.5, hours: '', hours_ta: '', mobile: '' });
-        setEditingStore(null);
-        setView('list');
     };
 
     const handleManageProducts = (store) => {
@@ -532,7 +577,7 @@ const StoreManagement = () => {
     };
 
     const handleAddProductToStore = () => {
-        setProductForm({ title: '', title_ta: '', price: '', category: '', category_ta: '', description: '', description_ta: '', image: '', sliderImages: [] });
+        setProductForm({ title: '', price: '', category: '', description: '', image: '', sliderImages: [] });
         setEditingProduct(null);
         setView('addProductToStore');
     };
@@ -541,12 +586,9 @@ const StoreManagement = () => {
         setEditingProduct(product);
         setProductForm({
             title: product.title,
-            title_ta: product.title_ta || '',
             price: product.price,
             category: product.category,
-            category_ta: product.category_ta || '',
             description: product.description,
-            description_ta: product.description_ta || '',
             image: product.image,
             sliderImages: product.images || []
         });
@@ -560,7 +602,7 @@ const StoreManagement = () => {
         }
     };
 
-    const handleProductSubmit = (e) => {
+    const handleProductSubmit = async (e) => {
         e.preventDefault();
         const productData = {
             ...productForm,
@@ -569,14 +611,19 @@ const StoreManagement = () => {
             images: productForm.sliderImages.length > 0 ? productForm.sliderImages : [productForm.image] // Use slider images if available, else main image
         };
 
-        if (editingProduct) {
-            updateProduct({ ...editingProduct, ...productData });
-            alert(t('Product updated successfully!'));
-        } else {
-            addProduct(productData);
-            alert(t('Product added to store successfully!'));
+        try {
+            if (editingProduct) {
+                await updateProduct({ ...editingProduct, ...productData });
+                alert(t('Product updated successfully!'));
+            } else {
+                await addProduct(productData);
+                alert(t('Product added to store successfully!'));
+            }
+            setView('storeProducts');
+        } catch (error) {
+            alert(t('Failed to save product. Please try again.'));
+            console.error('Error saving product:', error);
         }
-        setView('storeProducts');
     };
 
     return (
@@ -641,7 +688,6 @@ const StoreManagement = () => {
                         <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{editingStore ? t('Edit Store') : t('Add New Store')}</h2>
                     </div>
                     <form onSubmit={handleStoreSubmit} className="space-y-6">
-                        {/* Store Form Fields */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Store Name')}</label>
@@ -653,15 +699,7 @@ const StoreManagement = () => {
                                     required
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Store Name (Tamil)')}</label>
-                                <input
-                                    type="text"
-                                    value={storeForm.name_ta}
-                                    onChange={(e) => setStoreForm({ ...storeForm, name_ta: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
-                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Location')}</label>
                                 <input
@@ -672,15 +710,7 @@ const StoreManagement = () => {
                                     required
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Location (Tamil)')}</label>
-                                <input
-                                    type="text"
-                                    value={storeForm.location_ta}
-                                    onChange={(e) => setStoreForm({ ...storeForm, location_ta: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
-                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Timing')}</label>
                                 <input
@@ -692,16 +722,7 @@ const StoreManagement = () => {
                                     required
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Timing (Tamil)')}</label>
-                                <input
-                                    type="text"
-                                    value={storeForm.hours_ta}
-                                    onChange={(e) => setStoreForm({ ...storeForm, hours_ta: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder={t('e.g., காலை 9:00 - இரவு 9:00')}
-                                />
-                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Mobile Number')}</label>
                                 <input
@@ -736,210 +757,190 @@ const StoreManagement = () => {
                             </button>
                         </div>
                     </form>
-                </div >
+                </div>
             )}
 
-            {
-                view === 'storeProducts' && selectedStore && (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-4">
-                            <button onClick={() => setView('list')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                                <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
-                            </button>
-                            <div>
-                                <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{selectedStore.name}</h2>
-                                <p className="text-gray-500 dark:text-gray-400 text-sm">{t('Manage Products')}</p>
-                            </div>
-                            <button
-                                onClick={handleAddProductToStore}
-                                className="ml-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm md:text-base"
-                            >
-                                <Plus size={20} />
-                                {t('Add Product')}
-                            </button>
+            {view === 'storeProducts' && selectedStore && (
+                <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => setView('list')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                            <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
+                        </button>
+                        <div>
+                            <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{selectedStore.name}</h2>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">{t('Manage Products')}</p>
                         </div>
+                        <button
+                            onClick={handleAddProductToStore}
+                            className="ml-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm md:text-base"
+                        >
+                            <Plus size={20} />
+                            {t('Add Product')}
+                        </button>
+                    </div>
 
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead className="bg-gray-50 dark:bg-gray-700/50">
-                                        <tr>
-                                            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Image')}</th>
-                                            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Title')}</th>
-                                            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Price')}</th>
-                                            <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Actions')}</th>
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-50 dark:bg-gray-700/50">
+                                    <tr>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Image')}</th>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Title')}</th>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Price')}</th>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Actions')}</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                                    {products.filter(p => p.storeId === selectedStore.id).map(product => (
+                                        <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                            <td className="p-4">
+                                                <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
+                                            </td>
+                                            <td className="p-4 font-medium text-gray-900 dark:text-white">{product.title}</td>
+                                            <td className="p-4 font-medium text-gray-900 dark:text-white">${product.price}</td>
+                                            <td className="p-4">
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleEditProduct(product)}
+                                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        <Edit2 size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteProduct(product.id)}
+                                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                        {products.filter(p => p.storeId === selectedStore.id).map(product => (
-                                            <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                                <td className="p-4">
-                                                    <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
-                                                </td>
-                                                <td className="p-4 font-medium text-gray-900 dark:text-white">{product.title}</td>
-                                                <td className="p-4 font-medium text-gray-900 dark:text-white">${product.price}</td>
-                                                <td className="p-4">
-                                                    <div className="flex gap-2">
-                                                        <button
-                                                            onClick={() => handleEditProduct(product)}
-                                                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                                        >
-                                                            <Edit2 size={18} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDeleteProduct(product.id)}
-                                                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                                        >
-                                                            <Trash2 size={18} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {products.filter(p => p.storeId === selectedStore.id).length === 0 && (
-                                            <tr>
-                                                <td colSpan="4" className="p-8 text-center text-gray-500 dark:text-gray-400">
-                                                    {t('No products found in this store. Add one to get started!')}
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                    ))}
+                                    {products.filter(p => p.storeId === selectedStore.id).length === 0 && (
+                                        <tr>
+                                            <td colSpan="4" className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                                {t('No products found in this store. Add one to get started!')}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                )
-            }
+                </div>
+            )}
 
-            {
-                view === 'addProductToStore' && (
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                        <div className="flex items-center gap-4 mb-6">
-                            <button onClick={() => setView('storeProducts')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                                <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
-                            </button>
-                            <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
-                                {editingProduct ? t('Edit Product') : `${t('Add Product to')} ${selectedStore?.name}`}
-                            </h2>
-                        </div>
-                        <form onSubmit={handleProductSubmit} className="space-y-6">
-                            {/* Product Form Fields - Similar to ProductManagement but with slider images */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Product Title')}</label>
-                                    <input
-                                        type="text"
-                                        value={productForm.title}
-                                        onChange={(e) => setProductForm({ ...productForm, title: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                        required
-                                    />
+            {view === 'addProductToStore' && (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                    <div className="flex items-center gap-4 mb-6">
+                        <button onClick={() => setView('storeProducts')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                            <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
+                        </button>
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                            {editingProduct ? t('Edit Product') : `${t('Add Product to')} ${selectedStore?.name}`}
+                        </h2>
+                    </div>
+                    <form onSubmit={handleProductSubmit} className="space-y-6">
+                        {/* Product Form Fields - Similar to ProductManagement but with slider images */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Product Title')}</label>
+                                <input
+                                    type="text"
+                                    value={productForm.title}
+                                    onChange={(e) => setProductForm({ ...productForm, title: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Price ($)</label>
+                                <input
+                                    type="number"
+                                    value={productForm.price}
+                                    onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Category')}</label>
+                                <select
+                                    value={productForm.category}
+                                    onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required
+                                >
+                                    <option value="">{t('Select Category')}</option>
+                                    <option value="Electronics">{t('Electronics')}</option>
+                                    <option value="Fashion">{t('Fashion')}</option>
+                                    <option value="Home">{t('Home')}</option>
+                                    <option value="Beauty">{t('Beauty')}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Main Image')}</label>
+                                <div className="flex items-center gap-4">
+                                    {productForm.image && (
+                                        <img src={productForm.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
+                                    )}
+                                    <label className="flex-1 cursor-pointer">
+                                        <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
+                                            <Upload size={20} />
+                                            <span>{t('Upload Image')}</span>
+                                        </div>
+                                        <input type="file" accept="image/*" onChange={(e) => handleProductImageUpload(e, false)} className="hidden" required={!productForm.image} />
+                                    </label>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Product Title (Tamil)')}</label>
-                                    <input
-                                        type="text"
-                                        value={productForm.title_ta}
-                                        onChange={(e) => setProductForm({ ...productForm, title_ta: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Price ($)</label>
-                                    <input
-                                        type="number"
-                                        value={productForm.price}
-                                        onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Category')}</label>
-                                    <select
-                                        value={productForm.category}
-                                        onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                        required
-                                    >
-                                        <option value="">{t('Select Category')}</option>
-                                        <option value="Electronics">{t('Electronics')}</option>
-                                        <option value="Fashion">{t('Fashion')}</option>
-                                        <option value="Home">{t('Home')}</option>
-                                        <option value="Beauty">{t('Beauty')}</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Main Image')}</label>
-                                    <div className="flex items-center gap-4">
-                                        {productForm.image && (
-                                            <img src={productForm.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
-                                        )}
-                                        <label className="flex-1 cursor-pointer">
-                                            <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
-                                                <Upload size={20} />
-                                                <span>{t('Upload Image')}</span>
+                            </div>
+                            <div className="col-span-1 md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Slider Images (Optional)')}</label>
+                                <div className="space-y-4">
+                                    <div className="flex flex-wrap gap-4">
+                                        {productForm.sliderImages.map((img, idx) => (
+                                            <div key={idx} className="relative w-20 h-20 group">
+                                                <img src={img} alt={`Slider ${idx}`} className="w-full h-full rounded-lg object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeSliderImage(idx)}
+                                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <X size={12} />
+                                                </button>
                                             </div>
-                                            <input type="file" accept="image/*" onChange={(e) => handleProductImageUpload(e, false)} className="hidden" required={!productForm.image} />
+                                        ))}
+                                        <label className="cursor-pointer">
+                                            <div className="w-20 h-20 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center">
+                                                <Plus size={24} />
+                                            </div>
+                                            <input type="file" accept="image/*" multiple onChange={(e) => handleProductImageUpload(e, true)} className="hidden" />
                                         </label>
                                     </div>
                                 </div>
-                                <div className="col-span-1 md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Slider Images (Optional)')}</label>
-                                    <div className="space-y-4">
-                                        <div className="flex flex-wrap gap-4">
-                                            {productForm.sliderImages.map((img, idx) => (
-                                                <div key={idx} className="relative w-20 h-20 group">
-                                                    <img src={img} alt={`Slider ${idx}`} className="w-full h-full rounded-lg object-cover" />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeSliderImage(idx)}
-                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    >
-                                                        <X size={12} />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                            <label className="cursor-pointer">
-                                                <div className="w-20 h-20 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center">
-                                                    <Plus size={24} />
-                                                </div>
-                                                <input type="file" accept="image/*" multiple onChange={(e) => handleProductImageUpload(e, true)} className="hidden" />
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Description')}</label>
-                                <textarea
-                                    value={productForm.description}
-                                    onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
-                                    rows="4"
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    required
-                                ></textarea>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Description (Tamil)')}</label>
-                                <textarea
-                                    value={productForm.description_ta}
-                                    onChange={(e) => setProductForm({ ...productForm, description_ta: e.target.value })}
-                                    rows="4"
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                ></textarea>
-                            </div>
-                            <div className="flex justify-end">
-                                <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
-                                    <Plus size={20} />
-                                    {editingProduct ? t('Update Product') : t('Add Product to Store')}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                )
-            }
-        </div >
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Description')}</label>
+                            <textarea
+                                value={productForm.description}
+                                onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                                rows="4"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                required
+                            ></textarea>
+                        </div>
+
+                        <div className="flex justify-end">
+                            <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                <Plus size={20} />
+                                {editingProduct ? t('Update Product') : t('Add Product to Store')}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+        </div>
     );
 };
 
@@ -950,12 +951,9 @@ const NewsManagement = () => {
     const [editingNews, setEditingNews] = useState(null);
     const [newsForm, setNewsForm] = useState({
         headline: '',
-        headline_ta: '',
         type: 'Offer',
-        type_ta: '',
         image: '',
         content: '',
-        content_ta: ''
     });
 
     const handleNewsImageUpload = (e) => {
@@ -970,12 +968,9 @@ const NewsManagement = () => {
         setEditingNews(item);
         setNewsForm({
             headline: item.title, // Map title to headline
-            headline_ta: item.title_ta || '',
             type: item.category, // Map category to type
-            type_ta: item.category_ta || '',
             image: item.image,
             content: item.description, // Map description to content
-            content_ta: item.description_ta || ''
         });
         setView('form');
     };
@@ -991,12 +986,9 @@ const NewsManagement = () => {
         e.preventDefault();
         const newsItem = {
             title: newsForm.headline,
-            title_ta: newsForm.headline_ta,
             category: newsForm.type,
-            category_ta: newsForm.type_ta,
             image: newsForm.image,
             description: newsForm.content,
-            description_ta: newsForm.content_ta,
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         };
 
@@ -1007,7 +999,7 @@ const NewsManagement = () => {
             addNews(newsItem);
             alert(t('News published successfully!'));
         }
-        setNewsForm({ headline: '', headline_ta: '', type: 'Offer', type_ta: '', image: '', content: '', content_ta: '' });
+        setNewsForm({ headline: '', type: 'Offer', image: '', content: '' });
         setEditingNews(null);
         setView('list');
     };
@@ -1022,7 +1014,7 @@ const NewsManagement = () => {
                     onClick={() => {
                         if (view === 'list') {
                             setEditingNews(null);
-                            setNewsForm({ headline: '', headline_ta: '', type: 'Offer', type_ta: '', image: '', content: '', content_ta: '' });
+                            setNewsForm({ headline: '', type: 'Offer', image: '', content: '' });
                             setView('form');
                         } else {
                             setView('list');
@@ -1083,16 +1075,7 @@ const NewsManagement = () => {
                                 required
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Headline (Tamil)')}</label>
-                            <input
-                                type="text"
-                                value={newsForm.headline_ta}
-                                onChange={(e) => setNewsForm({ ...newsForm, headline_ta: e.target.value })}
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder={t('Headline in Tamil...')}
-                            />
-                        </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Type')}</label>
@@ -1106,16 +1089,7 @@ const NewsManagement = () => {
                                     <option>{t('Deal')}</option>
                                 </select>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Type (Tamil)')}</label>
-                                <input
-                                    type="text"
-                                    value={newsForm.type_ta}
-                                    onChange={(e) => setNewsForm({ ...newsForm, type_ta: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder={t('e.g., சலுகை')}
-                                />
-                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Post Image')}</label>
                                 <div className="flex items-center gap-4">
@@ -1148,16 +1122,7 @@ const NewsManagement = () => {
                                 required
                             ></textarea>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Content (Tamil)')}</label>
-                            <textarea
-                                rows="5"
-                                value={newsForm.content_ta}
-                                onChange={(e) => setNewsForm({ ...newsForm, content_ta: e.target.value })}
-                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder={t('Content in Tamil...')}
-                            ></textarea>
-                        </div>
+
                         <div className="flex justify-end">
                             <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
                                 {editingNews ? <Save size={20} /> : <Newspaper size={20} />}

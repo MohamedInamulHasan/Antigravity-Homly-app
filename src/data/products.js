@@ -12,9 +12,7 @@ export const products = [
             'https://images.unsplash.com/photo-1484704849700-f032a568e944?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Electronics',
-        category_ta: 'எலக்ட்ரானிக்ஸ்',
-        title_ta: 'வயர்லெஸ் இரைச்சல்-ரத்துசெய்யும் ஹெட்ஃபோன்கள்',
-        description_ta: 'செயலில் இரைச்சல் ரத்துசெய்தல் மூலம் பிரீமியம் ஒலி தரத்தை அனுபவிக்கவும். பயணம் மற்றும் வேலைக்கு ஏற்றது.',
+
         storeId: 1
     },
     {
@@ -29,9 +27,7 @@ export const products = [
             'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Electronics',
-        category_ta: 'எலக்ட்ரானிக்ஸ்',
-        title_ta: 'ஸ்மார்ட் ஃபிட்னஸ் டிராக்கர்',
-        description_ta: 'உங்கள் படிகள், இதயத் துடிப்பு மற்றும் தூக்க முறைகளை எளிதாகக் கண்காணிக்கவும். நீர்-எதிர்ப்பு மற்றும் நீண்ட பேட்டரி ஆயுள்.',
+
         storeId: 1
     },
     {
@@ -46,9 +42,7 @@ export const products = [
             'https://images.unsplash.com/photo-1552975084-6e027cd345c2?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Electronics',
-        category_ta: 'எலக்ட்ரானிக்ஸ்',
-        title_ta: '4K அல்ட்ரா HD ஸ்மார்ட் டிவி',
-        description_ta: 'இந்த 55-இன்ச் 4K டிவியுடன் அதிர்ச்சியூட்டும் காட்சிகளில் மூழ்கிவிடுங்கள். உள்ளமைக்கப்பட்ட ஸ்ட்ரீமிங் பயன்பாடுகள்.',
+
         storeId: 1
     },
     {
@@ -63,9 +57,7 @@ export const products = [
             'https://images.unsplash.com/photo-1589256469067-ea99122bbdc4?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Electronics',
-        category_ta: 'எலக்ட்ரானிக்ஸ்',
-        title_ta: 'புளூடூத் போர்ட்டபிள் ஸ்பீக்கர்',
-        description_ta: 'கச்சிதமான வடிவமைப்பில் சக்திவாய்ந்த ஒலி. நீர்ப்புகா மற்றும் வெளிப்புற சாகசங்களுக்கு ஏற்றது.',
+
         storeId: 1
     },
 
@@ -82,9 +74,7 @@ export const products = [
             'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Fashion',
-        category_ta: 'ஃபேஷன்',
-        title_ta: 'கிளாசிக் லெதர் வாட்ச்',
-        description_ta: 'உண்மையான தோல் வார் மற்றும் நீர் எதிர்ப்பு கொண்ட நேர்த்தியான கடிகாரம். ஒரு காலமற்ற துணை.',
+
         storeId: 2
     },
     {
@@ -99,9 +89,7 @@ export const products = [
             'https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Fashion',
-        category_ta: 'ஃபேஷன்',
-        title_ta: 'குறைந்தபட்ச பேக் பேக்',
-        description_ta: 'தினசரி பயணம் அல்லது பயணத்திற்கு நீடித்த மற்றும் ஸ்டைலான பேக் பேக். பல பிரிவுகள்.',
+
         storeId: 2
     },
     {
@@ -116,9 +104,7 @@ export const products = [
             'https://images.unsplash.com/photo-1551537482-f2075a1d41f2?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Fashion',
-        category_ta: 'ஃபேஷன்',
-        title_ta: 'டெனிம் ஜாக்கெட்',
-        description_ta: 'எல்லாவற்றிற்கும் பொருந்தக்கூடிய கிளாசிக் டெனிம் ஜாக்கெட். வசதியான பொருத்தம் மற்றும் நீடித்த துணி.',
+
         storeId: 2
     },
     {
@@ -133,9 +119,7 @@ export const products = [
             'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Fashion',
-        category_ta: 'ஃபேஷன்',
-        title_ta: 'ஓடும் காலணிகள்',
-        description_ta: 'அதிகபட்ச செயல்திறன் மற்றும் வசதிக்காக இலகுரக மற்றும் சுவாசிக்கக்கூடிய ஓடும் காலணிகள்.',
+
         storeId: 2
     },
 
@@ -152,9 +136,7 @@ export const products = [
             'https://images.unsplash.com/photo-1463936575829-25148e1db1b8?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Home',
-        category_ta: 'வீடு',
-        title_ta: 'பீங்கான் செடி பானை',
-        description_ta: 'உங்கள் உட்புற தாவரங்களுக்கு அழகான பீங்கான் பானை. உங்கள் வீட்டிற்கு பசுமையின் தொடுதலை சேர்க்கிறது.',
+
         storeId: 3
     },
     {
@@ -169,9 +151,7 @@ export const products = [
             'https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Home',
-        category_ta: 'வீடு',
-        title_ta: 'மென்மையான போர்வை',
-        description_ta: 'வசதியான மற்றும் சூடான போர்வை. படுக்கையில் படுத்துக் கொள்ள ஏற்றது.',
+
         storeId: 3
     },
     {
@@ -186,9 +166,7 @@ export const products = [
             'https://images.unsplash.com/photo-1513506003011-3b03c860ad80?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Home',
-        category_ta: 'வீடு',
-        title_ta: 'நவீன மேசை விளக்கு',
-        description_ta: 'நேர்த்தியான மற்றும் சரிசெய்யக்கூடிய மேசை விளக்கு. வேலை அல்லது வாசிப்புக்கு உகந்த வெளிச்சத்தை வழங்குகிறது.',
+
         storeId: 3
     },
 
@@ -205,9 +183,7 @@ export const products = [
             'https://images.unsplash.com/photo-1571781565036-d3f7595ca3f7?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Beauty',
-        category_ta: 'அழகு',
-        title_ta: 'ஆர்கானிக் ஃபேஸ் சீரம்',
-        description_ta: 'ஆர்கானிக் பொருட்களால் செய்யப்பட்ட புத்துணர்ச்சியூட்டும் ஃபேஸ் சீரம். சருமத்தை ஈரப்பதமாக்குகிறது மற்றும் பிரகாசமாக்குகிறது.',
+
         storeId: 4
     },
     {
@@ -222,9 +198,7 @@ export const products = [
             'https://images.unsplash.com/photo-1596462502278-27bfdd403348?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Beauty',
-        category_ta: 'அழகு',
-        title_ta: 'மேட் லிப்ஸ்டிக் செட்',
-        description_ta: 'பல்வேறு நிழல்களில் நீண்ட காலம் நீடிக்கும் மேட் லிப்ஸ்டிக்குகளின் தொகுப்பு. துடிப்பான வண்ணங்கள்.',
+
         storeId: 4
     },
 
@@ -241,9 +215,7 @@ export const products = [
             'https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Sports',
-        category_ta: 'விளையாட்டு',
-        title_ta: 'யோகா பாய்',
-        description_ta: 'உங்கள் தினசரி பயிற்சிக்கான வழுக்காத யோகா பாய். நீடித்த மற்றும் சுத்தம் செய்ய எளிதானது.',
+
         storeId: 4
     },
     {
@@ -258,9 +230,7 @@ export const products = [
             'https://images.unsplash.com/photo-1589256469067-ea99122bbdc4?q=80&w=1000&auto=format&fit=crop'
         ],
         category: 'Electronics',
-        category_ta: 'எலக்ட்ரானிக்ஸ்',
-        title_ta: 'புளூடூத் போர்ட்டபிள் ஸ்பீக்கர்',
-        description_ta: 'கச்சிதமான வடிவமைப்பில் சக்திவாய்ந்த ஒலி. நீர்ப்புகா மற்றும் வெளிப்புற சாகசங்களுக்கு ஏற்றது.',
+
         storeId: 1
     },
 

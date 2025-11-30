@@ -8,11 +8,11 @@ const StoreProducts = () => {
     const { id } = useParams();
     const { products, stores } = useData();
     const { t } = useLanguage();
-    const storeId = parseInt(id);
+    const storeId = id;
 
     // Find store and its products from global context
-    const store = stores.find(s => s.id === storeId);
-    const storeProducts = products.filter(p => p.storeId === storeId);
+    const store = stores.find(s => (s._id || s.id) === storeId);
+    const storeProducts = products.filter(p => (p.storeId === storeId) || (p.storeId === parseInt(storeId)));
 
     if (!store) {
         return (

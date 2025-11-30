@@ -17,13 +17,13 @@ const ProductDetails = () => {
 
     useEffect(() => {
         if (products.length > 0) {
-            const foundProduct = products.find(p => p.id === parseInt(id));
+            const foundProduct = products.find(p => (p._id || p.id) === id || (p._id || p.id) === parseInt(id));
             setProduct(foundProduct);
             setCurrentImageIndex(0);
         }
     }, [id, products]);
 
-    const cartItem = product ? cartItems.find(item => item.id === product.id) : null;
+    const cartItem = product ? cartItems.find(item => item.id === (product._id || product.id)) : null;
     const quantity = cartItem ? cartItem.quantity : 0;
 
     const handleCheckout = () => {
@@ -174,7 +174,7 @@ const ProductDetails = () => {
                                             <button
                                                 onClick={() => {
                                                     if (cartItem) {
-                                                        updateQuantity(product.id, Math.max(0, quantity - 1));
+                                                        updateQuantity((product._id || product.id), Math.max(0, quantity - 1));
                                                     }
                                                 }}
                                                 className={`w-10 h-10 flex items-center justify-center text-gray-600 dark:text-gray-400 transition-colors ${quantity <= 0 ? 'opacity-50 cursor-not-allowed' : 'hover:text-blue-600 dark:hover:text-blue-400'}`}
@@ -186,7 +186,7 @@ const ProductDetails = () => {
                                             <button
                                                 onClick={() => {
                                                     if (cartItem) {
-                                                        updateQuantity(product.id, quantity + 1);
+                                                        updateQuantity((product._id || product.id), quantity + 1);
                                                     } else {
                                                         addToCart(product);
                                                     }
@@ -238,7 +238,7 @@ const ProductDetails = () => {
                 <div className="max-w-7xl mx-auto">
                     <button
                         onClick={quantity > 0 ? handleCheckout : () => addToCart(product)}
-                        className={`w-full py-2.5 px-4 rounded-xl font-bold text-sm shadow-xl flex items-center justify-center gap-2 transition-all transform hover:-translate-y-1 ${quantity > 0
+                        className={`w-[90%] mx-auto block py-2.5 px-4 rounded-xl font-bold text-sm shadow-xl flex items-center justify-center gap-2 transition-all transform hover:-translate-y-1 ${quantity > 0
                             ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200 dark:shadow-none'
                             : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100'
                             }`}

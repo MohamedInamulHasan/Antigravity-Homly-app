@@ -63,7 +63,7 @@ const OrderDetails = () => {
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{t('Order Details')}</h1>
-                            <p className="text-gray-500 dark:text-gray-400">{t('Order')} #{order.id} • {order.date}</p>
+                            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 whitespace-nowrap">{t('Order')} #{order.id} • {order.date}</p>
                         </div>
                         <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(order.status)}`}>
                             {getStatusIcon(order.status)}
@@ -89,7 +89,7 @@ const OrderDetails = () => {
                                 <div className="flex-1 min-w-0">
                                     <h3 className="font-medium text-gray-900 dark:text-white mb-1">{item.name}</h3>
                                     <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">{t('Quantity')}: {item.quantity}</p>
-                                    <p className="font-semibold text-gray-900 dark:text-white">₹{Number(item.price || 0).toFixed(2)}</p>
+                                    <p className="font-semibold text-gray-900 dark:text-white">₹{Number(item.price || 0).toFixed(0)}</p>
                                 </div>
                             </div>
                         ))}
@@ -120,7 +120,6 @@ const OrderDetails = () => {
                         </h2>
                         <div className="flex items-center text-gray-600 dark:text-gray-300">
                             <span className="font-medium text-gray-900 dark:text-white mr-2">{order.paymentMethod?.type || t('Card')}</span>
-                            <span>{t('ending in')} {order.paymentMethod?.last4 || '****'}</span>
                         </div>
                     </div>
                 </div>
@@ -131,25 +130,25 @@ const OrderDetails = () => {
                     <div className="space-y-3">
                         <div className="flex justify-between text-gray-600 dark:text-gray-400">
                             <span>{t('Subtotal')}</span>
-                            <span>₹{Number(order.subtotal || 0).toFixed(2)}</span>
+                            <span>₹{Number(order.subtotal || 0).toFixed(0)}</span>
                         </div>
                         <div className="flex justify-between text-gray-600 dark:text-gray-400">
                             <span>{t('Shipping')}</span>
-                            <span>{Number(order.shipping || 0) === 0 ? t('Free') : `₹${Number(order.shipping).toFixed(2)}`}</span>
+                            <span>{Number(order.shipping || 0) === 0 ? t('Free') : `₹${Number(order.shipping).toFixed(0)}`}</span>
                         </div>
                         <div className="flex justify-between text-gray-600 dark:text-gray-400">
                             <span>{t('Tax')}</span>
-                            <span>₹{Number(order.tax || 0).toFixed(2)}</span>
+                            <span>₹{Number(order.tax || 0).toFixed(0)}</span>
                         </div>
                         {Number(order.discount || 0) !== 0 && (
                             <div className="flex justify-between text-green-600 dark:text-green-400">
                                 <span>{t('Discount')}</span>
-                                <span>-₹{Math.abs(Number(order.discount)).toFixed(2)}</span>
+                                <span>-₹{Math.abs(Number(order.discount)).toFixed(0)}</span>
                             </div>
                         )}
                         <div className="pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between font-bold text-gray-900 dark:text-white text-lg">
                             <span>{t('Total')}</span>
-                            <span>₹{Number(order.total || 0).toFixed(2)}</span>
+                            <span>₹{Number(order.total || 0).toFixed(0)}</span>
                         </div>
                     </div>
                 </div>

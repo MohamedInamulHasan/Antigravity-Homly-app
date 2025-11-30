@@ -21,40 +21,54 @@ const Layout = ({ children }) => {
     const location = useLocation();
     const hideMobileFooter = location.pathname.startsWith('/product/') ||
         location.pathname === '/checkout' ||
-        location.pathname === '/order-confirmation';
+        location.pathname === '/order-confirmation' ||
+        location.pathname === '/login' ||
+        location.pathname === '/signup';
+
+    const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-50">
+        <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
             <ScrollToTop />
-            <Navbar />
+            {!isAuthPage && <Navbar />}
             <main className={`flex-grow ${hideMobileFooter ? '' : 'pb-16'} md:pb-0`}>
                 {children}
             </main>
-            <MobileFooter />
+            {!isAuthPage && <MobileFooter />}
         </div>
     );
 };
 
+import { AuthProvider } from './context/AuthContext';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+
+// ... existing imports ...
+
 function App() {
     return (
-        <Router>
-            <Layout>
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/store" element={<Shop />} />
-                    <Route path="/store/:id" element={<StoreProducts />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/product/:id" element={<ProductDetails />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/checkout" element={<Checkout />} />
-                    <Route path="/orders" element={<Orders />} />
-                    <Route path="/orders/:id" element={<OrderDetails />} />
-                    <Route path="/order-confirmation" element={<OrderConfirmation />} />
-                    <Route path="/news" element={<News />} />
-                    <Route path="/admin" element={<AdminDashboard />} />
-                </Routes>
-            </Layout>
-        </Router>
+        <AuthProvider>
+            <Router>
+                <Layout>
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/store" element={<Shop />} />
+                        <Route path="/store/:id" element={<StoreProducts />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/product/:id" element={<ProductDetails />} />
+                        <Route path="/cart" element={<Cart />} />
+                        <Route path="/checkout" element={<Checkout />} />
+                        <Route path="/orders" element={<Orders />} />
+                        <Route path="/orders/:id" element={<OrderDetails />} />
+                        <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                        <Route path="/news" element={<News />} />
+                        <Route path="/admin" element={<AdminDashboard />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/signup" element={<Signup />} />
+                    </Routes>
+                </Layout>
+            </Router>
+        </AuthProvider>
     );
 }
 
