@@ -91,6 +91,7 @@ export const LanguageProvider = ({ children }) => {
         'Delivered': { en: 'Delivered' },
         'Cancelled': { en: 'Cancelled' },
         'Cash on Delivery': { en: 'Cash on Delivery' },
+        'Review Order': { en: 'Review Order' },
         'Review Your Order': { en: 'Review Your Order' },
         'Order Placed!': { en: 'Order Placed!' },
         'Order Items': { en: 'Order Items' },

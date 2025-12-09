@@ -19,13 +19,22 @@ const OrderConfirmation = () => {
         return <Navigate to="/" replace />;
     }
 
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+
     const handleConfirmOrder = () => {
-        // Create order object
+        setShowConfirmModal(true);
+    };
+
+    const confirmOrderAction = async () => {
+        // Create order object matching backend schema
         const newOrder = {
-            id: Math.floor(100000 + Math.random() * 900000), // Generate 6-digit ID
-            date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-            status: 'Processing',
-            items: cartItems,
+            items: cartItems.map(item => ({
+                product: item._id || item.id,
+                name: item.title,
+                quantity: item.quantity,
+                price: item.price,
+                image: item.image
+            })),
             total: finalTotal,
             subtotal: cartTotal,
             shipping: deliveryCharge,
@@ -35,9 +44,10 @@ const OrderConfirmation = () => {
                 name: formData.name,
                 street: formData.address,
                 city: formData.city,
-                state: '', // Assuming state is not collected or can be inferred
+                state: '',
                 zip: formData.pincode,
-                country: 'India' // Defaulting to India
+                country: 'India',
+                mobile: formData.mobile
             },
             paymentMethod: {
                 type: 'Cash on Delivery',
@@ -45,9 +55,19 @@ const OrderConfirmation = () => {
             }
         };
 
-        addOrder(newOrder);
-        clearCart();
-        navigate(`/orders/${newOrder.id}`);
+        try {
+            const createdOrder = await addOrder(newOrder);
+            clearCart();
+            if (createdOrder && createdOrder._id) {
+                navigate(`/orders/${createdOrder._id}`);
+            } else {
+                // Fallback if backend doesn't return the object immediately or offline mode
+                navigate('/orders');
+            }
+        } catch (error) {
+            console.error("Failed to create order:", error);
+            alert("Failed to place order. Please try again.");
+        }
     };
 
     return (
@@ -112,6 +132,16 @@ const OrderConfirmation = () => {
                         <p>{t('Mobile')}: {formData.mobile}</p>
                     </div>
                 </div>
+
+                {/* Desktop Confirm Button */}
+                <div className="hidden md:block">
+                    <button
+                        onClick={handleConfirmOrder}
+                        className="w-full bg-blue-600 text-white py-4 px-6 text-lg rounded-xl font-bold shadow-lg hover:bg-blue-700 dark:hover:bg-blue-500 hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
+                    >
+                        {t('Confirm Order')}
+                    </button>
+                </div>
             </div>
 
             {/* Sticky Action Footer - Mobile Only */}
@@ -125,6 +155,39 @@ const OrderConfirmation = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Confirmation Modal */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
+                        <div className="text-center">
+                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900 mb-4">
+                                <CheckCircle className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                {t('Confirm Order')}
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                                {t('Are you sure you want to place this order?')}
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowConfirmModal(false)}
+                                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                >
+                                    {t('Cancel')}
+                                </button>
+                                <button
+                                    onClick={confirmOrderAction}
+                                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                >
+                                    {t('Confirm')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

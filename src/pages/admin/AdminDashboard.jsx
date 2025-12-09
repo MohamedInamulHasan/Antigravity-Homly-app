@@ -290,7 +290,7 @@ const ProductManagement = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                {products.map(product => (
+                                {products.filter(p => !p.storeId).map(product => (
                                     <tr key={product.id || product._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                         <td className="p-4">
                                             <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
@@ -607,7 +607,7 @@ const StoreManagement = () => {
         const productData = {
             ...productForm,
             price: parseFloat(productForm.price),
-            storeId: selectedStore.id,
+            storeId: selectedStore._id || selectedStore.id,
             images: productForm.sliderImages.length > 0 ? productForm.sliderImages : [productForm.image] // Use slider images if available, else main image
         };
 
@@ -653,7 +653,7 @@ const StoreManagement = () => {
                                             <Edit2 size={18} />
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteStore(store.id)}
+                                            onClick={() => handleDeleteStore(store.id || store._id)}
                                             className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-red-600 hover:text-red-700 shadow-sm"
                                         >
                                             <Trash2 size={18} />
@@ -791,7 +791,7 @@ const StoreManagement = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                    {products.filter(p => p.storeId === selectedStore.id).map(product => (
+                                    {products.filter(p => p.storeId === (selectedStore._id || selectedStore.id)).map(product => (
                                         <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                             <td className="p-4">
                                                 <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
@@ -970,7 +970,7 @@ const NewsManagement = () => {
             headline: item.title, // Map title to headline
             type: item.category, // Map category to type
             image: item.image,
-            content: item.description, // Map description to content
+            content: item.content || item.description, // Map content to content form field
         });
         setView('form');
     };
@@ -988,7 +988,7 @@ const NewsManagement = () => {
             title: newsForm.headline,
             category: newsForm.type,
             image: newsForm.image,
-            description: newsForm.content,
+            content: newsForm.content,
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         };
 
@@ -1030,7 +1030,7 @@ const NewsManagement = () => {
             {view === 'list' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {news.map(item => (
-                        <div key={item.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col group relative">
+                        <div key={item._id || item.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col group relative">
                             <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleEditNews(item); }}
@@ -1039,7 +1039,7 @@ const NewsManagement = () => {
                                     <Edit2 size={18} />
                                 </button>
                                 <button
-                                    onClick={(e) => { e.stopPropagation(); handleDeleteNews(item.id); }}
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteNews(item._id || item.id); }}
                                     className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-red-600 hover:text-red-700 shadow-sm"
                                 >
                                     <Trash2 size={18} />
@@ -1056,7 +1056,7 @@ const NewsManagement = () => {
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{item.title}</h3>
                                 <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-3">
-                                    {item.description}
+                                    {item.content || item.description}
                                 </p>
                             </div>
                         </div>
@@ -1137,7 +1137,7 @@ const NewsManagement = () => {
 };
 
 const OrderManagement = () => {
-    const { orders, updateOrder } = useData();
+    const { orders, updateOrder, deleteOrder } = useData();
     const { t } = useLanguage();
     const [editingOrder, setEditingOrder] = useState(null);
     const [editAddress, setEditAddress] = useState('');
@@ -1155,10 +1155,22 @@ const OrderManagement = () => {
     };
 
     const saveOrder = (id) => {
-        const order = orders.find(o => o.id === id);
+        const order = orders.find(o => (o._id || o.id) === id);
         if (order) {
             updateOrder({ ...order, address: editAddress });
             setEditingOrder(null);
+        }
+    };
+
+    const handleDeleteOrder = async (id) => {
+        if (window.confirm(t('Are you sure you want to delete this order?'))) {
+            try {
+                await deleteOrder(id);
+                alert(t('Order deleted successfully!'));
+            } catch (error) {
+                console.error('Error deleting order:', error);
+                alert(t('Failed to delete order'));
+            }
         }
     };
 
@@ -1172,6 +1184,7 @@ const OrderManagement = () => {
                             <tr>
                                 <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Order ID')}</th>
                                 <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Customer')}</th>
+                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Mobile')}</th>
                                 <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Address')}</th>
                                 <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Date')}</th>
                                 <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Total')}</th>
@@ -1181,11 +1194,12 @@ const OrderManagement = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {orders.map(order => (
-                                <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                    <td className="p-4 font-medium text-gray-900 dark:text-white">{order.id}</td>
-                                    <td className="p-4 text-gray-600 dark:text-gray-300">{order.user}</td>
+                                <tr key={order._id || order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                    <td className="p-4 font-medium text-gray-900 dark:text-white">#{String(order._id || order.id).slice(-6).toUpperCase()}</td>
+                                    <td className="p-4 text-gray-600 dark:text-gray-300">{order.shippingAddress?.name || order.user}</td>
+                                    <td className="p-4 text-gray-600 dark:text-gray-300">{order.shippingAddress?.mobile || 'N/A'}</td>
                                     <td className="p-4 text-gray-500 dark:text-gray-400 text-sm max-w-xs">
-                                        {editingOrder === order.id ? (
+                                        {editingOrder === (order._id || order.id) ? (
                                             <input
                                                 type="text"
                                                 value={editAddress}
@@ -1193,33 +1207,40 @@ const OrderManagement = () => {
                                                 className="w-full px-2 py-1 border rounded"
                                             />
                                         ) : (
-                                            <span className="truncate block">{order.address}</span>
+                                            <span className="truncate block" title={`${order.shippingAddress?.street}, ${order.shippingAddress?.city}`}>
+                                                {order.shippingAddress ? `${order.shippingAddress.street}, ${order.shippingAddress.city}` : 'N/A'}
+                                            </span>
                                         )}
                                     </td>
                                     <td className="p-4 text-gray-500 dark:text-gray-400">{order.date}</td>
-                                    <td className="p-4 font-medium text-gray-900 dark:text-white">${order.total.toFixed(2)}</td>
+                                    <td className="p-4 font-medium text-gray-900 dark:text-white">₹{order.total.toFixed(0)}</td>
                                     <td className="p-4">
                                         <select
                                             value={order.status}
-                                            onChange={(e) => updateStatus(order.id, e.target.value)}
+                                            onChange={(e) => updateStatus(order._id || order.id, e.target.value)}
                                             className="text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
                                         >
-                                            <option>{t('Pending')}</option>
+                                            <option>{t('Processing')}</option>
                                             <option>{t('Shipped')}</option>
                                             <option>{t('Delivered')}</option>
                                             <option>{t('Cancelled')}</option>
                                         </select>
                                     </td>
                                     <td className="p-4">
-                                        {editingOrder === order.id ? (
+                                        {editingOrder === (order._id || order.id) ? (
                                             <div className="flex gap-2">
-                                                <button onClick={() => saveOrder(order.id)} className="text-green-600 hover:text-green-700"><CheckCircle size={18} /></button>
+                                                <button onClick={() => saveOrder(order._id || order.id)} className="text-green-600 hover:text-green-700"><CheckCircle size={18} /></button>
                                                 <button onClick={() => setEditingOrder(null)} className="text-red-600 hover:text-red-700"><XCircle size={18} /></button>
                                             </div>
                                         ) : (
-                                            <button onClick={() => handleEditOrder(order)} className="text-blue-600 hover:text-blue-700">
-                                                <Edit2 size={18} />
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <button onClick={() => handleEditOrder(order)} className="text-blue-600 hover:text-blue-700">
+                                                    <Edit2 size={18} />
+                                                </button>
+                                                <button onClick={() => handleDeleteOrder(order._id || order.id)} className="text-red-600 hover:text-red-700">
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
                                         )}
                                     </td>
                                 </tr>
@@ -1344,12 +1365,12 @@ const AdsManagement = () => {
             {/* Ads List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {ads.map(ad => (
-                    <div key={ad.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden group relative">
+                    <div key={ad._id || ad.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden group relative">
                         <div className="aspect-video relative">
                             <img src={ad.image} alt={ad.title} className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <button
-                                    onClick={() => deleteAd(ad.id)}
+                                    onClick={() => deleteAd(ad._id || ad.id)}
                                     className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
                                 >
                                     <Trash2 size={20} />

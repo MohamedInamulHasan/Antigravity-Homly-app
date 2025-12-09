@@ -6,11 +6,12 @@ import { useLanguage } from '../context/LanguageContext';
 const ProductCard = ({ product }) => {
     const { addToCart, cartItems, updateQuantity } = useCart();
     const { t } = useLanguage();
-    const cartItem = cartItems.find(item => item.id === product.id);
+    const productId = product._id || product.id;
+    const cartItem = cartItems.find(item => item.id === productId);
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full border border-gray-100 dark:border-gray-700">
-            <Link to={`/product/${product.id}`} className="flex-1 group block">
+            <Link to={`/product/${productId}`} className="flex-1 group block">
                 <div className="relative pb-[100%] overflow-hidden">
                     <img
                         src={product.image}
@@ -29,7 +30,7 @@ const ProductCard = ({ product }) => {
                     {cartItem ? (
                         <div className="flex items-center justify-between w-full gap-2" onClick={(e) => e.stopPropagation()}>
                             <button
-                                onClick={() => updateQuantity(product.id, cartItem.quantity - 1)}
+                                onClick={() => updateQuantity(productId, cartItem.quantity - 1)}
                                 className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white hover:bg-blue-700 focus:outline-none rounded-full transition-colors shadow-sm"
                                 aria-label="Decrease quantity"
                             >
@@ -37,7 +38,7 @@ const ProductCard = ({ product }) => {
                             </button>
                             <span className="font-bold text-gray-900 dark:text-white text-lg">{cartItem.quantity}</span>
                             <button
-                                onClick={() => updateQuantity(product.id, cartItem.quantity + 1)}
+                                onClick={() => updateQuantity(productId, cartItem.quantity + 1)}
                                 className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white hover:bg-blue-700 focus:outline-none rounded-full transition-colors shadow-sm"
                                 aria-label="Increase quantity"
                             >

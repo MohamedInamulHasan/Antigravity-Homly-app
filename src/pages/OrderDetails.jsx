@@ -2,14 +2,19 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, CreditCard, RotateCcw } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const OrderDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { t } = useLanguage();
-    const { orders } = useData();
+    const { orders, loading } = useData();
 
-    const order = orders.find(o => String(o.id) === id);
+    const order = orders.find(o => (o._id || o.id) === id);
+
+    if (loading.orders) {
+        return <LoadingSpinner />;
+    }
 
     if (!order) {
         return (
@@ -63,7 +68,7 @@ const OrderDetails = () => {
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{t('Order Details')}</h1>
-                            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 whitespace-nowrap">{t('Order')} #{order.id} • {order.date}</p>
+                            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 whitespace-nowrap">{t('Order')} #{String(order._id || order.id).slice(-6).toUpperCase()} • {order.date}</p>
                         </div>
                         <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(order.status)}`}>
                             {getStatusIcon(order.status)}

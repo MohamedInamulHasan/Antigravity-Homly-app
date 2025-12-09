@@ -16,7 +16,7 @@ const newsSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ['Agriculture', 'Market', 'Technology', 'Health', 'General'],
+        enum: ['Agriculture', 'Market', 'Technology', 'Health', 'General', 'Offer', 'News', 'Deal'],
         default: 'General'
     },
     author: {

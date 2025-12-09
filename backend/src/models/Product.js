@@ -50,6 +50,11 @@ const productSchema = new mongoose.Schema({
     timestamps: true
 });
 
+// Add indexes for performance and to avoid sort memory limit errors
+productSchema.index({ createdAt: -1 });
+productSchema.index({ storeId: 1 });
+productSchema.index({ category: 1 });
+
 const Product = mongoose.model('Product', productSchema);
 
 export default Product;

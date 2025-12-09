@@ -220,7 +220,13 @@ const Checkout = () => {
                                 </div>
                             </div>
 
-
+                            <button
+                                onClick={handleSubmit}
+                                className="hidden md:flex w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg items-center justify-center gap-2 transition-all transform hover:-translate-y-1"
+                            >
+                                <ShoppingBag size={22} />
+                                {t('Review Order')}
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -11,19 +11,7 @@ export const useData = () => {
 
 export const DataProvider = ({ children }) => {
     // Products State
-    const [products, setProducts] = useState(() => {
-        try {
-            const saved = localStorage.getItem('products');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed)) return parsed;
-            }
-            return initialProducts;
-        } catch (e) {
-            console.error("Failed to parse products from local storage", e);
-            return initialProducts;
-        }
-    });
+    const [products, setProducts] = useState(initialProducts);
 
     // Stores State
     const [stores, setStores] = useState(() => {
@@ -252,7 +240,7 @@ export const DataProvider = ({ children }) => {
                 const response = await apiService.getProducts();
                 if (response.success && response.data) {
                     setProducts(response.data);
-                    localStorage.setItem('products', JSON.stringify(response.data));
+                    // localStorage.setItem('products', JSON.stringify(response.data)); // Disabled due to size limit
                 }
             } catch (err) {
                 console.error('Failed to fetch products:', err);
@@ -310,12 +298,58 @@ export const DataProvider = ({ children }) => {
         fetchNews();
     }, []);
 
+    useEffect(() => {
+        const fetchOrders = async () => {
+            setLoading(prev => ({ ...prev, orders: true }));
+            setError(prev => ({ ...prev, orders: null }));
+            try {
+                const response = await apiService.getOrders();
+                if (response.success && response.data) {
+                    setOrders(response.data);
+                    localStorage.setItem('orders', JSON.stringify(response.data));
+                }
+            } catch (err) {
+                console.error('Failed to fetch orders:', err);
+                setError(prev => ({ ...prev, orders: err.message }));
+                // Keep using localStorage data as fallback
+            } finally {
+                setLoading(prev => ({ ...prev, orders: false }));
+            }
+        };
+
+        fetchOrders();
+    }, []);
+
+    useEffect(() => {
+        const fetchAds = async () => {
+            setLoading(prev => ({ ...prev, ads: true }));
+            setError(prev => ({ ...prev, ads: null }));
+            try {
+                const response = await apiService.getAds();
+                if (response.success && response.data) {
+                    setAds(response.data);
+                    localStorage.setItem('ads', JSON.stringify(response.data));
+                }
+            } catch (err) {
+                console.error('Failed to fetch ads:', err);
+                setError(prev => ({ ...prev, ads: err.message }));
+                // Keep using localStorage data as fallback
+            } finally {
+                setLoading(prev => ({ ...prev, ads: false }));
+            }
+        };
+
+        fetchAds();
+    }, []);
+
     // Sync with localStorage when data changes
+    /* 
     useEffect(() => {
         if (products.length > 0) {
             localStorage.setItem('products', JSON.stringify(products));
         }
     }, [products]);
+    */
 
     useEffect(() => {
         if (stores.length > 0) {
@@ -450,12 +484,27 @@ export const DataProvider = ({ children }) => {
         }
     };
 
-    const addAd = (ad) => {
-        setAds(prev => [...prev, { ...ad, id: Date.now() }]);
+    const addAd = async (ad) => {
+        try {
+            const response = await apiService.createAd(ad);
+            if (response.success && response.data) {
+                setAds(prev => [response.data, ...prev]);
+                return response.data;
+            }
+        } catch (err) {
+            console.error('Failed to add ad:', err);
+            throw err;
+        }
     };
 
-    const deleteAd = (id) => {
-        setAds(prev => prev.filter(ad => ad.id !== id));
+    const deleteAd = async (id) => {
+        try {
+            await apiService.deleteAd(id);
+            setAds(prev => prev.filter(ad => (ad._id || ad.id) !== id));
+        } catch (err) {
+            console.error('Failed to delete ad:', err);
+            throw err;
+        }
     };
 
     const deleteStore = async (id) => {

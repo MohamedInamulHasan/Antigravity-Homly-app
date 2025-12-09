@@ -82,7 +82,7 @@ const News = () => {
                                     {t(item, 'title')}
                                 </h2>
                                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                                    {t(item, 'description')}
+                                    {item.content ? t(item, 'content') : t(item, 'description')}
                                 </p>
                             </div>
                         </div>

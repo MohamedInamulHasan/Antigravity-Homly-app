@@ -23,7 +23,7 @@ const Orders = () => {
                         activeTab === 'Cancelled' ? order.status === 'Cancelled' : true;
 
         const matchesSearch =
-            String(order.id).toLowerCase().includes(searchQuery.toLowerCase()) ||
+            String(order._id || order.id).toLowerCase().includes(searchQuery.toLowerCase()) ||
             order.items?.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
         return matchesTab && matchesSearch;
@@ -91,8 +91,8 @@ const Orders = () => {
                     {filteredOrders.length > 0 ? (
                         filteredOrders.map(order => (
                             <div
-                                key={order.id}
-                                onClick={() => navigate(`/orders/${order.id}`)}
+                                key={order._id || order.id}
+                                onClick={() => navigate(`/orders/${order._id || order.id}`)}
                                 className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-md transition-all cursor-pointer group"
                             >
                                 <div className="p-6">
@@ -102,7 +102,7 @@ const Orders = () => {
                                                 <Package size={20} />
                                             </div>
                                             <div>
-                                                <p className="text-sm md:text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap">#{order.id}</p>
+                                                <p className="text-sm md:text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap">#{String(order._id || order.id).slice(-6).toUpperCase()}</p>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">{order.date}</p>
                                             </div>
                                         </div>
@@ -111,16 +111,18 @@ const Orders = () => {
                                                 {getStatusIcon(order.status)}
                                                 {t(order.status)}
                                             </div>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setDeleteConfirmation({ isOpen: true, orderId: order.id });
-                                                }}
-                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                                title={t("Delete Order")}
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
+                                            {!['Shipped', 'Delivered'].includes(order.status) && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setDeleteConfirmation({ isOpen: true, orderId: order._id || order.id });
+                                                    }}
+                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    title={t("Delete Order")}
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 

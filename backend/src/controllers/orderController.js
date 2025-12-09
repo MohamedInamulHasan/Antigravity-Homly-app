@@ -47,7 +47,11 @@ export const createOrder = async (req, res, next) => {
 // @access  Private
 export const getOrders = async (req, res, next) => {
     try {
-        const orders = await Order.find({ user: req.user._id })
+        // For admin purposes, return all orders
+        // If user is authenticated, filter by user, otherwise return all
+        const query = req.user ? { user: req.user._id } : {};
+
+        const orders = await Order.find(query)
             .populate('items.product', 'title image')
             .sort({ createdAt: -1 });
 

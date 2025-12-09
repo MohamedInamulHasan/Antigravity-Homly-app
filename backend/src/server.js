@@ -10,6 +10,7 @@ import userRoutes from './routes/users.js';
 import orderRoutes from './routes/orders.js';
 import storeRoutes from './routes/stores.js';
 import newsRoutes from './routes/news.js';
+import adRoutes from './routes/ads.js';
 
 // Load environment variables
 dotenv.config();
@@ -22,7 +23,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: [process.env.CLIENT_URL, 'http://localhost:5173', 'http://localhost:5174'].filter(Boolean),
     credentials: true
 }));
 app.use(express.json({ limit: '50mb' })); // Increased limit for Base64 images
@@ -48,6 +49,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/stores', storeRoutes);
 app.use('/api/news', newsRoutes);
+app.use('/api/ads', adRoutes);
 
 // Error handler middleware (must be last)
 app.use(errorHandler);

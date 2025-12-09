@@ -52,7 +52,8 @@ const Home = () => {
     ];
 
     useEffect(() => {
-        let filtered = [...allProducts];
+        // Filter out products that belong to a specific store for the main home page
+        let filtered = allProducts.filter(p => !p.storeId);
 
         if (categoryFilter && categoryFilter !== 'All') {
             filtered = filtered.filter(p => p.category === categoryFilter);

@@ -42,7 +42,7 @@ const Shop = () => {
                 {filteredStores.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredStores.map((store) => (
-                            <div key={store.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 group">
+                            <div key={store._id || store.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 group">
                                 <div className="relative h-48 overflow-hidden">
                                     <img
                                         src={store.image}
@@ -78,7 +78,7 @@ const Shop = () => {
                                     </div>
 
                                     <Link
-                                        to={`/store/${store.id}`}
+                                        to={`/store/${store._id || store.id}`}
                                         className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-md hover:shadow-lg"
                                     >
                                         {t('Visit Store')}

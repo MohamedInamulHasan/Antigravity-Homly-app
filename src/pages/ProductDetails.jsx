@@ -23,7 +23,8 @@ const ProductDetails = () => {
         }
     }, [id, products]);
 
-    const cartItem = product ? cartItems.find(item => item.id === (product._id || product.id)) : null;
+    const productId = product ? (product._id || product.id) : null;
+    const cartItem = product ? cartItems.find(item => item.id === productId) : null;
     const quantity = cartItem ? cartItem.quantity : 0;
 
     const handleCheckout = () => {
@@ -174,7 +175,7 @@ const ProductDetails = () => {
                                             <button
                                                 onClick={() => {
                                                     if (cartItem) {
-                                                        updateQuantity((product._id || product.id), Math.max(0, quantity - 1));
+                                                        updateQuantity(productId, Math.max(0, quantity - 1));
                                                     }
                                                 }}
                                                 className={`w-10 h-10 flex items-center justify-center text-gray-600 dark:text-gray-400 transition-colors ${quantity <= 0 ? 'opacity-50 cursor-not-allowed' : 'hover:text-blue-600 dark:hover:text-blue-400'}`}
@@ -186,7 +187,7 @@ const ProductDetails = () => {
                                             <button
                                                 onClick={() => {
                                                     if (cartItem) {
-                                                        updateQuantity((product._id || product.id), quantity + 1);
+                                                        updateQuantity(productId, quantity + 1);
                                                     } else {
                                                         addToCart(product);
                                                     }
@@ -215,7 +216,7 @@ const ProductDetails = () => {
                                         {quantity > 0 ? (
                                             <>
                                                 <ShoppingBag size={22} />
-                                                {t('Proceed to Checkout')}
+                                                {t('Add to Cart')}
                                             </>
                                         ) : (
                                             <>
@@ -246,7 +247,7 @@ const ProductDetails = () => {
                         {quantity > 0 ? (
                             <>
                                 <ShoppingBag size={20} />
-                                {t('Proceed to Checkout')}
+                                {t('Add to Cart')}
                             </>
                         ) : (
                             <>

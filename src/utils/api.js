@@ -3,7 +3,7 @@ import axios from 'axios';
 // Create axios instance with base configuration
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
-    timeout: 10000,
+    timeout: 60000, // Increased to 60s to handle large image payloads
     headers: {
         'Content-Type': 'application/json',
     },
@@ -74,6 +74,13 @@ export const apiService = {
     login: (data) => api.post('/users/login', data),
     getProfile: () => api.get('/users/profile'),
     updateProfile: (data) => api.put('/users/profile', data),
+
+    // Ads
+    getAds: () => api.get('/ads'),
+    getAd: (id) => api.get(`/ads/${id}`),
+    createAd: (data) => api.post('/ads', data),
+    updateAd: (id, data) => api.put(`/ads/${id}`, data),
+    deleteAd: (id) => api.delete(`/ads/${id}`),
 };
 
 export default api;
