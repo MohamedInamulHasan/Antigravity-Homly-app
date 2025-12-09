@@ -13,11 +13,30 @@ export const CartProvider = ({ children }) => {
     });
 
     useEffect(() => {
-        localStorage.setItem('cart', JSON.stringify(cartItems));
+        try {
+            localStorage.setItem('cart', JSON.stringify(cartItems));
+        } catch (error) {
+            console.error("Failed to save cart to localStorage:", error);
+            // If quota exceeded, we could try to clear old items or just warn
+            if (error.name === 'QuotaExceededError') {
+                console.warn("LocalStorage quota exceeded. Cart changes may not be saved.");
+            }
+        }
     }, [cartItems]);
 
     const addToCart = (product) => {
         const productId = product._id || product.id;
+
+        // Create a lean object to save space
+        const productToSave = {
+            id: productId,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            storeId: product.storeId, // Keep store reference if needed
+            quantity: 1
+        };
+
         setCartItems((prevItems) => {
             const existingItem = prevItems.find((item) => item.id === productId);
             if (existingItem) {
@@ -25,7 +44,7 @@ export const CartProvider = ({ children }) => {
                     item.id === productId ? { ...item, quantity: item.quantity + 1 } : item
                 );
             }
-            return [...prevItems, { ...product, id: productId, quantity: 1 }];
+            return [...prevItems, productToSave];
         });
     };
 
