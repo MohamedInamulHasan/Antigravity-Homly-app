@@ -298,25 +298,25 @@ export const DataProvider = ({ children }) => {
         fetchNews();
     }, []);
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-            setLoading(prev => ({ ...prev, orders: true }));
-            setError(prev => ({ ...prev, orders: null }));
-            try {
-                const response = await apiService.getOrders();
-                if (response.success && response.data) {
-                    setOrders(response.data);
-                    localStorage.setItem('orders', JSON.stringify(response.data));
-                }
-            } catch (err) {
-                console.error('Failed to fetch orders:', err);
-                setError(prev => ({ ...prev, orders: err.message }));
-                // Keep using localStorage data as fallback
-            } finally {
-                setLoading(prev => ({ ...prev, orders: false }));
+    const fetchOrders = async () => {
+        setLoading(prev => ({ ...prev, orders: true }));
+        setError(prev => ({ ...prev, orders: null }));
+        try {
+            const response = await apiService.getOrders();
+            if (response.success && response.data) {
+                setOrders(response.data);
+                localStorage.setItem('orders', JSON.stringify(response.data));
             }
-        };
+        } catch (err) {
+            console.error('Failed to fetch orders:', err);
+            setError(prev => ({ ...prev, orders: err.message }));
+            // Keep using localStorage data as fallback
+        } finally {
+            setLoading(prev => ({ ...prev, orders: false }));
+        }
+    };
 
+    useEffect(() => {
         fetchOrders();
     }, []);
 
@@ -576,6 +576,7 @@ export const DataProvider = ({ children }) => {
         deleteAd,
         deleteOrder,
         cancelOrder,
+        refreshOrders: fetchOrders,
     };
 
     return (

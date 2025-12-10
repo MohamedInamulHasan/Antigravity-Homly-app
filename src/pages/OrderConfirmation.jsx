@@ -72,8 +72,9 @@ const OrderConfirmation = () => {
             setShowSuccessModal(true);
         } catch (error) {
             console.error("Failed to create order:", error);
-            alert("Failed to place order. Please try again.");
-            setIsSubmitting(false); // Only reset on error, success modal handles navigation
+            const errorMessage = error.response?.data?.message || error.message || t('Failed to place order. Please try again.');
+            alert(`${t('Error')}: ${errorMessage}`);
+            setIsSubmitting(false);
         }
     };
 
@@ -181,30 +182,31 @@ const OrderConfirmation = () => {
 
             {/* Confirmation Modal (Are you sure?) */}
             {showConfirmModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md transition-opacity duration-300">
+                    <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-sm w-full p-8 transform transition-all scale-100 animate-bounce-subtle border border-gray-100 dark:border-gray-700">
                         <div className="text-center">
-                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900 mb-4">
-                                <ShoppingBag className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                            <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-blue-50 dark:bg-blue-900/40 mb-6 shadow-inner relative group">
+                                <div className="absolute inset-0 rounded-full bg-blue-400 opacity-20 animate-ping group-hover:animate-none"></div>
+                                <ShoppingBag className="h-10 w-10 text-blue-600 dark:text-blue-400 relative z-10" />
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                                {t('Place Order?')}
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                                {t('Ready to Wrap Up?')}
                             </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                                {t('Are you sure you want to confirm this order?')}
+                            <p className="text-base text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
+                                {t('You are just one step away from confirming your order. Do you want to proceed?')}
                             </p>
-                            <div className="flex gap-3">
+                            <div className="flex gap-4">
                                 <button
                                     onClick={() => setShowConfirmModal(false)}
                                     disabled={isSubmitting}
-                                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
+                                    className="flex-1 px-4 py-3.5 text-sm font-bold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 transition-colors"
                                 >
                                     {t('Cancel')}
                                 </button>
                                 <button
                                     onClick={confirmOrderAction}
                                     disabled={isSubmitting}
-                                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="flex-1 px-4 py-3.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl shadow-lg shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-2 transform active:scale-95 transition-all"
                                 >
                                     {isSubmitting ? (
                                         <>
@@ -212,7 +214,7 @@ const OrderConfirmation = () => {
                                             {t('Processing')}
                                         </>
                                     ) : (
-                                        t('Confirm')
+                                        t('Confirm Order')
                                     )}
                                 </button>
                             </div>

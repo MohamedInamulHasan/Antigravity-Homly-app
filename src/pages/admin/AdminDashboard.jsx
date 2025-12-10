@@ -23,7 +23,8 @@ import {
     Save,
 
     Trash2,
-    Image as ImageIcon
+    Image as ImageIcon,
+    RefreshCw
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -1159,10 +1160,25 @@ const NewsManagement = () => {
 };
 
 const OrderManagement = () => {
-    const { orders, updateOrder, deleteOrder } = useData();
+    const { orders, updateOrder, deleteOrder, refreshOrders } = useData();
     const { t } = useLanguage();
     const [editingOrder, setEditingOrder] = useState(null);
     const [editAddress, setEditAddress] = useState('');
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Real-time updates: Poll every 10 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            refreshOrders();
+        }, 10000);
+        return () => clearInterval(interval);
+    }, [refreshOrders]);
+
+    const handleManualRefresh = async () => {
+        setIsRefreshing(true);
+        await refreshOrders();
+        setTimeout(() => setIsRefreshing(false), 1000);
+    };
 
     const updateStatus = (id, newStatus) => {
         const order = orders.find(o => o.id === id);
@@ -1198,7 +1214,16 @@ const OrderManagement = () => {
 
     return (
         <div className="max-w-6xl">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('Manage Orders')}</h2>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('Manage Orders')}</h2>
+                <button
+                    onClick={handleManualRefresh}
+                    className={`p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-blue-600 dark:text-blue-400 ${isRefreshing ? 'animate-spin' : ''}`}
+                    title={t('Refresh Orders')}
+                >
+                    <RefreshCw size={24} />
+                </button>
+            </div>
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">

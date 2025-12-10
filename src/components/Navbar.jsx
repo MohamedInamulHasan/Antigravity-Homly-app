@@ -109,19 +109,12 @@ const Navbar = () => {
                                 )}
                             </Link>
                         )}
-                        {isAdmin ? (
+                        {isAdmin && (
                             <button
                                 onClick={() => setIsOpen(!isOpen)}
                                 className="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                             >
                                 {isOpen ? <X size={24} /> : <LayoutDashboard size={24} />}
-                            </button>
-                        ) : (
-                            <button
-                                onClick={() => setIsOpen(!isOpen)}
-                                className="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                            >
-                                {isOpen ? <X size={24} /> : <Menu size={24} />}
                             </button>
                         )}
                     </div>
