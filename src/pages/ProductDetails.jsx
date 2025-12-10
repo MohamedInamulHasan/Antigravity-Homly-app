@@ -146,10 +146,6 @@ const ProductDetails = () => {
                                     <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider rounded-full">
                                         {t(product, 'category')}
                                     </span>
-                                    <div className="flex items-center text-yellow-400 text-sm font-bold">
-                                        <Star size={16} className="fill-current" />
-                                        <span className="ml-1 text-gray-600 dark:text-gray-400">4.8 (120 reviews)</span>
-                                    </div>
                                 </div>
 
                                 <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
@@ -158,7 +154,6 @@ const ProductDetails = () => {
 
                                 <div className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8 flex items-baseline gap-2">
                                     ₹{Number(product.price).toFixed(0)}
-                                    <span className="text-lg text-gray-500 dark:text-gray-400 font-normal">/ unit</span>
                                 </div>
 
                                 <div className="prose prose-lg dark:prose-invert max-w-none mb-10">

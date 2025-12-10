@@ -614,6 +614,12 @@ const StoreManagement = () => {
 
     const handleProductSubmit = async (e) => {
         e.preventDefault();
+
+        if (!selectedStore) {
+            alert(t('No store selected. Please go back and select a store.'));
+            return;
+        }
+
         const productData = {
             ...productForm,
             price: parseFloat(productForm.price),
@@ -631,8 +637,9 @@ const StoreManagement = () => {
             }
             setView('storeProducts');
         } catch (error) {
-            alert(t('Failed to save product. Please try again.'));
             console.error('Error saving product:', error);
+            const errorMessage = error.response?.data?.message || error.message || t('Failed to save product. Please try again.');
+            alert(`${t('Error')}: ${errorMessage}`);
         }
     };
 

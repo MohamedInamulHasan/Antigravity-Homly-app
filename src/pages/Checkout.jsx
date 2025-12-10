@@ -45,6 +45,7 @@ const Checkout = () => {
 
         // Navigate to order confirmation with form data and cart details
         // We map the fields to match what OrderConfirmation expects
+        const deliveryCharge = 20;
         navigate('/order-confirmation', {
             state: {
                 formData: {
@@ -53,7 +54,8 @@ const Checkout = () => {
                     pincode: formData.zip
                 },
                 cartItems,
-                cartTotal
+                cartTotal,
+                deliveryCharge
             }
         });
     };
@@ -62,6 +64,9 @@ const Checkout = () => {
         navigate('/cart');
         return null;
     }
+
+    const deliveryCharge = 20;
+    const finalTotal = cartTotal + deliveryCharge;
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 pb-24 transition-colors duration-200">
@@ -86,7 +91,7 @@ const Checkout = () => {
                         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                                 <MapPin className="text-blue-600 dark:text-blue-400" size={24} />
-                                {t('Delivery Charge')}
+                                {t('Shipping Details')}
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="md:col-span-2">
@@ -212,11 +217,11 @@ const Checkout = () => {
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-gray-600 dark:text-gray-400">{t('Delivery Charge')}</span>
-                                    <span className="font-medium text-green-600 dark:text-green-400">{t('Free')}</span>
+                                    <span className="font-medium text-gray-900 dark:text-white">₹20</span>
                                 </div>
                                 <div className="flex items-center justify-between text-base font-bold pt-2 border-t border-gray-200 dark:border-gray-700">
                                     <span className="text-gray-900 dark:text-white">{t('Total')}</span>
-                                    <span className="text-blue-600 dark:text-blue-400">₹{cartTotal.toFixed(0)}</span>
+                                    <span className="text-blue-600 dark:text-blue-400">₹{finalTotal.toFixed(0)}</span>
                                 </div>
                             </div>
 
@@ -237,7 +242,7 @@ const Checkout = () => {
                 <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
                     <div className="flex flex-col">
                         <span className="text-xs text-gray-500 dark:text-gray-400">{t('Total')}</span>
-                        <span className="text-lg font-bold text-blue-600 dark:text-blue-400">₹{cartTotal.toFixed(0)}</span>
+                        <span className="text-lg font-bold text-blue-600 dark:text-blue-400">₹{finalTotal.toFixed(0)}</span>
                     </div>
                     <button
                         onClick={handleSubmit}

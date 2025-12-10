@@ -22,12 +22,19 @@ const OrderConfirmation = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [createdOrderId, setCreatedOrderId] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleConfirmOrder = () => {
         setShowConfirmModal(true);
     };
 
     const confirmOrderAction = async () => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
+
+        // Use provided delivery charge or default to 20
+        const finalDeliveryCharge = deliveryCharge !== undefined ? deliveryCharge : 20;
+
         // Create order object matching backend schema
         const newOrder = {
             items: cartItems.map(item => ({
@@ -37,9 +44,9 @@ const OrderConfirmation = () => {
                 price: item.price,
                 image: item.image
             })),
-            total: finalTotal,
+            total: finalTotal || ((cartTotal || 0) + finalDeliveryCharge),
             subtotal: cartTotal,
-            shipping: deliveryCharge,
+            shipping: finalDeliveryCharge,
             tax: 0,
             discount: 0,
             shippingAddress: {
@@ -66,6 +73,7 @@ const OrderConfirmation = () => {
         } catch (error) {
             console.error("Failed to create order:", error);
             alert("Failed to place order. Please try again.");
+            setIsSubmitting(false); // Only reset on error, success modal handles navigation
         }
     };
 
@@ -125,7 +133,7 @@ const OrderConfirmation = () => {
                             </div>
                             <div className="flex justify-between text-gray-600 dark:text-gray-400">
                                 <span>{t('Delivery Charge')}</span>
-                                <span>₹{(deliveryCharge || 0).toFixed(0)}</span>
+                                <span>₹{(deliveryCharge || 20).toFixed(0)}</span>
                             </div>
                             <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
                                 <span className="text-lg font-bold text-gray-900 dark:text-white">{t('Total')}</span>
@@ -188,15 +196,24 @@ const OrderConfirmation = () => {
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setShowConfirmModal(false)}
-                                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                    disabled={isSubmitting}
+                                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
                                 >
                                     {t('Cancel')}
                                 </button>
                                 <button
                                     onClick={confirmOrderAction}
-                                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                    disabled={isSubmitting}
+                                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
-                                    {t('Confirm')}
+                                    {isSubmitting ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            {t('Processing')}
+                                        </>
+                                    ) : (
+                                        t('Confirm')
+                                    )}
                                 </button>
                             </div>
                         </div>

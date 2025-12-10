@@ -60,10 +60,6 @@ const Shop = () => {
                                                 <span className="line-clamp-1">{t(store, 'location')}</span>
                                             </div>
                                         </div>
-                                        <div className="flex items-center bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-lg">
-                                            <Star size={14} className="text-green-600 dark:text-green-400 mr-1 fill-current" />
-                                            <span className="text-sm font-bold text-green-700 dark:text-green-400">{store.rating}</span>
-                                        </div>
                                     </div>
 
                                     <div className="space-y-2 mb-6">
