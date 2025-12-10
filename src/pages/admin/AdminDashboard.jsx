@@ -532,10 +532,15 @@ const StoreManagement = () => {
         setView('form');
     };
 
-    const handleDeleteStore = (id) => {
+    const handleDeleteStore = async (id) => {
         if (window.confirm(t('Are you sure you want to delete this store?'))) {
-            deleteStore(id);
-            alert(t('Store deleted successfully!'));
+            try {
+                await deleteStore(id);
+                alert(t('Store deleted successfully!'));
+            } catch (error) {
+                console.error('Error deleting store:', error);
+                alert(t('Failed to delete store. Please try again.'));
+            }
         }
     };
 
@@ -595,10 +600,15 @@ const StoreManagement = () => {
         setView('addProductToStore'); // Reusing the add form for editing
     };
 
-    const handleDeleteProduct = (productId) => {
+    const handleDeleteProduct = async (productId) => {
         if (window.confirm(t('Are you sure you want to delete this product?'))) {
-            deleteProduct(productId);
-            alert(t('Product deleted successfully!'));
+            try {
+                await deleteProduct(productId);
+                alert(t('Product deleted successfully!'));
+            } catch (error) {
+                console.error('Error deleting product:', error);
+                alert(t('Failed to delete product. Please try again.'));
+            }
         }
     };
 
@@ -975,10 +985,15 @@ const NewsManagement = () => {
         setView('form');
     };
 
-    const handleDeleteNews = (id) => {
+    const handleDeleteNews = async (id) => {
         if (window.confirm(t('Are you sure you want to delete this post?'))) {
-            deleteNews(id);
-            alert(t('Post deleted successfully!'));
+            try {
+                await deleteNews(id);
+                alert(t('Post deleted successfully!'));
+            } catch (error) {
+                console.error('Error deleting news:', error);
+                alert(t('Failed to delete post. Please try again.'));
+            }
         }
     };
 
@@ -1317,6 +1332,18 @@ const AdsManagement = () => {
         }
     };
 
+    const handleDeleteAd = async (id) => {
+        if (window.confirm(t('Are you sure you want to delete this ad?'))) {
+            try {
+                await deleteAd(id);
+                alert(t('Ad deleted successfully!'));
+            } catch (error) {
+                console.error('Error deleting ad:', error);
+                alert(t('Failed to delete ad. Please try again.'));
+            }
+        }
+    };
+
     return (
         <div className="max-w-6xl">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('Ads Slider Management')}</h2>
@@ -1370,7 +1397,7 @@ const AdsManagement = () => {
                             <img src={ad.image} alt={ad.title} className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <button
-                                    onClick={() => deleteAd(ad._id || ad.id)}
+                                    onClick={() => handleDeleteAd(ad._id || ad.id)}
                                     className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
                                 >
                                     <Trash2 size={20} />
