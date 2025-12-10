@@ -802,7 +802,7 @@ const StoreManagement = () => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                     {products.filter(p => p.storeId === (selectedStore._id || selectedStore.id)).map(product => (
-                                        <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                        <tr key={product._id || product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                             <td className="p-4">
                                                 <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
                                             </td>
@@ -817,7 +817,7 @@ const StoreManagement = () => {
                                                         <Edit2 size={18} />
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDeleteProduct(product.id)}
+                                                        onClick={() => handleDeleteProduct(product._id || product.id)}
                                                         className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                                     >
                                                         <Trash2 size={18} />
