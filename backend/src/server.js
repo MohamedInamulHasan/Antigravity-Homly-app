@@ -23,7 +23,26 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: [process.env.CLIENT_URL, 'http://localhost:5173', 'http://localhost:5174'].filter(Boolean),
+    origin: (origin, callback) => {
+        const allowedOrigins = [
+            process.env.CLIENT_URL,
+            'http://localhost:5173',
+            'http://localhost:5174'
+        ].filter(Boolean);
+
+        // Allow requests with no origin (like mobile apps sometimes or curl requests)
+        if (!origin) return callback(null, true);
+
+        // Allow allowed origins, any Vercel app, and the backend itself
+        if (allowedOrigins.includes(origin) ||
+            origin.endsWith('.vercel.app') ||
+            origin.endsWith('.onrender.com')) {
+            return callback(null, true);
+        }
+
+        console.log('CORS blocked origin:', origin);
+        return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true
 }));
 app.use(express.json({ limit: '50mb' })); // Increased limit for Base64 images
