@@ -30,7 +30,7 @@ export const CartProvider = ({ children }) => {
         // Create a lean object to save space
         const productToSave = {
             id: productId,
-            name: product.name,
+            title: product.title || product.name,
             price: product.price,
             image: product.image,
             storeId: product.storeId, // Keep store reference if needed

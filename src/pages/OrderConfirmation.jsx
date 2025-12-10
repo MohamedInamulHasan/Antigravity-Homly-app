@@ -39,7 +39,7 @@ const OrderConfirmation = () => {
         const newOrder = {
             items: cartItems.map(item => ({
                 product: item._id || item.id,
-                name: item.title,
+                name: item.title || item.name || 'Product', // Fallback for safety
                 quantity: item.quantity,
                 price: item.price,
                 image: item.image
