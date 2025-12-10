@@ -7,9 +7,10 @@ const orderSchema = new mongoose.Schema({
         required: false // Allow guest checkout
     },
     items: [{
+
         product: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product'
+            type: mongoose.Schema.Types.Mixed, // Allow both ObjectId and numeric IDs (for mock data)
+            // ref: 'Product' // populate will only work for valid ObjectIds
         },
         name: {
             type: String,
