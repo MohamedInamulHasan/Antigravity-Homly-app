@@ -211,7 +211,7 @@ const ProductDetails = () => {
                                         {quantity > 0 ? (
                                             <>
                                                 <ShoppingBag size={22} />
-                                                {t('Add to Cart')}
+                                                {t('Proceed to Checkout')}
                                             </>
                                         ) : (
                                             <>
@@ -242,7 +242,7 @@ const ProductDetails = () => {
                         {quantity > 0 ? (
                             <>
                                 <ShoppingBag size={20} />
-                                {t('Add to Cart')}
+                                {t('Proceed to Checkout')}
                             </>
                         ) : (
                             <>

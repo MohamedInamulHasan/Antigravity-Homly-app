@@ -25,6 +25,11 @@ const Checkout = () => {
         e.preventDefault();
 
         // Validation
+        if (!formData.fullName || !formData.address || !formData.city || !formData.zip) {
+            alert(t('Please fill in all required fields'));
+            return;
+        }
+
         const mobileRegex = /^\d{10}$/;
         const zipRegex = /^\d{6}$/;
 
@@ -35,11 +40,6 @@ const Checkout = () => {
 
         if (!zipRegex.test(formData.zip)) {
             alert(t('Please enter a valid 6-digit ZIP code'));
-            return;
-        }
-
-        if (!formData.fullName || !formData.address || !formData.city || !formData.zip) {
-            alert(t('Please fill in all required fields'));
             return;
         }
 
@@ -84,7 +84,7 @@ const Checkout = () => {
                     {t('Checkout')}
                 </h1>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Checkout Form */}
                     <div className="lg:col-span-2 space-y-8">
                         {/* Shipping Address */}
@@ -202,7 +202,7 @@ const Checkout = () => {
                                             />
                                         </div>
                                         <div className="flex flex-1 flex-col justify-center">
-                                            <h3 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">{t(item, 'title')}</h3>
+                                            <h3 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">{t(item, 'title') || item.title || item.name || t('Product')}</h3>
                                             <p className="text-sm text-gray-500 dark:text-gray-400">{t('Qty')}: {item.quantity}</p>
                                             <p className="text-sm font-medium text-gray-900 dark:text-white">₹{(item.price * item.quantity).toFixed(0)}</p>
                                         </div>
@@ -234,7 +234,7 @@ const Checkout = () => {
                             </button>
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
 
             {/* Sticky Action Footer - Mobile Only */}

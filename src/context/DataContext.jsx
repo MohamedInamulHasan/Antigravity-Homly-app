@@ -572,8 +572,6 @@ export const DataProvider = ({ children }) => {
         addOrder,
         addAd,
         deleteAd,
-        addAd,
-        deleteAd,
         deleteOrder,
         cancelOrder,
         refreshOrders: fetchOrders,

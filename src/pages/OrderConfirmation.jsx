@@ -117,7 +117,7 @@ const OrderConfirmation = () => {
                                                 <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
                                             </div>
                                             <div>
-                                                <p className="font-medium text-gray-900 dark:text-white">{t(item, 'title')}</p>
+                                                <p className="font-medium text-gray-900 dark:text-white">{t(item, 'title') || item.title || item.name || t('Product')}</p>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">{t('Qty')}: {item.quantity}</p>
                                             </div>
                                         </div>

@@ -56,7 +56,7 @@ const Cart = () => {
                                         <div>
                                             <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                                                 <Link to={`/product/${item.id}`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                                                    {t(item, 'title')}
+                                                    {t(item, 'title') || item.title || item.name || t('Product')}
                                                 </Link>
                                             </h3>
                                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-1">{t(item, 'description')}</p>
