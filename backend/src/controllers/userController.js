@@ -142,3 +142,86 @@ export const updateUserProfile = async (req, res, next) => {
         next(error);
     }
 };
+
+// @desc    Get all users
+// @route   GET /api/users
+// @access  Private/Admin
+export const getAllUsers = async (req, res, next) => {
+    try {
+        const users = await User.find({}).select('-password');
+
+        res.status(200).json({
+            success: true,
+            count: users.length,
+            data: users
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Update user by admin
+// @route   PUT /api/users/:id
+// @access  Private/Admin
+export const updateUserByAdmin = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            res.status(404);
+            throw new Error('User not found');
+        }
+
+        user.name = req.body.name || user.name;
+        user.email = req.body.email || user.email;
+        user.mobile = req.body.mobile || user.mobile;
+        user.address = req.body.address || user.address;
+
+        if (req.body.role) {
+            user.role = req.body.role;
+        }
+
+        if (req.body.password) {
+            user.password = req.body.password;
+        }
+
+        const updatedUser = await user.save();
+
+        res.status(200).json({
+            success: true,
+            data: {
+                _id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                mobile: updatedUser.mobile,
+                address: updatedUser.address
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Delete user
+// @route   DELETE /api/users/:id
+// @access  Private/Admin
+export const deleteUser = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            res.status(404);
+            throw new Error('User not found');
+        }
+
+        await user.deleteOne();
+
+        res.status(200).json({
+            success: true,
+            data: {}
+        });
+    } catch (error) {
+        next(error);
+    }
+};

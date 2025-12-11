@@ -64,15 +64,31 @@ const OrderConfirmation = () => {
             }
         };
 
+        console.log('📦 Creating order with data:', newOrder);
+
         try {
             const createdOrder = await addOrder(newOrder);
+            console.log('✅ Order created successfully:', createdOrder);
             clearCart();
             setCreatedOrderId(createdOrder?._id || 'NEW');
             setShowConfirmModal(false);
             setShowSuccessModal(true);
         } catch (error) {
-            console.error("Failed to create order:", error);
-            const errorMessage = error.response?.data?.message || error.message || t('Failed to place order. Please try again.');
+            console.error('❌ Failed to create order:', error);
+
+            let errorMessage = t('Failed to place order. Please try again.');
+
+            // Handle different error types
+            if (error.message && error.message.includes('timeout')) {
+                errorMessage = t('Request timed out. The server might be starting up. Please try again in a moment.');
+            } else if (error.message && error.message.includes('Network Error')) {
+                errorMessage = t('Network error. Please check your internet connection.');
+            } else if (error.data?.message) {
+                errorMessage = error.data.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
             alert(`${t('Error')}: ${errorMessage}`);
             setIsSubmitting(false);
         }

@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin } from 'lucide-react';
+import { ArrowLeft, MapPin, Clock, Phone } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
 import ProductCard from '../components/ProductCard';
@@ -33,10 +33,20 @@ const StoreProducts = () => {
                     <ArrowLeft className="h-4 w-4 mr-1" />
                     Back to Stores
                 </Link>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{t(store, 'name')}</h1>
-                <div className="flex items-center text-gray-600 dark:text-gray-300">
-                    <MapPin className="h-5 w-5 mr-2" />
-                    <span>{t(store, 'location')}</span>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{store.name}</h1>
+                <div className="space-y-2">
+                    <div className="flex items-center text-gray-600 dark:text-gray-300">
+                        <MapPin className="h-5 w-5 mr-2" />
+                        <span>{store.address || 'No address available'}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600 dark:text-gray-300">
+                        <Clock className="h-5 w-5 mr-2" />
+                        <span>{store.timing || '9:00 AM - 9:00 PM'}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600 dark:text-gray-300">
+                        <Phone className="h-5 w-5 mr-2" />
+                        <span>{store.mobile || 'No phone number'}</span>
+                    </div>
                 </div>
             </div>
 

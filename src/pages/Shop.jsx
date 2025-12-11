@@ -19,7 +19,7 @@ const Shop = () => {
 
     const filteredStores = stores.filter(store =>
         store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        store.location.toLowerCase().includes(searchQuery.toLowerCase())
+        (store.address && store.address.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     return (
@@ -57,7 +57,7 @@ const Shop = () => {
                                             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{t(store, 'name')}</h2>
                                             <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-2">
                                                 <MapPin size={16} className="mr-1 flex-shrink-0" />
-                                                <span className="line-clamp-1">{t(store, 'location')}</span>
+                                                <span className="line-clamp-1">{store.address || 'No address'}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -65,7 +65,7 @@ const Shop = () => {
                                     <div className="space-y-2 mb-6">
                                         <div className="flex items-center text-gray-600 dark:text-gray-300 text-sm">
                                             <Clock size={16} className="mr-2 text-blue-500" />
-                                            <span>{t(store, 'hours')}</span>
+                                            <span>{store.timing || '9:00 AM - 9:00 PM'}</span>
                                         </div>
                                         <div className="flex items-center text-gray-600 dark:text-gray-300 text-sm">
                                             <Phone size={16} className="mr-2 text-blue-500" />

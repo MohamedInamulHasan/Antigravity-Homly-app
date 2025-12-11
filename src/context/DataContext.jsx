@@ -44,125 +44,113 @@ export const DataProvider = ({ children }) => {
     });
 
     // Orders State
-    const [orders, setOrders] = useState(() => {
-        try {
-            const saved = localStorage.getItem('orders');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed)) return parsed;
-            }
-            return [
-                {
-                    id: 'ORD-2024-001',
-                    date: 'Nov 20, 2024',
-                    total: 129.99,
-                    status: 'Delivered',
-                    user: 'John Doe',
-                    shippingAddress: {
-                        name: 'John Doe',
-                        street: '123 Main St',
-                        city: 'New York',
-                        state: 'NY',
-                        zip: '10001',
-                        country: 'United States'
-                    },
-                    paymentMethod: {
-                        type: 'Visa',
-                        last4: '4242'
-                    },
-                    items: [
-                        { name: 'Wireless Noise-Canceling Headphones', quantity: 1, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=2070&auto=format&fit=crop' },
-                        { name: 'Smart Fitness Tracker', quantity: 1, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1999&auto=format&fit=crop' }
-                    ],
-                    subtotal: 179.98,
-                    shipping: 0.00,
-                    tax: 14.40,
-                    discount: -64.39
-                },
-                {
-                    id: 'ORD-2024-002',
-                    date: 'Nov 15, 2024',
-                    total: 59.50,
-                    status: 'Shipped',
-                    user: 'Jane Smith',
-                    shippingAddress: {
-                        name: 'Jane Smith',
-                        street: '456 Oak Ave',
-                        city: 'Los Angeles',
-                        state: 'CA',
-                        zip: '90001',
-                        country: 'United States'
-                    },
-                    paymentMethod: {
-                        type: 'Mastercard',
-                        last4: '8888'
-                    },
-                    items: [
-                        { name: 'Classic Leather Watch', quantity: 1, image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=1999&auto=format&fit=crop' }
-                    ],
-                    subtotal: 59.50,
-                    shipping: 5.00,
-                    tax: 4.50,
-                    discount: 0.00
-                },
-                {
-                    id: 'ORD-2024-003',
-                    date: 'Nov 10, 2024',
-                    total: 24.99,
-                    status: 'Processing',
-                    user: 'Mike Johnson',
-                    shippingAddress: {
-                        name: 'Mike Johnson',
-                        street: '789 Pine Ln',
-                        city: 'Chicago',
-                        state: 'IL',
-                        zip: '60601',
-                        country: 'United States'
-                    },
-                    paymentMethod: {
-                        type: 'PayPal',
-                        last4: 'mike@example.com'
-                    },
-                    items: [
-                        { name: 'Soft Throw Blanket', quantity: 2, image: 'https://images.unsplash.com/photo-1580301762395-9c64265e9c5d?q=80&w=2070&auto=format&fit=crop' }
-                    ],
-                    subtotal: 25.00,
-                    shipping: 0.00,
-                    tax: 2.00,
-                    discount: -2.01
-                },
-                {
-                    id: 'ORD-2024-004',
-                    date: 'Oct 25, 2024',
-                    total: 199.00,
-                    status: 'Cancelled',
-                    user: 'Sarah Williams',
-                    shippingAddress: {
-                        name: 'Sarah Williams',
-                        street: '321 Elm St',
-                        city: 'Miami',
-                        state: 'FL',
-                        zip: '33101',
-                        country: 'United States'
-                    },
-                    paymentMethod: {
-                        type: 'Visa',
-                        last4: '1234'
-                    },
-                    items: [
-                        { name: 'Premium Coffee Maker', quantity: 1, image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=2070&auto=format&fit=crop' }
-                    ],
-                    subtotal: 199.00,
-                    shipping: 10.00,
-                    tax: 15.00,
-                    discount: 0.00
-                }
-            ];
-        } catch (e) {
-            console.error("Failed to parse orders from local storage", e);
-            return [];
+    const [orders, setOrders] = useState([
+        {
+            id: 'ORD-2024-001',
+            date: 'Nov 20, 2024',
+            total: 129.99,
+            status: 'Delivered',
+            user: 'John Doe',
+            shippingAddress: {
+                name: 'John Doe',
+                street: '123 Main St',
+                city: 'New York',
+                state: 'NY',
+                zip: '10001',
+                country: 'United States'
+            },
+            paymentMethod: {
+                type: 'Visa',
+                last4: '4242'
+            },
+            items: [
+                { name: 'Wireless Noise-Canceling Headphones', quantity: 1, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=2070&auto=format&fit=crop' },
+                { name: 'Smart Fitness Tracker', quantity: 1, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1999&auto=format&fit=crop' }
+            ],
+            subtotal: 179.98,
+            shipping: 0.00,
+            tax: 14.40,
+            discount: -64.39
+        },
+        {
+            id: 'ORD-2024-002',
+            date: 'Nov 15, 2024',
+            total: 59.50,
+            status: 'Shipped',
+            user: 'Jane Smith',
+            shippingAddress: {
+                name: 'Jane Smith',
+                street: '456 Oak Ave',
+                city: 'Los Angeles',
+                state: 'CA',
+                zip: '90001',
+                country: 'United States'
+            },
+            paymentMethod: {
+                type: 'Mastercard',
+                last4: '8888'
+            },
+            items: [
+                { name: 'Classic Leather Watch', quantity: 1, image: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=1999&auto=format&fit=crop' }
+            ],
+            subtotal: 59.50,
+            shipping: 5.00,
+            tax: 4.50,
+            discount: 0.00
+        },
+        {
+            id: 'ORD-2024-003',
+            date: 'Nov 10, 2024',
+            total: 24.99,
+            status: 'Processing',
+            user: 'Mike Johnson',
+            shippingAddress: {
+                name: 'Mike Johnson',
+                street: '789 Pine Ln',
+                city: 'Chicago',
+                state: 'IL',
+                zip: '60601',
+                country: 'United States'
+            },
+            paymentMethod: {
+                type: 'PayPal',
+                last4: 'mike@example.com'
+            },
+            items: [
+                { name: 'Soft Throw Blanket', quantity: 2, image: 'https://images.unsplash.com/photo-1580301762395-9c64265e9c5d?q=80&w=2070&auto=format&fit=crop' }
+            ],
+            subtotal: 25.00,
+            shipping: 0.00,
+            tax: 2.00,
+            discount: -2.01
+        },
+        {
+            id: 'ORD-2024-004',
+            date: 'Oct 25, 2024',
+            total: 199.00,
+            status: 'Cancelled',
+            user: 'Sarah Williams',
+            shippingAddress: {
+                name: 'Sarah Williams',
+                street: '321 Elm St',
+                city: 'Miami',
+                state: 'FL',
+                zip: '33101',
+                country: 'United States'
+            },
+            paymentMethod: {
+                type: 'Visa',
+                last4: '1234'
+            },
+            items: [
+                { name: 'Premium Coffee Maker', quantity: 1, image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=2070&auto=format&fit=crop' }
+            ],
+            subtotal: 199.00,
+            shipping: 10.00,
+            tax: 15.00,
+            discount: 0.00
         }
-    });
+    ]);
 
     // News State
     const [news, setNews] = useState(() => {
@@ -231,6 +219,12 @@ export const DataProvider = ({ children }) => {
         }
     });
 
+    // Categories State
+    const [categories, setCategories] = useState([]);
+
+    // Users State
+    const [users, setUsers] = useState([]);
+
     // Fetch data from API on mount
     useEffect(() => {
         const fetchProducts = async () => {
@@ -262,7 +256,11 @@ export const DataProvider = ({ children }) => {
                 const response = await apiService.getStores();
                 if (response.success && response.data) {
                     setStores(response.data);
-                    localStorage.setItem('stores', JSON.stringify(response.data));
+                    try {
+                        localStorage.setItem('stores', JSON.stringify(response.data));
+                    } catch (e) {
+                        console.error('Failed to save stores to local storage', e);
+                    }
                 }
             } catch (err) {
                 console.error('Failed to fetch stores:', err);
@@ -284,7 +282,11 @@ export const DataProvider = ({ children }) => {
                 const response = await apiService.getNews();
                 if (response.success && response.data) {
                     setNews(response.data);
-                    localStorage.setItem('news', JSON.stringify(response.data));
+                    try {
+                        localStorage.setItem('news', JSON.stringify(response.data));
+                    } catch (e) {
+                        console.error('Failed to save news to local storage', e);
+                    }
                 }
             } catch (err) {
                 console.error('Failed to fetch news:', err);
@@ -305,7 +307,7 @@ export const DataProvider = ({ children }) => {
             const response = await apiService.getOrders();
             if (response.success && response.data) {
                 setOrders(response.data);
-                localStorage.setItem('orders', JSON.stringify(response.data));
+                // localStorage.setItem('orders', JSON.stringify(response.data)); // Disabled due to QuotaExceededError
             }
         } catch (err) {
             console.error('Failed to fetch orders:', err);
@@ -328,7 +330,11 @@ export const DataProvider = ({ children }) => {
                 const response = await apiService.getAds();
                 if (response.success && response.data) {
                     setAds(response.data);
-                    localStorage.setItem('ads', JSON.stringify(response.data));
+                    try {
+                        localStorage.setItem('ads', JSON.stringify(response.data));
+                    } catch (e) {
+                        console.error('Failed to save ads to local storage', e);
+                    }
                 }
             } catch (err) {
                 console.error('Failed to fetch ads:', err);
@@ -353,20 +359,32 @@ export const DataProvider = ({ children }) => {
 
     useEffect(() => {
         if (stores.length > 0) {
-            localStorage.setItem('stores', JSON.stringify(stores));
+            try {
+                localStorage.setItem('stores', JSON.stringify(stores));
+            } catch (e) {
+                console.error('Failed to save stores to local storage', e);
+            }
         }
     }, [stores]);
 
-    useEffect(() => {
-        localStorage.setItem('orders', JSON.stringify(orders));
-    }, [orders]);
+    // useEffect(() => {
+    //     localStorage.setItem('orders', JSON.stringify(orders));
+    // }, [orders]);
 
     useEffect(() => {
-        localStorage.setItem('news', JSON.stringify(news));
+        try {
+            localStorage.setItem('news', JSON.stringify(news));
+        } catch (e) {
+            console.error('Failed to save news to local storage', e);
+        }
     }, [news]);
 
     useEffect(() => {
-        localStorage.setItem('ads', JSON.stringify(ads));
+        try {
+            localStorage.setItem('ads', JSON.stringify(ads));
+        } catch (e) {
+            console.error('Failed to save ads to local storage', e);
+        }
     }, [ads]);
 
     // Actions
@@ -473,13 +491,15 @@ export const DataProvider = ({ children }) => {
 
     const addOrder = async (order) => {
         try {
+            console.log('🔄 DataContext: Sending order to API...', order);
             const response = await apiService.createOrder(order);
+            console.log('📥 DataContext: Received response:', response);
             if (response.success && response.data) {
                 setOrders(prev => [response.data, ...prev]);
                 return response.data;
             }
         } catch (err) {
-            console.error('Failed to add order:', err);
+            console.error('❌ DataContext: Failed to add order:', err);
             throw err;
         }
     };
@@ -550,12 +570,107 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    // Category Management
+    const fetchCategories = async () => {
+        try {
+            console.log('DataContext: Fetching categories...');
+            const response = await apiService.getCategories();
+            console.log('DataContext: Categories response:', response);
+            if (response.success && response.data) {
+                setCategories(response.data);
+                console.log('DataContext: Categories set successfully, count:', response.data.length);
+            }
+        } catch (err) {
+            console.error('DataContext: Failed to fetch categories - Full error:', err);
+            throw err; // Propagate error to component
+        }
+    };
+
+    const addCategory = async (category) => {
+        try {
+            console.log('DataContext: Adding category:', category);
+            const response = await apiService.createCategory(category);
+            console.log('DataContext: Add category response:', response);
+            if (response.success && response.data) {
+                setCategories(prev => [...prev, response.data]);
+                return response.data;
+            }
+        } catch (err) {
+            console.error('DataContext: Failed to add category - Full error:', err);
+            throw err;
+        }
+    };
+
+    const updateCategory = async (updatedCategory) => {
+        try {
+            const response = await apiService.updateCategory(updatedCategory._id || updatedCategory.id, updatedCategory);
+            if (response.success && response.data) {
+                setCategories(prev => prev.map(c => (c._id || c.id) === (response.data._id || response.data.id) ? response.data : c));
+                return response.data;
+            }
+        } catch (err) {
+            console.error('Failed to update category:', err);
+            throw err;
+        }
+    };
+
+    const deleteCategory = async (id) => {
+        try {
+            await apiService.deleteCategory(id);
+            setCategories(prev => prev.filter(c => (c._id || c.id) !== id));
+        } catch (err) {
+            console.error('Failed to delete category:', err);
+            throw err;
+        }
+    };
+
+    // User Management
+    const fetchUsers = async () => {
+        try {
+            console.log('DataContext: Fetching users...');
+            const response = await apiService.getAllUsers();
+            console.log('DataContext: Users response:', response);
+            if (response.success && response.data) {
+                setUsers(response.data);
+                console.log('DataContext: Users set successfully, count:', response.data.length);
+            }
+        } catch (err) {
+            console.error('DataContext: Failed to fetch users - Full error:', err);
+            throw err; // Propagate error to component
+        }
+    };
+
+    const updateUser = async (updatedUser) => {
+        try {
+            const response = await apiService.updateUser(updatedUser._id || updatedUser.id, updatedUser);
+            if (response.success && response.data) {
+                setUsers(prev => prev.map(u => (u._id || u.id) === (response.data._id || response.data.id) ? response.data : u));
+                return response.data;
+            }
+        } catch (err) {
+            console.error('Failed to update user:', err);
+            throw err;
+        }
+    };
+
+    const deleteUser = async (id) => {
+        try {
+            await apiService.deleteUser(id);
+            setUsers(prev => prev.filter(u => (u._id || u.id) !== id));
+        } catch (err) {
+            console.error('Failed to delete user:', err);
+            throw err;
+        }
+    };
+
     const value = {
         products,
         stores,
         orders,
         news,
         ads,
+        categories,
+        users,
         loading,
         error,
         addProduct,
@@ -567,7 +682,6 @@ export const DataProvider = ({ children }) => {
         addNews,
         updateNews,
         deleteNews,
-
         updateOrder,
         addOrder,
         addAd,
@@ -575,6 +689,13 @@ export const DataProvider = ({ children }) => {
         deleteOrder,
         cancelOrder,
         refreshOrders: fetchOrders,
+        fetchCategories,
+        addCategory,
+        updateCategory,
+        deleteCategory,
+        fetchUsers,
+        updateUser,
+        deleteUser,
     };
 
     return (

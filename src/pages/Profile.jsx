@@ -8,7 +8,7 @@ import AuthContext from '../context/AuthContext';
 const Profile = () => {
     const { theme, toggleTheme } = useTheme();
     const { language, t } = useLanguage();
-    const { logout } = useContext(AuthContext);
+    const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -92,21 +92,23 @@ const Profile = () => {
                     </Link>
                 </div>
 
-                {/* Admin Dashboard (Visible only to Admins) */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-6 transition-colors duration-200">
-                    <Link to="/admin" className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                                <Shield className="text-blue-600 dark:text-blue-400" size={24} />
+                {/* Admin Dashboard (Visible only to specific admin) */}
+                {user && user.email === 'mohamedinamulhasan0@gmail.com' && (
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-6 transition-colors duration-200">
+                        <Link to="/admin" className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                                    <Shield className="text-blue-600 dark:text-blue-400" size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t('Admin Dashboard')}</h2>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('Manage products, stores, and users')}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t('Admin Dashboard')}</h2>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">{t('Manage products, stores, and users')}</p>
-                            </div>
-                        </div>
-                        <ChevronRight className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" size={20} />
-                    </Link>
-                </div>
+                            <ChevronRight className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" size={20} />
+                        </Link>
+                    </div>
+                )}
 
                 {/* Settings */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-200">

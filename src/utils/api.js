@@ -3,7 +3,7 @@ import axios from 'axios';
 // Create axios instance with base configuration
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL || 'https://homly-backend-8616.onrender.com/api',
-    timeout: 60000, // Increased to 60s to handle large image payloads
+    timeout: 120000, // Increased to 120s to handle Render cold starts (free tier can take 50+ seconds to wake up)
     headers: {
         'Content-Type': 'application/json',
     },
@@ -30,7 +30,18 @@ api.interceptors.response.use(
     },
     (error) => {
         const message = error.response?.data?.message || error.message || 'An error occurred';
-        console.error('API Error:', message);
+
+        // Enhanced error logging for debugging
+        console.error('API Error Details:', {
+            message,
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            url: error.config?.url,
+            method: error.config?.method,
+            data: error.response?.data,
+            hasAuthToken: !!error.config?.headers?.Authorization
+        });
+
         return Promise.reject({
             message,
             status: error.response?.status,
@@ -81,6 +92,18 @@ export const apiService = {
     createAd: (data) => api.post('/ads', data),
     updateAd: (id, data) => api.put(`/ads/${id}`, data),
     deleteAd: (id) => api.delete(`/ads/${id}`),
+
+    // Categories
+    getCategories: () => api.get('/categories'),
+    getCategory: (id) => api.get(`/categories/${id}`),
+    createCategory: (data) => api.post('/categories', data),
+    updateCategory: (id, data) => api.put(`/categories/${id}`, data),
+    deleteCategory: (id) => api.delete(`/categories/${id}`),
+
+    // User Management (Admin)
+    getAllUsers: () => api.get('/users'),
+    updateUser: (id, data) => api.put(`/users/${id}`, data),
+    deleteUser: (id) => api.delete(`/users/${id}`),
 };
 
 export default api;

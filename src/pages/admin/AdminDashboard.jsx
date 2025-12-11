@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     LayoutDashboard,
     Package,
@@ -46,6 +46,8 @@ const AdminDashboard = () => {
                 return <OrderManagement />;
             case 'users':
                 return <UserManagement />;
+            case 'categories':
+                return <CategoryManagement />;
             case 'ads':
                 return <AdsManagement />;
             default:
@@ -115,6 +117,12 @@ const AdminDashboard = () => {
                         label={t('Users')}
                         active={activeTab === 'users'}
                         onClick={() => { setActiveTab('users'); setIsMobileMenuOpen(false); }}
+                    />
+                    <SidebarItem
+                        icon={<List size={20} />}
+                        label={t('Categories')}
+                        active={activeTab === 'categories'}
+                        onClick={() => { setActiveTab('categories'); setIsMobileMenuOpen(false); }}
                     />
                     <SidebarItem
                         icon={<ImageIcon size={20} />}
@@ -470,10 +478,10 @@ const StoreManagement = () => {
     const [editingProduct, setEditingProduct] = useState(null);
     const [storeForm, setStoreForm] = useState({
         name: '',
-        location: '',
+        address: '',
         image: '',
         rating: 4.5,
-        hours: '',
+        timing: '',
         mobile: ''
     });
     const [productForm, setProductForm] = useState({
@@ -524,10 +532,10 @@ const StoreManagement = () => {
         setEditingStore(store);
         setStoreForm({
             name: store.name,
-            location: store.location,
+            address: store.address || '',
             image: store.image,
             rating: store.rating,
-            hours: store.hours || '',
+            timing: store.timing || '9:00 AM - 9:00 PM',
             mobile: store.mobile || ''
         });
         setView('form');
@@ -548,13 +556,12 @@ const StoreManagement = () => {
     const handleStoreSubmit = async (e) => {
         e.preventDefault();
 
-        // Map form fields to match Store model schema
         const storeData = {
             name: storeForm.name,
             type: 'General Store', // Default type - can be made dynamic later
-            address: storeForm.location, // Map location to address
-            city: storeForm.location.split(',').pop().trim() || 'Unknown', // Extract city from location or use default
-            timing: storeForm.hours || '9:00 AM - 9:00 PM', // Map hours to timing
+            address: storeForm.address,
+            city: storeForm.address.split(',').pop().trim() || 'Unknown', // Extract city from address
+            timing: storeForm.timing || '9:00 AM - 9:00 PM',
             mobile: storeForm.mobile,
             image: storeForm.image,
             rating: storeForm.rating || 4.5
@@ -568,7 +575,7 @@ const StoreManagement = () => {
                 await addStore(storeData);
                 alert(t('Store added successfully!'));
             }
-            setStoreForm({ name: '', location: '', image: '', rating: 4.5, hours: '', mobile: '' });
+            setStoreForm({ name: '', address: '', image: '', rating: 4.5, timing: '', mobile: '' });
             setEditingStore(null);
             setView('list');
         } catch (error) {
@@ -682,7 +689,7 @@ const StoreManagement = () => {
                                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{store.name}</h3>
                                     <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 flex items-center gap-2">
                                         <MapPin size={16} />
-                                        {store.location}
+                                        {store.address || 'No address'}
                                     </p>
                                     <button
                                         onClick={() => handleManageProducts(store)}
@@ -719,12 +726,13 @@ const StoreManagement = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Location')}</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Address')}</label>
                                 <input
                                     type="text"
-                                    value={storeForm.location}
-                                    onChange={(e) => setStoreForm({ ...storeForm, location: e.target.value })}
+                                    value={storeForm.address}
+                                    onChange={(e) => setStoreForm({ ...storeForm, address: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder="e.g., 123 Main St, City"
                                     required
                                 />
                             </div>
@@ -733,8 +741,8 @@ const StoreManagement = () => {
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Timing')}</label>
                                 <input
                                     type="text"
-                                    value={storeForm.hours}
-                                    onChange={(e) => setStoreForm({ ...storeForm, hours: e.target.value })}
+                                    value={storeForm.timing}
+                                    onChange={(e) => setStoreForm({ ...storeForm, timing: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                     placeholder="e.g., 9:00 AM - 9:00 PM"
                                     required
@@ -1300,43 +1308,362 @@ const OrderManagement = () => {
     );
 };
 
-const UserManagement = () => {
+const CategoryManagement = () => {
+    const { categories, fetchCategories, addCategory, updateCategory, deleteCategory } = useData();
     const { t } = useLanguage();
-    const users = [
-        { id: 1, name: 'John Doe', email: 'john@example.com', address: '123 Main St, New York, NY', orders: 12 },
-        { id: 2, name: 'Jane Smith', email: 'jane@example.com', address: '456 Oak Ave, Los Angeles, CA', orders: 5 },
-        { id: 3, name: 'Mike Johnson', email: 'mike@example.com', address: '789 Pine Ln, Chicago, IL', orders: 8 },
-    ];
+    const [view, setView] = useState('list');
+    const [editingCategory, setEditingCategory] = useState(null);
+    const [formData, setFormData] = useState({
+        name: ''
+    });
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const handleEdit = (category) => {
+        setEditingCategory(category);
+        setFormData({
+            name: category.name
+        });
+        setView('form');
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm(t('Are you sure you want to delete this category?'))) {
+            try {
+                await deleteCategory(id);
+                alert(t('Category deleted successfully!'));
+            } catch (error) {
+                alert(t('Failed to delete category. Please try again.'));
+                console.error('Error deleting category:', error);
+            }
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            if (editingCategory) {
+                await updateCategory({ ...editingCategory, ...formData });
+                alert(t('Category updated successfully!'));
+            } else {
+                console.log('Adding category with data:', formData);
+                const result = await addCategory(formData);
+                console.log('Category add result:', result);
+                alert(t('Category added successfully!'));
+            }
+            setFormData({ name: '' });
+            setEditingCategory(null);
+            setView('list');
+            fetchCategories();
+        } catch (error) {
+            console.error('Error saving category - Full details:', error);
+
+            // Display specific error message from backend
+            const errorMessage = error?.message || error?.data?.message || 'Failed to save category. Please try again.';
+            alert(t(errorMessage));
+        }
+    };
+
+    return (
+        <div className="max-w-5xl">
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {view === 'list' ? t('Categories') : editingCategory ? t('Edit Category') : t('Add New Category')}
+                </h2>
+                <button
+                    onClick={() => {
+                        if (view === 'list') {
+                            setEditingCategory(null);
+                            setFormData({ name: '' });
+                            setView('form');
+                        } else {
+                            setView('list');
+                        }
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                >
+                    {view === 'list' ? <Plus size={20} /> : <List size={20} />}
+                    {view === 'list' ? t('Add Category') : t('View List')}
+                </button>
+            </div>
+
+            {view === 'list' ? (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-50 dark:bg-gray-700/50">
+                                <tr>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Name')}</th>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Actions')}</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                                {categories.length > 0 ? categories.map(category => (
+                                    <tr key={category._id || category.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                        <td className="p-4 font-medium text-gray-900 dark:text-white">{category.name}</td>
+                                        <td className="p-4">
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleDelete(category._id || category.id)}
+                                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="2" className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                            {t('No categories found. Add one to get started!')}
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            ) : (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Category Name')}</label>
+                            <input
+                                type="text"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ name: e.target.value })}
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                placeholder={t('e.g., Vegetables')}
+                                required
+                            />
+                        </div>
+
+                        <div className="flex justify-end">
+                            <button
+                                type="submit"
+                                className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+                            >
+                                {editingCategory ? <Save size={20} /> : <Plus size={20} />}
+                                {editingCategory ? t('Update Category') : t('Add Category')}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const UserManagement = () => {
+    const { users, fetchUsers, updateUser, deleteUser } = useData();
+    const { t } = useLanguage();
+    const [editingUser, setEditingUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        mobile: '',
+        address: ''
+    });
+
+    useEffect(() => {
+        const loadUsers = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                console.log('Fetching users...');
+                await fetchUsers();
+                console.log('Users fetched successfully, count:', users.length);
+            } catch (err) {
+                console.error('Error fetching users:', err);
+                setError(err?.message || 'Failed to load users');
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadUsers();
+    }, []);
+
+    const handleEdit = (user) => {
+        setEditingUser(user);
+        setFormData({
+            name: user.name,
+            email: user.email,
+            mobile: user.mobile || '',
+            address: user.address || ''
+        });
+    };
+
+    const handleSave = async () => {
+        try {
+            console.log('Updating user:', { ...editingUser, ...formData });
+            await updateUser({ ...editingUser, ...formData });
+            alert(t('User updated successfully!'));
+            setEditingUser(null);
+            fetchUsers();
+        } catch (error) {
+            console.error('Error updating user - Full details:', error);
+            const errorMessage = error?.message || error?.data?.message || 'Failed to update user. Please try again.';
+            alert(t(errorMessage));
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm(t('Are you sure you want to delete this user?'))) {
+            try {
+                console.log('Deleting user with ID:', id);
+                await deleteUser(id);
+                alert(t('User deleted successfully!'));
+                fetchUsers();
+            } catch (error) {
+                console.error('Error deleting user - Full details:', error);
+                const errorMessage = error?.message || error?.data?.message || 'Failed to delete user. Please try again.';
+                alert(t(errorMessage));
+            }
+        }
+    };
 
     return (
         <div className="max-w-5xl">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('User Database')}</h2>
-            <div className="grid gap-6">
-                {users.map(user => (
-                    <div key={user.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex items-start justify-between">
-                        <div className="flex gap-4">
-                            <div className="h-12 w-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400">
-                                <Users size={24} />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{user.name}</h3>
-                                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    <Mail size={14} />
-                                    {user.email}
+
+            {loading && (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 text-center">
+                    <p className="text-gray-500 dark:text-gray-400">{t('Loading users...')}</p>
+                </div>
+            )}
+
+            {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-200 dark:border-red-800 p-6 mb-6">
+                    <p className="text-red-600 dark:text-red-400">{t('Error')}: {error}</p>
+                    <button
+                        onClick={() => fetchUsers()}
+                        className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                        {t('Retry')}
+                    </button>
+                </div>
+            )}
+
+            {!loading && !error && (
+                <div className="grid gap-6">
+                    {users.length > 0 ? users.map(user => (
+                        <div key={user._id || user.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                            {editingUser && (editingUser._id || editingUser.id) === (user._id || user.id) ? (
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Name')}</label>
+                                            <input
+                                                type="text"
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Email')}</label>
+                                            <input
+                                                type="email"
+                                                value={formData.email}
+                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Mobile')}</label>
+                                            <input
+                                                type="tel"
+                                                value={formData.mobile}
+                                                onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Address')}</label>
+                                            <input
+                                                type="text"
+                                                value={formData.address}
+                                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 justify-end">
+                                        <button
+                                            onClick={() => setEditingUser(null)}
+                                            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                        >
+                                            {t('Cancel')}
+                                        </button>
+                                        <button
+                                            onClick={handleSave}
+                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                        >
+                                            <Save size={18} />
+                                            {t('Save')}
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    <MapPin size={14} />
-                                    {user.address}
+                            ) : (
+                                <div className="flex items-start justify-between">
+                                    <div className="flex gap-4">
+                                        <div className="h-12 w-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400">
+                                            <Users size={24} />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{user.name}</h3>
+                                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                <Mail size={14} />
+                                                {user.email}
+                                            </div>
+                                            {user.mobile && (
+                                                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                    <Phone size={14} />
+                                                    {user.mobile}
+                                                </div>
+                                            )}
+                                            {user.address && (
+                                                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                    <MapPin size={14} />
+                                                    {user.address}
+                                                </div>
+                                            )}
+                                            <div className="mt-2">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                                                    {user.role || 'user'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleEdit(user)}
+                                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                        >
+                                            <Edit2 size={18} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(user._id || user.id)}
+                                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
-                        <div className="text-right">
-                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{user.orders}</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('Orders')}</div>
+                    )) : (
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 text-center">
+                            <p className="text-gray-500 dark:text-gray-400">{t('No users found.')}</p>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

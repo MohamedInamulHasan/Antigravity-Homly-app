@@ -11,6 +11,7 @@ import orderRoutes from './routes/orders.js';
 import storeRoutes from './routes/stores.js';
 import newsRoutes from './routes/news.js';
 import adRoutes from './routes/ads.js';
+import categoryRoutes from './routes/categories.js';
 
 // Load environment variables
 dotenv.config();
@@ -58,7 +59,9 @@ app.get('/', (req, res) => {
             users: '/api/users',
             orders: '/api/orders',
             stores: '/api/stores',
-            news: '/api/news'
+            news: '/api/news',
+            ads: '/api/ads',
+            categories: '/api/categories'
         }
     });
 });
@@ -69,6 +72,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/stores', storeRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/ads', adRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // Error handler middleware (must be last)
 app.use(errorHandler);
