@@ -29,9 +29,9 @@ app.use(cors({
             process.env.CLIENT_URL,
             'http://localhost:5173',
             'http://localhost:5174'
-        ].filter(Boolean);
+        ];
 
-        // Allow requests with no origin (like mobile apps sometimes or curl requests)
+        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
 
         // Allow allowed origins, any Vercel app, and the backend itself

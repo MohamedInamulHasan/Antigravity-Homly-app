@@ -61,7 +61,13 @@ const OrderConfirmation = () => {
             paymentMethod: {
                 type: 'Cash on Delivery',
                 last4: ''
-            }
+            },
+            scheduledDeliveryTime: formData.deliveryTime ? (() => {
+                const today = new Date();
+                const [hours, minutes] = formData.deliveryTime.split(':');
+                today.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                return today.toISOString();
+            })() : null
         };
 
         console.log('📦 Creating order with data:', newOrder);
@@ -171,6 +177,28 @@ const OrderConfirmation = () => {
                         <p>{formData.city}, {formData.pincode}</p>
                         <p>{t('Mobile')}: {formData.mobile}</p>
                     </div>
+
+                    {/* Delivery Time Display */}
+                    {formData.deliveryTime && (
+                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('Scheduled Delivery')}</p>
+                                    <p className="font-semibold">
+                                        {t('Today')} at {(() => {
+                                            const [hours, minutes] = formData.deliveryTime.split(':');
+                                            const date = new Date();
+                                            date.setHours(parseInt(hours), parseInt(minutes));
+                                            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                                        })()}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Desktop Confirm Button */}

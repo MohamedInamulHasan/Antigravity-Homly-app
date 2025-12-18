@@ -14,6 +14,7 @@ const Checkout = () => {
         address: '',
         city: '',
         zip: '',
+        deliveryTime: '',
         paymentMethod: 'cod'
     });
 
@@ -154,6 +155,58 @@ const Checkout = () => {
                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                                         placeholder={t('Enter ZIP code')}
                                     />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        {t('Preferred Delivery Time')} <span className="text-gray-500 text-xs">({t('Optional')})</span>
+                                    </label>
+                                    <select
+                                        name="deliveryTime"
+                                        value={formData.deliveryTime}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
+                                    >
+                                        <option value="">{t('Select a time slot')}</option>
+                                        {(() => {
+                                            const slots = [];
+                                            const now = new Date();
+                                            now.setMinutes(now.getMinutes() + 30);
+
+                                            // Round to next 30-minute slot
+                                            const minutes = now.getMinutes();
+                                            if (minutes < 30) {
+                                                now.setMinutes(30, 0, 0);
+                                            } else {
+                                                now.setMinutes(0, 0, 0);
+                                                now.setHours(now.getHours() + 1);
+                                            }
+
+                                            // Generate slots until end of day (11:30 PM)
+                                            const endOfDay = new Date();
+                                            endOfDay.setHours(23, 30, 0, 0);
+
+                                            while (now <= endOfDay) {
+                                                const hours = now.getHours();
+                                                const minutes = now.getMinutes();
+                                                const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                                                const displayTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+                                                slots.push(
+                                                    <option key={timeString} value={timeString}>
+                                                        {displayTime}
+                                                    </option>
+                                                );
+
+                                                now.setMinutes(now.getMinutes() + 30);
+                                            }
+
+                                            return slots;
+                                        })()}
+                                    </select>
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        {t('Choose your preferred delivery time (slots start 30 minutes from now)')}
+                                    </p>
                                 </div>
                             </div>
                         </div>

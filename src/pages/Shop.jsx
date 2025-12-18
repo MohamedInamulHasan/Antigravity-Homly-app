@@ -1,13 +1,22 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { MapPin, Search, Star, Clock, Phone } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
 
 const Shop = () => {
     const [searchQuery, setSearchQuery] = useState('');
-    const { stores } = useData();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const { stores, categories: dbCategories } = useData();
     const { t } = useLanguage();
+
+    const categoryFilter = searchParams.get('category') || 'All';
+
+    // Create categories array with "All" option first, then add categories from database
+    const categories = [
+        { name: 'All' },
+        ...(dbCategories || []).map(cat => ({ name: cat.name }))
+    ];
 
     if (!stores) {
         return (
@@ -17,17 +26,27 @@ const Shop = () => {
         );
     }
 
-    const filteredStores = stores.filter(store =>
-        store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (store.address && store.address.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    const filteredStores = stores.filter(store => {
+        const matchesSearch = store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (store.address && store.address.toLowerCase().includes(searchQuery.toLowerCase()));
+
+        // Flexible matching for category/type
+        const matchesCategory = categoryFilter === 'All' ||
+            (store.type && store.type.toLowerCase() === categoryFilter.toLowerCase());
+
+        return matchesSearch && matchesCategory;
+    });
+
+    const handleCategoryClick = (categoryName) => {
+        setSearchParams({ category: categoryName });
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{t('Find a Store')}</h1>
-                    <div className="relative max-w-xl">
+                    <div className="relative max-w-xl mb-6">
                         <input
                             type="text"
                             placeholder={t('Search by store name or location...')}
@@ -36,6 +55,27 @@ const Shop = () => {
                             className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                         />
                         <Search className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" size={20} />
+                    </div>
+
+                    {/* Category Pills */}
+                    <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
+                        {categories.map((category) => {
+                            const isActive = category.name === categoryFilter;
+                            return (
+                                <button
+                                    key={category.name}
+                                    onClick={() => handleCategoryClick(category.name)}
+                                    className={`flex-shrink-0 px-4 py-2 rounded-full border transition-all duration-300 ${isActive
+                                        ? 'bg-blue-600 text-white border-blue-600'
+                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:text-blue-500'
+                                        }`}
+                                >
+                                    <span className="font-medium whitespace-nowrap text-sm">
+                                        {t(category.name)}
+                                    </span>
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -59,6 +99,11 @@ const Shop = () => {
                                                 <MapPin size={16} className="mr-1 flex-shrink-0" />
                                                 <span className="line-clamp-1">{store.address || 'No address'}</span>
                                             </div>
+                                            {store.type && (
+                                                <span className="inline-block px-2 py-1 text-xs font-semibold text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 rounded-md">
+                                                    {store.type}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
 
@@ -89,7 +134,7 @@ const Shop = () => {
                             <Search className="text-gray-400 dark:text-gray-500" size={32} />
                         </div>
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('No stores found')}</h3>
-                        <p className="text-gray-500 dark:text-gray-400">{t('Try adjusting your search terms to find what you\'re looking for.')}</p>
+                        <p className="text-gray-500 dark:text-gray-400">{t('Try adjusting your search terms or category filter.')}</p>
                     </div>
                 )}
             </div>

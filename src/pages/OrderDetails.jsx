@@ -68,7 +68,21 @@ const OrderDetails = () => {
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{t('Order Details')}</h1>
-                            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 whitespace-nowrap">{t('Order')} #{String(order._id || order.id).slice(-6).toUpperCase()} • {order.date}</p>
+                            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 whitespace-nowrap">{t('Order')} #{String(order._id || order.id).slice(-6).toUpperCase()}</p>
+                            {/* Order Placed Time */}
+                            {order.createdAt && (
+                                <p className="text-xs md:text-sm text-gray-400 dark:text-gray-500 mt-1">
+                                    {t('Placed on')} {new Date(order.createdAt).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                    })} at {new Date(order.createdAt).toLocaleTimeString('en-US', {
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                        hour12: true
+                                    })}
+                                </p>
+                            )}
                         </div>
                         <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(order.status)}`}>
                             {getStatusIcon(order.status)}
@@ -115,6 +129,29 @@ const OrderDetails = () => {
                             <p>{order.shippingAddress?.city || ''}, {order.shippingAddress?.state || ''} {order.shippingAddress?.zip || ''}</p>
                             <p>{order.shippingAddress?.country || ''}</p>
                         </address>
+
+                        {/* Delivery Time Display */}
+                        {order.scheduledDeliveryTime && (
+                            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                                    <Clock size={18} />
+                                    <div>
+                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('Scheduled Delivery')}</p>
+                                        <p className="font-semibold text-gray-900 dark:text-white">
+                                            {new Date(order.scheduledDeliveryTime).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric'
+                                            })} at {new Date(order.scheduledDeliveryTime).toLocaleTimeString('en-US', {
+                                                hour: 'numeric',
+                                                minute: '2-digit',
+                                                hour12: true
+                                            })}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Payment Info */}

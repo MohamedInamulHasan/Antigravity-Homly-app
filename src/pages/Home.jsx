@@ -1,77 +1,38 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
-import ProductList from '../components/ProductList';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { useState, useEffect, useRef } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext.jsx';
 import { useLanguage } from '../context/LanguageContext';
+import SimpleProductCard from '../components/SimpleProductCard';
 
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [displayedProducts, setDisplayedProducts] = useState([]);
-    const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
-    const { products: allProducts, ads, loading, error } = useData();
+    const [searchQuery, setSearchQuery] = useState('');
+    const { ads, products, categories, fetchCategories } = useData();
     const { t } = useLanguage();
+    const navigate = useNavigate();
 
-    const categoryFilter = searchParams.get('category');
-    const searchQuery = searchParams.get('search');
-    const [mobileSearchTerm, setMobileSearchTerm] = useState(searchQuery || '');
-
-    const slides = ads.length > 0 ? ads : [
-        {
-            id: 1,
-            image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2070&auto=format&fit=crop',
-            title: t('Summer Collection 2024'),
-            subtitle: t('Discover the latest trends in fashion.')
-        },
-        {
-            id: 2,
-            image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=2071&auto=format&fit=crop',
-            title: t('Modern Electronics'),
-            subtitle: t('Upgrade your lifestyle with new tech.')
-        },
-        {
-            id: 3,
-            image: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4f9d?q=80&w=2070&auto=format&fit=crop',
-            title: t('Cozy Home Living'),
-            subtitle: t('Make your home your sanctuary.')
-        }
-    ];
-
-    const categories = [
-        { name: 'All' },
-        { name: 'Electronics' },
-        { name: 'Fashion' },
-        { name: 'Home' },
-        { name: 'Beauty' },
-        { name: 'Sports' },
-        { name: 'Toys' },
-        { name: 'Books' },
-        { name: 'Automotive' },
-    ];
-
+    // Fetch categories on mount
     useEffect(() => {
-        // Filter out products that belong to a specific store for the main home page
-        let filtered = allProducts.filter(p => !p.storeId);
+        fetchCategories();
+    }, []);
 
-        if (categoryFilter && categoryFilter !== 'All') {
-            filtered = filtered.filter(p => p.category === categoryFilter);
-        }
+    // Use ads from backend only, no dummy fallback
+    const slides = (ads && ads.length > 0) ? ads : [];
 
-        if (searchQuery) {
-            const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(p =>
-                p.title.toLowerCase().includes(query) ||
-                p.description.toLowerCase().includes(query)
-            );
-        }
+    // Group products by category - with safety check
+    const groupedProducts = (products && Array.isArray(products))
+        ? products.reduce((acc, product) => {
+            const category = product.category || 'Other';
+            if (!acc[category]) {
+                acc[category] = [];
+            }
+            acc[category].push(product);
+            return acc;
+        }, {})
+        : {};
 
-        // Show all products by default
-        setDisplayedProducts(filtered);
-    }, [categoryFilter, searchQuery, allProducts]);
-
-    // Auto-scroll functionality
+    // Auto-scroll functionality for hero slider
     useEffect(() => {
         const timer = setInterval(() => {
             const container = document.getElementById('hero-slider');
@@ -108,44 +69,13 @@ const Home = () => {
         }
     };
 
-    const handleCategoryClick = (categoryName) => {
-        // If category is already selected, do nothing
-        if (categoryFilter === categoryName) {
-            return;
-        }
-
-        // Selecting new category
-        let url = `/?category=${encodeURIComponent(categoryName)}`;
-        if (searchQuery) {
-            url += `&search=${encodeURIComponent(searchQuery)}`;
-        }
-
-        navigate(url);
-    };
-
-    const handleMobileSearch = (e) => {
-        e.preventDefault();
-        let url = '/';
-        if (mobileSearchTerm) {
-            url += `?search=${encodeURIComponent(mobileSearchTerm)}`;
-        }
-        if (categoryFilter) {
-            url += `${mobileSearchTerm ? '&' : '?'}category=${encodeURIComponent(categoryFilter)}`;
-        }
-        navigate(url);
-    };
-
-    const getSectionTitle = () => {
-        if (searchQuery) return `${t('Search Results for')} "${searchQuery}"`;
-        if (categoryFilter === 'All' || !categoryFilter) return t('All Products');
-        return `${t(categoryFilter)} ${t('Products')}`;
-    };
-
-    const isAllSelected = !categoryFilter || categoryFilter === 'All';
+    // All categories for the grid
+    const allCategories = categories && categories.length > 0 ? categories : [];
 
     return (
-        <div className="space-y-8 pb-16 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 min-h-screen">
-            {true && (
+        <div className="space-y-6 pb-16 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 min-h-screen">
+            {/* Hero Slider - Only show if slides exist */}
+            {slides.length > 0 && (
                 <section className="relative h-[250px] md:h-[500px] group">
                     <div
                         id="hero-slider"
@@ -153,7 +83,7 @@ const Home = () => {
                         onScroll={handleScroll}
                         style={{ scrollBehavior: 'smooth' }}
                     >
-                        {slides.map((slide, index) => (
+                        {slides.map((slide) => (
                             <div
                                 key={slide.id}
                                 className="min-w-full h-full relative snap-center"
@@ -163,9 +93,6 @@ const Home = () => {
                                     alt={slide.title}
                                     className="w-full h-full object-cover"
                                 />
-                                {
-                                    /* Overlay removed as requested */
-                                }
                             </div>
                         ))}
                     </div>
@@ -190,97 +117,217 @@ const Home = () => {
                             <button
                                 key={index}
                                 onClick={() => scrollToSlide(index)}
-                                className={`w-3 h-3 rounded-full transition-colors ${index === currentSlide ? 'bg-white' : 'bg-white/50'
-                                    }`}
+                                className={`w-3 h-3 rounded-full transition-colors ${index === currentSlide ? 'bg-white' : 'bg-white/50'}`}
                             />
                         ))}
                     </div>
                 </section>
             )}
 
-            {/* Horizontal Scrollable Categories (Text Pills) */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-end items-center mb-6">
-                    {(!isAllSelected || searchQuery) && (
-                        <button
-                            onClick={() => navigate('/')}
-                            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium"
+
+            {/* Categories Section - Round Images Grid Below Slider */}
+            {allCategories.length > 0 && (
+                <section className="bg-gray-50 dark:bg-gray-900 py-6">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                            {t('Shop by Category')}
+                        </h2>
+                        {/* Grid: 3 columns on mobile, 4 on tablet, 6 on desktop, 8 on xl screens */}
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6">
+                            {allCategories.map((category) => (
+                                <Link
+                                    key={category._id || category.id}
+                                    to={`/store?category=${encodeURIComponent(category.name)}`}
+                                    className="flex flex-col items-center gap-2 md:gap-3 group"
+                                >
+                                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ring-4 ring-white dark:ring-gray-800 group-hover:ring-blue-500">
+                                        <img
+                                            src={category.image || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000&auto=format&fit=crop'}
+                                            alt={category.name}
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                        />
+                                    </div>
+                                    <span className="text-xs sm:text-sm md:text-base font-semibold text-gray-900 dark:text-white text-center max-w-full group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+                                        {t(category.name)}
+                                    </span>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* Mobile Search Bar - Below Categories */}
+            <section className="md:hidden bg-white dark:bg-gray-800 py-4 sticky top-0 z-20 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4">
+                    <div className="relative">
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                if (searchQuery.trim()) {
+                                    navigate(`/shop?search=${encodeURIComponent(searchQuery)}`);
+                                    setSearchQuery('');
+                                }
+                            }}
+                            className="relative"
                         >
-                            {t('Clear Filters')}
-                        </button>
-                    )}
-                </div>
-                <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
-                    {categories.map((category) => {
-                        const currentCategory = categoryFilter || 'All';
-                        const isActive = category.name === currentCategory;
-                        return (
-                            <div
-                                key={category.name}
-                                onClick={() => handleCategoryClick(category.name)}
-                                className={`flex-shrink-0 px-4 py-2 md:px-6 md:py-3 rounded-full border cursor-pointer transition-all duration-300 ${isActive
-                                    ? 'bg-blue-600 text-white border-blue-600'
-                                    : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-blue-600 hover:text-white hover:border-blue-600 dark:hover:bg-blue-600 dark:hover:border-blue-600'
-                                    }`}
+                            <input
+                                type="text"
+                                name="search"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder={t('Search products...')}
+                                className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
+                            />
+                            <svg
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+                                width="20"
+                                height="20"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
                             >
-                                <span className="font-medium whitespace-nowrap text-sm md:text-base">
-                                    {t(category.name)}
-                                </span>
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </form>
+
+                        {/* Search Results Dropdown */}
+                        {searchQuery.trim() && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto z-30">
+                                {(() => {
+                                    const filteredProducts = products.filter(product =>
+                                        product.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                        product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                        product.category?.toLowerCase().includes(searchQuery.toLowerCase())
+                                    ).slice(0, 5);
+
+                                    if (filteredProducts.length === 0) {
+                                        return (
+                                            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                                                {t('No products found')}
+                                            </div>
+                                        );
+                                    }
+
+                                    return filteredProducts.map((product) => (
+                                        <Link
+                                            key={product._id || product.id}
+                                            to={`/product/${product._id || product.id}`}
+                                            onClick={() => setSearchQuery('')}
+                                            className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                        >
+                                            <img
+                                                src={product.image}
+                                                alt={product.title}
+                                                className="w-12 h-12 rounded-lg object-cover"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium text-gray-900 dark:text-white truncate">
+                                                    {t(product, 'title')}
+                                                </p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    ₹{Number(product.price).toFixed(0)}
+                                                </p>
+                                            </div>
+                                        </Link>
+                                    ));
+                                })()}
                             </div>
-                        );
-                    })}
+                        )}
+                    </div>
                 </div>
             </section>
 
-            {/* Product Grid */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Mobile Search Bar */}
-                <div className="md:hidden mb-6">
-                    <form onSubmit={handleMobileSearch} className="relative">
-                        <input
-                            type="text"
-                            placeholder={t('Search products...')}
-                            value={mobileSearchTerm}
-                            onChange={(e) => setMobileSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                        />
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    </form>
-                </div>
+            {/* Main Content Container */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{getSectionTitle()}</h2>
-
-                </div>
-
-                {loading.products ? (
-                    <LoadingSpinner size="lg" message={t('Loading products...')} />
-                ) : error.products ? (
-                    <div className="text-center py-12">
-                        <p className="text-xl text-red-500 dark:text-red-400 mb-4">{t('Failed to load products')}</p>
-                        <p className="text-gray-500 dark:text-gray-400">{error.products}</p>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            {t('Retry')}
-                        </button>
-                    </div>
-                ) : displayedProducts.length > 0 ? (
-                    <ProductList products={displayedProducts} />
-                ) : (
-                    <div className="text-center py-12">
-                        <p className="text-xl text-gray-500 dark:text-gray-400">{t('No products found')}</p>
-                        <button
-                            onClick={() => navigate('/')}
-                            className="mt-4 text-blue-600 dark:text-blue-400 hover:underline"
-                        >
-                            {t('Clear filters')}
-                        </button>
-                    </div>
-                )}
-            </section>
+                {/* Product Sections by Category */}
+                {Object.entries(groupedProducts).map(([category, categoryProducts]) => (
+                    <CategorySection
+                        key={category}
+                        category={category}
+                        products={categoryProducts.slice(0, 10)}
+                        t={t}
+                    />
+                ))}
+            </div>
         </div>
+    );
+};
+
+// Category Section Component
+const CategorySection = ({ category, products, t }) => {
+    const scrollContainerRef = useRef(null);
+
+    const scroll = (direction) => {
+        if (scrollContainerRef.current) {
+            const scrollAmount = 300;
+            const newScrollLeft = scrollContainerRef.current.scrollLeft + (direction === 'left' ? -scrollAmount : scrollAmount);
+            scrollContainerRef.current.scrollTo({
+                left: newScrollLeft,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    if (!products || products.length === 0) return null;
+
+    // Get category image from first product or use default
+    const categoryImage = products[0]?.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop';
+
+    return (
+        <section className="relative space-y-4">
+            {/* Category Header */}
+            <div className="flex items-center justify-between">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                    {t(category)}
+                </h2>
+                <Link
+                    to={`/store?category=${encodeURIComponent(category)}`}
+                    className="text-sm md:text-base text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
+                >
+                    {t('View All')} →
+                </Link>
+            </div>
+
+            {/* Products Carousel */}
+            <div className="relative group">
+                {/* Scroll Buttons - Desktop Only */}
+                <button
+                    onClick={() => scroll('left')}
+                    className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white dark:bg-gray-800 shadow-lg rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
+                    aria-label="Scroll left"
+                >
+                    <ChevronLeft size={20} className="text-gray-700 dark:text-gray-300" />
+                </button>
+                <button
+                    onClick={() => scroll('right')}
+                    className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white dark:bg-gray-800 shadow-lg rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
+                    aria-label="Scroll right"
+                >
+                    <ChevronRight size={20} className="text-gray-700 dark:text-gray-300" />
+                </button>
+
+                {/* Scrollable Products Container */}
+                <div
+                    ref={scrollContainerRef}
+                    className="flex overflow-x-auto gap-3 md:gap-4 pb-4 snap-x snap-mandatory scrollbar-hide scroll-smooth"
+                    style={{
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none',
+                    }}
+                >
+                    {products.map((product) => (
+                        <div
+                            key={product._id || product.id}
+                            className="flex-none w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] snap-start"
+                        >
+                            <SimpleProductCard product={product} />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
     );
 };
 

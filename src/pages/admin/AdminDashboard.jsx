@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { compressImage, validateImageSize } from '../../utils/imageCompression';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('products');
@@ -159,7 +160,7 @@ const SidebarItem = ({ icon, label, active, onClick }) => (
 // --- Sub-Components ---
 
 const ProductManagement = () => {
-    const { products, stores, addProduct, updateProduct, deleteProduct } = useData();
+    const { products, stores, categories, addProduct, updateProduct, deleteProduct } = useData();
     const { t } = useLanguage();
     const [view, setView] = useState('list'); // 'list' or 'form'
     const [editingProduct, setEditingProduct] = useState(null);
@@ -206,7 +207,9 @@ const ProductManagement = () => {
             storeId: product.storeId || '',
             description: product.description,
             image: product.image || (product.images && product.images[0]) || '',
-            sliderImages: product.images || []
+            sliderImages: product.images || [],
+            stock: product.stock || 0,
+            unit: product.unit || 'kg'
         });
         setView('form');
     };
@@ -237,7 +240,9 @@ const ProductManagement = () => {
             category: formData.category,
             price: parseFloat(formData.price),
             image: formData.image || imagesArray[0], // Main image (required)
-            images: imagesArray // Array of images (optional)
+            images: imagesArray, // Array of images (optional)
+            stock: parseInt(formData.stock) || 0,
+            unit: formData.unit || 'kg'
         };
 
         // Add storeId only if it's not empty
@@ -253,7 +258,7 @@ const ProductManagement = () => {
                 await addProduct(productData);
                 alert(t('Product uploaded successfully!'));
             }
-            setFormData({ title: '', price: '', category: '', storeId: '', description: '', image: '', sliderImages: [] });
+            setFormData({ title: '', price: '', category: '', storeId: '', description: '', image: '', sliderImages: [], stock: 0, unit: 'kg' });
             setEditingProduct(null);
             setView('list');
         } catch (error) {
@@ -272,7 +277,7 @@ const ProductManagement = () => {
                     onClick={() => {
                         if (view === 'list') {
                             setEditingProduct(null);
-                            setFormData({ title: '', price: '', category: '', storeId: '', description: '', image: '', sliderImages: [] });
+                            setFormData({ title: '', price: '', category: '', storeId: '', description: '', image: '', sliderImages: [], stock: 0, unit: 'kg' });
                             setView('form');
                         } else {
                             setView('list');
@@ -365,16 +370,11 @@ const ProductManagement = () => {
                                     required
                                 >
                                     <option value="">{t('Select Category')}</option>
-                                    <option value="Vegetables">{t('Vegetables')}</option>
-                                    <option value="Fruits">{t('Fruits')}</option>
-                                    <option value="Dairy">{t('Dairy')}</option>
-                                    <option value="Bakery">{t('Bakery')}</option>
-                                    <option value="Meat">{t('Meat')}</option>
-                                    <option value="Beverages">{t('Beverages')}</option>
-                                    <option value="Snacks">{t('Snacks')}</option>
-                                    <option value="Fashion">{t('Fashion')}</option>
-                                    <option value="Electronics">{t('Electronics')}</option>
-                                    <option value="Other">{t('Other')}</option>
+                                    {categories && categories.length > 0 && categories.map((cat) => (
+                                        <option key={cat._id || cat.id} value={cat.name}>
+                                            {t(cat.name)}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
 
@@ -470,7 +470,7 @@ const ProductManagement = () => {
 };
 
 const StoreManagement = () => {
-    const { stores, products, addStore, updateStore, addProduct, updateProduct, deleteProduct, deleteStore } = useData();
+    const { stores, products, categories, addStore, updateStore, addProduct, updateProduct, deleteProduct, deleteStore } = useData();
     const { t } = useLanguage();
     const [view, setView] = useState('list'); // 'list', 'form', 'storeProducts', 'addProductToStore', 'editProduct'
     const [selectedStore, setSelectedStore] = useState(null);
@@ -490,7 +490,9 @@ const StoreManagement = () => {
         category: '',
         description: '',
         image: '',
-        sliderImages: []
+        sliderImages: [],
+        stock: 0,
+        unit: 'kg'
     });
 
     const handleStoreImageUpload = (e) => {
@@ -590,7 +592,7 @@ const StoreManagement = () => {
     };
 
     const handleAddProductToStore = () => {
-        setProductForm({ title: '', price: '', category: '', description: '', image: '', sliderImages: [] });
+        setProductForm({ title: '', price: '', category: '', description: '', image: '', sliderImages: [], stock: 0, unit: 'kg' });
         setEditingProduct(null);
         setView('addProductToStore');
     };
@@ -603,7 +605,9 @@ const StoreManagement = () => {
             category: product.category,
             description: product.description,
             image: product.image,
-            sliderImages: product.images || []
+            sliderImages: product.images || [],
+            stock: product.stock || 0,
+            unit: product.unit || 'kg'
         });
         setView('addProductToStore'); // Reusing the add form for editing
     };
@@ -631,6 +635,8 @@ const StoreManagement = () => {
         const productData = {
             ...productForm,
             price: parseFloat(productForm.price),
+            stock: parseInt(productForm.stock) || 0,
+            unit: productForm.unit || 'kg',
             storeId: selectedStore._id || selectedStore.id,
             images: productForm.sliderImages.length > 0 ? productForm.sliderImages : [productForm.image] // Use slider images if available, else main image
         };
@@ -899,12 +905,54 @@ const StoreManagement = () => {
                                     required
                                 >
                                     <option value="">{t('Select Category')}</option>
-                                    <option value="Electronics">{t('Electronics')}</option>
-                                    <option value="Fashion">{t('Fashion')}</option>
-                                    <option value="Home">{t('Home')}</option>
-                                    <option value="Beauty">{t('Beauty')}</option>
+                                    {categories && categories.length > 0 ? (
+                                        categories.map((cat) => (
+                                            <option key={cat._id || cat.id} value={cat.name}>
+                                                {t(cat.name)}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <>
+                                            <option value="Electronics">{t('Electronics')}</option>
+                                            <option value="Fashion">{t('Fashion')}</option>
+                                            <option value="Home">{t('Home')}</option>
+                                            <option value="Beauty">{t('Beauty')}</option>
+                                        </>
+                                    )}
                                 </select>
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Stock')}</label>
+                                <input
+                                    type="number"
+                                    value={productForm.stock}
+                                    onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder="0"
+                                    min="0"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Unit')}</label>
+                                <select
+                                    value={productForm.unit}
+                                    onChange={(e) => setProductForm({ ...productForm, unit: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required
+                                >
+                                    <option value="kg">{t('Kilogram (kg)')}</option>
+                                    <option value="g">{t('Gram (g)')}</option>
+                                    <option value="l">{t('Liter (l)')}</option>
+                                    <option value="ml">{t('Milliliter (ml)')}</option>
+                                    <option value="pcs">{t('Pieces (pcs)')}</option>
+                                    <option value="box">{t('Box')}</option>
+                                    <option value="pack">{t('Pack')}</option>
+                                </select>
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Main Image')}</label>
                                 <div className="flex items-center gap-4">
@@ -1314,17 +1362,39 @@ const CategoryManagement = () => {
     const [view, setView] = useState('list');
     const [editingCategory, setEditingCategory] = useState(null);
     const [formData, setFormData] = useState({
-        name: ''
+        name: '',
+        image: ''
     });
 
     useEffect(() => {
         fetchCategories();
     }, []);
 
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file size (max 5MB)
+            if (!validateImageSize(file, 5)) {
+                alert(t('Image is too large! Please select an image smaller than 5MB.'));
+                return;
+            }
+
+            try {
+                // Compress image to max 500KB and 800px width
+                const compressedImage = await compressImage(file, 500, 800);
+                setFormData(prev => ({ ...prev, image: compressedImage }));
+            } catch (error) {
+                console.error('Error compressing image:', error);
+                alert(t('Failed to process image. Please try another image.'));
+            }
+        }
+    };
+
     const handleEdit = (category) => {
         setEditingCategory(category);
         setFormData({
-            name: category.name
+            name: category.name,
+            image: category.image || ''
         });
         setView('form');
     };
@@ -1354,7 +1424,7 @@ const CategoryManagement = () => {
                 console.log('Category add result:', result);
                 alert(t('Category added successfully!'));
             }
-            setFormData({ name: '' });
+            setFormData({ name: '', image: '' });
             setEditingCategory(null);
             setView('list');
             fetchCategories();
@@ -1434,11 +1504,35 @@ const CategoryManagement = () => {
                             <input
                                 type="text"
                                 value={formData.name}
-                                onChange={(e) => setFormData({ name: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 placeholder={t('e.g., Vegetables')}
                                 required
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Category Image')}</label>
+                            <div className="flex items-center gap-4">
+                                {formData.image && (
+                                    <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-gray-200 dark:ring-gray-700">
+                                        <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                    </div>
+                                )}
+                                <label className="flex-1 cursor-pointer">
+                                    <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
+                                        <Upload size={20} />
+                                        <span>{t('Upload Image')}</span>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                        required={!formData.image}
+                                    />
+                                </label>
+                            </div>
                         </div>
 
                         <div className="flex justify-end">
@@ -1630,7 +1724,9 @@ const UserManagement = () => {
                                             {user.address && (
                                                 <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
                                                     <MapPin size={14} />
-                                                    {user.address}
+                                                    {typeof user.address === 'string'
+                                                        ? user.address
+                                                        : `${user.address.street || ''}, ${user.address.city || ''}, ${user.address.state || ''}`.replace(/, ,/g, ',').replace(/^, |, $/g, '')}
                                                 </div>
                                             )}
                                             <div className="mt-2">
@@ -1677,8 +1773,11 @@ const AdsManagement = () => {
     const handleAdImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
-            const imageUrl = URL.createObjectURL(file);
-            setNewAdUrl(imageUrl);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setNewAdUrl(reader.result); // Base64 string
+            };
+            reader.readAsDataURL(file);
         }
     };
 

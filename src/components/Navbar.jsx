@@ -2,7 +2,7 @@ import { useState, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, Search, ShoppingBag, ShoppingCart, LayoutDashboard, User } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import AuthContext from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
 const Navbar = () => {
@@ -10,7 +10,7 @@ const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const { cartCount } = useCart();
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const isAdmin = location.pathname.startsWith('/admin');

@@ -4,12 +4,24 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import AuthContext from '../context/AuthContext';
+import { useData } from '../context/DataContext';
+import { formatOrderDate } from '../utils/dateUtils';
 
 const Profile = () => {
     const { theme, toggleTheme } = useTheme();
     const { language, t } = useLanguage();
     const { user, logout } = useContext(AuthContext);
+    const { orders } = useData();
     const navigate = useNavigate();
+
+    // Calculate real-time order statistics
+    const totalOrders = orders.length;
+    const processingOrders = orders.filter(order => order.status === 'Processing').length;
+    const deliveredOrders = orders.filter(order => order.status === 'Delivered').length;
+    const cancelledOrders = orders.filter(order => order.status === 'Cancelled').length;
+
+    // Get most recent order
+    const recentOrder = orders.length > 0 ? orders[0] : null;
 
     const handleLogout = () => {
         logout();
@@ -25,8 +37,8 @@ const Profile = () => {
                         <User size={48} className="text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">John Doe</h1>
-                        <p className="text-gray-500 dark:text-gray-400">john.doe@example.com</p>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{user?.name || 'Guest User'}</h1>
+                        <p className="text-gray-500 dark:text-gray-400">{user?.email || 'Not logged in'}</p>
                     </div>
                 </div>
 
@@ -44,35 +56,43 @@ const Profile = () => {
                     <div className="p-6">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
                             <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">12</p>
+                                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{totalOrders}</p>
                                 <p className="text-xs text-gray-600 dark:text-gray-400 font-medium mt-1">{t('Total Orders')}</p>
                             </div>
                             <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
-                                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">2</p>
+                                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{processingOrders}</p>
                                 <p className="text-xs text-gray-600 dark:text-gray-400 font-medium mt-1">{t('Processing')}</p>
                             </div>
                             <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
-                                <p className="text-2xl font-bold text-green-600 dark:text-green-400">8</p>
+                                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{deliveredOrders}</p>
                                 <p className="text-xs text-gray-600 dark:text-gray-400 font-medium mt-1">{t('Delivered')}</p>
                             </div>
                             <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl">
-                                <p className="text-2xl font-bold text-red-600 dark:text-red-400">1</p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400 font-medium mt-1">{t('Returns')}</p>
+                                <p className="text-2xl font-bold text-red-600 dark:text-red-400">{cancelledOrders}</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 font-medium mt-1">{t('Cancelled')}</p>
                             </div>
                         </div>
                         <div className="mt-6">
-                            <Link to="/orders" className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center">
-                                        <Package className="text-gray-400 dark:text-gray-500" size={24} />
+                            {recentOrder ? (
+                                <Link to={`/orders/${recentOrder._id || recentOrder.id}`} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-12 w-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center">
+                                            <Package className="text-gray-400 dark:text-gray-500" size={24} />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-gray-900 dark:text-white">{t('Track your recent order')}</p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                #{String(recentOrder._id || recentOrder.id).slice(-6).toUpperCase()} • {formatOrderDate(recentOrder.createdAt || recentOrder.date)}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="font-medium text-gray-900 dark:text-white">{t('Track your recent order')}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">ORD-2024-001 • Nov 20, 2024</p>
-                                    </div>
+                                    <ChevronRight className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" size={20} />
+                                </Link>
+                            ) : (
+                                <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl text-center">
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('No orders yet')}</p>
                                 </div>
-                                <ChevronRight className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" size={20} />
-                            </Link>
+                            )}
                         </div>
                     </div>
                 </div>

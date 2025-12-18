@@ -43,7 +43,7 @@ export const getCategoryById = async (req, res, next) => {
 // @access  Private/Admin
 export const createCategory = async (req, res, next) => {
     try {
-        const { name, name_ta, description, icon } = req.body;
+        const { name, name_ta, description, icon, image } = req.body;
 
         // Check if category already exists
         const categoryExists = await Category.findOne({ name });
@@ -57,7 +57,8 @@ export const createCategory = async (req, res, next) => {
             name,
             name_ta,
             description,
-            icon
+            icon,
+            image
         });
 
         res.status(201).json({

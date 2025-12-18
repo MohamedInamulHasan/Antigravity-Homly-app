@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with base configuration
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'https://homly-backend-8616.onrender.com/api',
+    baseURL: 'http://localhost:5000/api',
     timeout: 120000, // Increased to 120s to handle Render cold starts (free tier can take 50+ seconds to wake up)
     headers: {
         'Content-Type': 'application/json',

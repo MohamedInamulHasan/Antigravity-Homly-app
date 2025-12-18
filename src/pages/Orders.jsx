@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Package, Search, ChevronRight, Truck, CheckCircle, Clock, RotateCcw, ShoppingBag, Trash2, AlertTriangle, X } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
+import { formatOrderDateTime, formatDeliveryTime } from '../utils/dateUtils';
 
 const Orders = () => {
     const navigate = useNavigate();
@@ -103,7 +104,14 @@ const Orders = () => {
                                             </div>
                                             <div>
                                                 <p className="text-sm md:text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap">#{String(order._id || order.id).slice(-6).toUpperCase()}</p>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400">{order.date}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                    {formatOrderDateTime(order.createdAt || order.date)}
+                                                </p>
+                                                {order.scheduledDeliveryTime && (
+                                                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                                                        Delivery: {formatDeliveryTime(order.scheduledDeliveryTime)}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3">
