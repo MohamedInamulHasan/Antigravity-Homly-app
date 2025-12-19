@@ -15,14 +15,29 @@ const Login = () => {
 
     useEffect(() => {
         if (user) {
-            navigate(redirect);
+            // Check if there's a saved redirect path from checkout
+            const savedRedirect = sessionStorage.getItem('redirectAfterLogin');
+            if (savedRedirect) {
+                sessionStorage.removeItem('redirectAfterLogin');
+                navigate(savedRedirect);
+            } else {
+                navigate(redirect);
+            }
         }
     }, [navigate, user, redirect]);
 
     const submitHandler = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        await login(email, password);
+        const success = await login(email, password);
+        if (success) {
+            // Check for saved redirect
+            const savedRedirect = sessionStorage.getItem('redirectAfterLogin');
+            if (savedRedirect) {
+                sessionStorage.removeItem('redirectAfterLogin');
+                navigate(savedRedirect);
+            }
+        }
         setIsSubmitting(false);
     };
 

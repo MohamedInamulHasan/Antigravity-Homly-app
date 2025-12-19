@@ -53,6 +53,7 @@ export const getOrders = async (req, res, next) => {
 
         const orders = await Order.find(query)
             .populate('items.product', 'title image')
+            .populate('items.storeId', 'name')
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -71,7 +72,8 @@ export const getOrders = async (req, res, next) => {
 export const getOrder = async (req, res, next) => {
     try {
         const order = await Order.findById(req.params.id)
-            .populate('items.product', 'title image price');
+            .populate('items.product', 'title image price')
+            .populate('items.storeId', 'name');
 
         if (!order) {
             res.status(404);

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, Search, ChevronRight, Truck, CheckCircle, Clock, RotateCcw, ShoppingBag, Trash2, AlertTriangle, X } from 'lucide-react';
+import { Package, Search, ChevronRight, Truck, CheckCircle, Clock, RotateCcw, ShoppingBag, Trash2, AlertTriangle, X, Store } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
 import { formatOrderDateTime, formatDeliveryTime } from '../utils/dateUtils';
@@ -97,27 +97,27 @@ const Orders = () => {
                                 className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-md transition-all cursor-pointer group"
                             >
                                 <div className="p-6">
-                                    <div className="flex justify-between items-start gap-4 mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400">
-                                                <Package size={20} />
+                                    <div className="flex justify-between items-start gap-2 mb-4">
+                                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                                            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400 flex-shrink-0">
+                                                <Package size={18} />
                                             </div>
-                                            <div>
-                                                <p className="text-sm md:text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap">#{String(order._id || order.id).slice(-6).toUpperCase()}</p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-xs md:text-sm font-semibold text-gray-900 dark:text-white truncate">#{String(order._id || order.id).slice(-6).toUpperCase()}</p>
+                                                <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 truncate">
                                                     {formatOrderDateTime(order.createdAt || order.date)}
+                                                    {order.scheduledDeliveryTime && (
+                                                        <span className="text-blue-600 dark:text-blue-400 ml-1">
+                                                            • {formatDeliveryTime(order.scheduledDeliveryTime)}
+                                                        </span>
+                                                    )}
                                                 </p>
-                                                {order.scheduledDeliveryTime && (
-                                                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
-                                                        Delivery: {formatDeliveryTime(order.scheduledDeliveryTime)}
-                                                    </p>
-                                                )}
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}>
+                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                            <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-xs font-medium border ${getStatusColor(order.status)}`}>
                                                 {getStatusIcon(order.status)}
-                                                {t(order.status)}
+                                                <span className="ml-1">{t(order.status)}</span>
                                             </div>
                                             {!['Shipped', 'Delivered'].includes(order.status) && (
                                                 <button
@@ -125,7 +125,7 @@ const Orders = () => {
                                                         e.stopPropagation();
                                                         setDeleteConfirmation({ isOpen: true, orderId: order._id || order.id });
                                                     }}
-                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                                     title={t("Delete Order")}
                                                 >
                                                     <Trash2 size={18} />
@@ -142,6 +142,14 @@ const Orders = () => {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{item.name}</p>
+                                                    {item.storeId && (
+                                                        <div className="flex items-center gap-1 mt-0.5">
+                                                            <Store size={10} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                                {item.storeId.name || 'Unknown Store'}
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                     <p className="text-xs text-gray-500 dark:text-gray-400">{t('Quantity')}: {item.quantity}</p>
                                                 </div>
                                             </div>

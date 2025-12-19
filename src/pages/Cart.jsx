@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Store } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -53,12 +53,20 @@ const Cart = () => {
 
                                 <div className="flex flex-1 flex-col">
                                     <div className="flex justify-between">
-                                        <div>
+                                        <div className="flex-1 min-w-0">
                                             <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                                                 <Link to={`/product/${item.id}`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                                                     {t(item, 'title') || item.title || item.name || t('Product')}
                                                 </Link>
                                             </h3>
+                                            {item.storeId && (
+                                                <div className="flex items-center gap-1 mt-1">
+                                                    <Store size={12} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                        {item.storeId.name || 'Unknown Store'}
+                                                    </p>
+                                                </div>
+                                            )}
                                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-1">{t(item, 'description')}</p>
                                         </div>
                                         <p className="ml-4 text-lg font-medium text-gray-900 dark:text-white">₹{(item.price * item.quantity).toFixed(0)}</p>

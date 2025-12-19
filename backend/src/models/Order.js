@@ -25,7 +25,12 @@ const orderSchema = new mongoose.Schema({
             type: Number,
             required: true
         },
-        image: String
+        image: String,
+        storeId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Store',
+            required: false
+        }
     }],
     shippingAddress: {
         name: {

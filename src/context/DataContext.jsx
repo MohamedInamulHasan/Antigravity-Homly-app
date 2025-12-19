@@ -8,20 +8,8 @@ export const useData = () => {
 };
 
 export const DataProvider = ({ children }) => {
-    // Products State - load from localStorage for instant display
-    const [products, setProducts] = useState(() => {
-        try {
-            const saved = localStorage.getItem('products');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed)) return parsed;
-            }
-            return [];
-        } catch (e) {
-            console.error("Failed to parse products from local storage", e);
-            return [];
-        }
-    });
+    // Products State - always start fresh, fetch from database
+    const [products, setProducts] = useState([]);
 
     // Stores State
     const [stores, setStores] = useState(() => {
@@ -71,26 +59,22 @@ export const DataProvider = ({ children }) => {
         }
     });
 
-    // Ads State - will be populated from backend
-    const [ads, setAds] = useState(() => {
-        try {
-            const saved = localStorage.getItem('ads');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed)) return parsed;
-            }
-            return [];
-        } catch (e) {
-            console.error("Failed to parse ads from local storage", e);
-            return [];
-        }
-    });
+    // Ads State - always start fresh, fetch from database
+    const [ads, setAds] = useState([]);
 
     // Categories State
     const [categories, setCategories] = useState([]);
 
     // Users State
     const [users, setUsers] = useState([]);
+
+    // Clear stale localStorage on mount
+    useEffect(() => {
+        // Remove old cached data to prevent stale content
+        localStorage.removeItem('products');
+        localStorage.removeItem('ads');
+        console.log('🧹 Cleared stale cache from localStorage (products, ads)');
+    }, []);
 
     // Fetch data from API on mount
     useEffect(() => {
@@ -197,11 +181,7 @@ export const DataProvider = ({ children }) => {
                 const response = await apiService.getAds();
                 if (response.success && response.data) {
                     setAds(response.data);
-                    try {
-                        localStorage.setItem('ads', JSON.stringify(response.data));
-                    } catch (e) {
-                        console.error('Failed to save ads to local storage', e);
-                    }
+                    // No longer saving to localStorage - always fetch fresh
                 }
             } catch (err) {
                 console.error('Failed to fetch ads:', err);
@@ -215,19 +195,7 @@ export const DataProvider = ({ children }) => {
         fetchAds();
     }, []);
 
-    // Sync with localStorage when data changes
-    useEffect(() => {
-        if (products.length > 0) {
-            try {
-                localStorage.setItem('products', JSON.stringify(products));
-            } catch (e) {
-                console.error('Failed to save products to localStorage', e);
-                if (e.name === 'QuotaExceededError') {
-                    console.warn('localStorage quota exceeded for products');
-                }
-            }
-        }
-    }, [products]);
+    // Products are no longer cached in localStorage - always fetch fresh from database
 
     useEffect(() => {
         if (stores.length > 0) {
@@ -251,13 +219,7 @@ export const DataProvider = ({ children }) => {
         }
     }, [news]);
 
-    useEffect(() => {
-        try {
-            localStorage.setItem('ads', JSON.stringify(ads));
-        } catch (e) {
-            console.error('Failed to save ads to local storage', e);
-        }
-    }, [ads]);
+    // Ads are no longer cached in localStorage - always fetch fresh from database
 
     // Actions
     const addProduct = async (product) => {

@@ -29,16 +29,16 @@ const Profile = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 transition-colors duration-200">
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-gray-50 dark:bg-gray-900 py-8 md:py-12 transition-colors duration-200">
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
                 {/* Profile Header */}
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6 flex items-center gap-6 transition-colors duration-200">
-                    <div className="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-full flex-shrink-0">
-                        <User size={48} className="text-blue-600 dark:text-blue-400" />
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6 flex items-center gap-4 sm:gap-6 transition-colors duration-200">
+                    <div className="bg-blue-100 dark:bg-blue-900/30 p-3 sm:p-4 rounded-full flex-shrink-0">
+                        <User size={40} className="text-blue-600 dark:text-blue-400 sm:w-12 sm:h-12" />
                     </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{user?.name || 'Guest User'}</h1>
-                        <p className="text-gray-500 dark:text-gray-400">{user?.email || 'Not logged in'}</p>
+                    <div className="flex-1 min-w-0">
+                        <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white truncate">{user?.name || 'Guest User'}</h1>
+                        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 truncate">{user?.email || 'Not logged in'}</p>
                     </div>
                 </div>
 

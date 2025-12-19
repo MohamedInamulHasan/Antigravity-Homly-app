@@ -27,7 +27,7 @@ export const getProducts = async (req, res, next) => {
             query.storeId = req.query.storeId;
         }
 
-        const products = await Product.find(query).sort({ createdAt: -1 });
+        const products = await Product.find(query).populate('storeId', 'name').sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
@@ -44,7 +44,7 @@ export const getProducts = async (req, res, next) => {
 // @access  Public
 export const getProduct = async (req, res, next) => {
     try {
-        const product = await Product.findById(req.params.id);
+        const product = await Product.findById(req.params.id).populate('storeId', 'name');
 
         if (!product) {
             res.status(404);

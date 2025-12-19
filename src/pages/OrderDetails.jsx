@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, CreditCard, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, CreditCard, RotateCcw, Store } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -107,6 +107,14 @@ const OrderDetails = () => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <h3 className="font-medium text-gray-900 dark:text-white mb-1">{item.name}</h3>
+                                    {item.storeId && (
+                                        <div className="flex items-center gap-1 mb-1">
+                                            <Store size={12} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                {item.storeId.name || 'Unknown Store'}
+                                            </p>
+                                        </div>
+                                    )}
                                     <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">{t('Quantity')}: {item.quantity}</p>
                                     <p className="font-semibold text-gray-900 dark:text-white">₹{Number(item.price || 0).toFixed(0)}</p>
                                 </div>

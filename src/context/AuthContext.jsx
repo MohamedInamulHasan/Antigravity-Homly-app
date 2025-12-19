@@ -27,6 +27,8 @@ export const AuthProvider = ({ children }) => {
             setUser(data.data);
             localStorage.setItem('userInfo', JSON.stringify(data.data));
             localStorage.setItem('authToken', data.data.token);
+            // Dispatch custom event to notify cart of user change
+            window.dispatchEvent(new Event('userChanged'));
             return true;
         } catch (err) {
             setError(
@@ -46,6 +48,8 @@ export const AuthProvider = ({ children }) => {
             setUser(data.data);
             localStorage.setItem('userInfo', JSON.stringify(data.data));
             localStorage.setItem('authToken', data.data.token);
+            // Dispatch custom event to notify cart of user change
+            window.dispatchEvent(new Event('userChanged'));
             return true;
         } catch (err) {
             setError(
@@ -61,6 +65,8 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('userInfo');
         localStorage.removeItem('authToken');
         setUser(null);
+        // Dispatch custom event to notify cart of user change
+        window.dispatchEvent(new Event('userChanged'));
     };
 
     return (

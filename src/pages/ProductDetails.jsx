@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Plus, ArrowLeft, Minus, ShoppingBag, ShoppingCart, ChevronLeft, ChevronRight, Star, Share2, Heart } from 'lucide-react';
+import { Plus, ArrowLeft, Minus, ShoppingBag, ShoppingCart, ChevronLeft, ChevronRight, Star, Share2, Heart, Store } from 'lucide-react';
 
 const ProductDetails = () => {
     const { id } = useParams();
@@ -146,6 +146,14 @@ const ProductDetails = () => {
                                     <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider rounded-full">
                                         {t(product, 'category')}
                                     </span>
+                                    {product.storeId && (
+                                        <div className="flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
+                                            <Store size={12} className="text-gray-500 dark:text-gray-400" />
+                                            <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                                                {product.storeId.name || 'Unknown Store'}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">

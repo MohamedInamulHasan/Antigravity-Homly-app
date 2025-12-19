@@ -19,7 +19,14 @@ const Signup = () => {
 
     useEffect(() => {
         if (user) {
-            navigate(redirect);
+            // Check if there's a saved redirect path from checkout
+            const savedRedirect = sessionStorage.getItem('redirectAfterLogin');
+            if (savedRedirect) {
+                sessionStorage.removeItem('redirectAfterLogin');
+                navigate(savedRedirect);
+            } else {
+                navigate(redirect);
+            }
         }
     }, [navigate, user, redirect]);
 
@@ -33,7 +40,15 @@ const Signup = () => {
         }
 
         setIsSubmitting(true);
-        await register(name, email, password);
+        const success = await register(name, email, password);
+        if (success) {
+            // Check for saved redirect
+            const savedRedirect = sessionStorage.getItem('redirectAfterLogin');
+            if (savedRedirect) {
+                sessionStorage.removeItem('redirectAfterLogin');
+                navigate(savedRedirect);
+            }
+        }
         setIsSubmitting(false);
     };
 

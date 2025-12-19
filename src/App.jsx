@@ -31,7 +31,7 @@ const Layout = ({ children }) => {
         <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
             <ScrollToTop />
             {!isAuthPage && <Navbar />}
-            <main className={`flex-grow ${hideMobileFooter ? '' : 'pb-16'} md:pb-0`}>
+            <main className={`flex-grow ${hideMobileFooter ? '' : 'pb-24'} md:pb-0`}>
                 {children}
             </main>
             {!isAuthPage && <MobileFooter />}

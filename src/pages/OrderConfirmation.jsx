@@ -3,7 +3,7 @@ import { useLocation, useNavigate, Link, Navigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
-import { CheckCircle, ArrowLeft, MapPin, ClipboardList, ShoppingBag } from 'lucide-react';
+import { CheckCircle, ArrowLeft, MapPin, ClipboardList, ShoppingBag, Store } from 'lucide-react';
 
 const OrderConfirmation = () => {
     const location = useLocation();
@@ -42,7 +42,8 @@ const OrderConfirmation = () => {
                 name: item.title || item.name || 'Product', // Fallback for safety
                 quantity: item.quantity,
                 price: item.price,
-                image: item.image
+                image: item.image,
+                storeId: item.storeId?._id || item.storeId || null
             })),
             total: finalTotal || ((cartTotal || 0) + finalDeliveryCharge),
             subtotal: cartTotal,
@@ -138,8 +139,16 @@ const OrderConfirmation = () => {
                                             <div className="h-16 w-16 rounded-xl bg-gray-100 dark:bg-gray-700 overflow-hidden">
                                                 <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
                                             </div>
-                                            <div>
+                                            <div className="flex-1 min-w-0">
                                                 <p className="font-medium text-gray-900 dark:text-white">{t(item, 'title') || item.title || item.name || t('Product')}</p>
+                                                {item.storeId && (
+                                                    <div className="flex items-center gap-1 mt-0.5">
+                                                        <Store size={12} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                            {item.storeId.name || 'Unknown Store'}
+                                                        </p>
+                                                    </div>
+                                                )}
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">{t('Qty')}: {item.quantity}</p>
                                             </div>
                                         </div>

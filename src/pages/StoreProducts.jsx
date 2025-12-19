@@ -16,13 +16,14 @@ const StoreProducts = () => {
     const store = stores.find(s => (s._id || s.id) === storeId);
 
     // Filter products for this store
-    // Ensure we handle both string and number ID comparisons
+    // Ensure we handle both string and number ID comparisons, and populated storeId objects
     const storeProducts = useMemo(() => {
         return products.filter(p => {
-            const pStoreId = p.storeId;
+            // Handle both populated storeId (object with _id) and direct ID reference
+            const pStoreId = p.storeId?._id || p.storeId;
             const targetId = storeId;
-            // Loose comparison to catch '1' vs 1
-            return pStoreId == targetId;
+            // Loose comparison to catch '1' vs 1, and also handle ObjectId comparison
+            return pStoreId == targetId || String(pStoreId) === String(targetId);
         });
     }, [products, storeId]);
 
@@ -40,7 +41,7 @@ const StoreProducts = () => {
     // Filter products to display based on selected category
     const displayedProducts = selectedCategory
         ? storeProducts.filter(p => p.category === selectedCategory)
-        : [];
+        : storeProducts; // Show all products by default
 
     if (!store) {
         return (
@@ -96,81 +97,30 @@ const StoreProducts = () => {
             </div>
 
             {/* Content Area */}
-            {selectedCategory ? (
-                /* Product Grid View */
-                <div>
-                    <div className="flex justify-between items-center mb-6">
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => setSelectedCategory(null)}
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                            >
-                                <ArrowLeft size={24} className="text-gray-600 dark:text-gray-300" />
-                            </button>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t(selectedCategory)}</h2>
+            <div>
+                {/* Products Grid */}
+                {storeProducts.length > 0 ? (
+                    <div>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                                {t('All Products')}
+                            </h2>
+                            <span className="text-gray-500 dark:text-gray-400 text-sm">
+                                {storeProducts.length} {t('products')}
+                            </span>
                         </div>
-                        <span className="text-gray-500 dark:text-gray-400 text-sm">
-                            {displayedProducts.length} {t('products')}
-                        </span>
-                    </div>
-
-                    {displayedProducts.length > 0 ? (
                         <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-                            {displayedProducts.map((product) => (
+                            {storeProducts.map((product) => (
                                 <ProductCard key={product._id || product.id} product={product} />
                             ))}
                         </div>
-                    ) : (
-                        <div className="text-center py-12">
-                            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('No products found in this category')}</p>
-                        </div>
-                    )}
-                </div>
-            ) : (
-                /* Category Tile View */
-                <div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{t('Shop by Category')}</h2>
-
-                    {categories.length > 0 ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {categories.map((cat) => (
-                                <div
-                                    key={cat.name}
-                                    onClick={() => setSelectedCategory(cat.name)}
-                                    className="group cursor-pointer bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1"
-                                >
-                                    <div className="aspect-square relative overflow-hidden bg-gray-100 dark:bg-gray-700">
-                                        {cat.image ? (
-                                            <img
-                                                src={cat.image}
-                                                alt={cat.name}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                <span className="text-4xl">📦</span>
-                                            </div>
-                                        )}
-                                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
-                                    </div>
-                                    <div className="p-4 text-center">
-                                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                            {t(cat.name)}
-                                        </h3>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            {cat.count} {t('items')}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
-                            <p className="text-gray-500 dark:text-gray-400 text-lg">{t('No products available at this store currently.')}</p>
-                        </div>
-                    )}
-                </div>
-            )}
+                    </div>
+                ) : (
+                    <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
+                        <p className="text-gray-500 dark:text-gray-400 text-lg">{t('No products available at this store currently.')}</p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

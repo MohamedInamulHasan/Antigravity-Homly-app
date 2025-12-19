@@ -7,14 +7,83 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
+    // Get current user ID from localStorage
+    const getUserId = () => {
+        try {
+            const userInfo = localStorage.getItem('userInfo');
+            if (userInfo) {
+                const user = JSON.parse(userInfo);
+                return user._id || user.id || 'guest';
+            }
+        } catch (e) {
+            console.error('Failed to get user info:', e);
+        }
+        return 'guest';
+    };
+
+    const [userId, setUserId] = useState(getUserId());
     const [cartItems, setCartItems] = useState(() => {
-        const localData = localStorage.getItem('cart');
-        return localData ? JSON.parse(localData) : [];
+        const currentUserId = getUserId();
+        const cartKey = `cart_${currentUserId}`;
+        const localData = localStorage.getItem(cartKey);
+        if (!localData) return [];
+
+        try {
+            const items = JSON.parse(localData);
+            // Migrate old cart items: ensure storeId is properly structured
+            return items.map(item => ({
+                ...item,
+                storeId: item.storeId && typeof item.storeId === 'object'
+                    ? item.storeId
+                    : null // Clear invalid storeId references
+            }));
+        } catch (e) {
+            console.error('Failed to parse cart from localStorage:', e);
+            return [];
+        }
     });
+
+    // Listen for user changes (login/logout)
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const newUserId = getUserId();
+            if (newUserId !== userId) {
+                setUserId(newUserId);
+                // Load cart for new user
+                const cartKey = `cart_${newUserId}`;
+                const localData = localStorage.getItem(cartKey);
+                if (localData) {
+                    try {
+                        const items = JSON.parse(localData);
+                        setCartItems(items.map(item => ({
+                            ...item,
+                            storeId: item.storeId && typeof item.storeId === 'object'
+                                ? item.storeId
+                                : null
+                        })));
+                    } catch (e) {
+                        setCartItems([]);
+                    }
+                } else {
+                    setCartItems([]);
+                }
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        // Also listen for custom event when user logs in/out
+        window.addEventListener('userChanged', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('userChanged', handleStorageChange);
+        };
+    }, [userId]);
 
     useEffect(() => {
         try {
-            localStorage.setItem('cart', JSON.stringify(cartItems));
+            const cartKey = `cart_${userId}`;
+            localStorage.setItem(cartKey, JSON.stringify(cartItems));
         } catch (error) {
             console.error("Failed to save cart to localStorage:", error);
             // If quota exceeded, we could try to clear old items or just warn
@@ -22,7 +91,7 @@ export const CartProvider = ({ children }) => {
                 console.warn("LocalStorage quota exceeded. Cart changes may not be saved.");
             }
         }
-    }, [cartItems]);
+    }, [cartItems, userId]);
 
     const addToCart = (product) => {
         const productId = product._id || product.id;
@@ -33,7 +102,10 @@ export const CartProvider = ({ children }) => {
             title: product.title || product.name,
             price: product.price,
             image: product.image,
-            storeId: product.storeId, // Keep store reference if needed
+            storeId: product.storeId ? {
+                _id: product.storeId._id || product.storeId,
+                name: product.storeId.name || null
+            } : null, // Save complete store object
             quantity: 1
         };
 

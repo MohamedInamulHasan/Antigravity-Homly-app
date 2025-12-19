@@ -24,7 +24,7 @@ const MobileFooter = () => {
 
     return (
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 pb-safe z-50 transition-colors duration-200">
-            <div className="flex justify-around items-center h-12">
+            <div className="flex justify-around items-center h-16 py-2">
                 {navItems.map((item) => {
                     const active = isActive(item.path);
                     return (

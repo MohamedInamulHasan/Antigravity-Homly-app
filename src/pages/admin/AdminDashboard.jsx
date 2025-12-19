@@ -482,7 +482,8 @@ const StoreManagement = () => {
         image: '',
         rating: 4.5,
         timing: '',
-        mobile: ''
+        mobile: '',
+        category: ''
     });
     const [productForm, setProductForm] = useState({
         title: '',
@@ -538,7 +539,8 @@ const StoreManagement = () => {
             image: store.image,
             rating: store.rating,
             timing: store.timing || '9:00 AM - 9:00 PM',
-            mobile: store.mobile || ''
+            mobile: store.mobile || '',
+            category: store.type || ''
         });
         setView('form');
     };
@@ -560,7 +562,7 @@ const StoreManagement = () => {
 
         const storeData = {
             name: storeForm.name,
-            type: 'General Store', // Default type - can be made dynamic later
+            type: storeForm.category || 'General Store', // Use selected category as type
             address: storeForm.address,
             city: storeForm.address.split(',').pop().trim() || 'Unknown', // Extract city from address
             timing: storeForm.timing || '9:00 AM - 9:00 PM',
@@ -577,7 +579,7 @@ const StoreManagement = () => {
                 await addStore(storeData);
                 alert(t('Store added successfully!'));
             }
-            setStoreForm({ name: '', address: '', image: '', rating: 4.5, timing: '', mobile: '' });
+            setStoreForm({ name: '', address: '', image: '', rating: 4.5, timing: '', mobile: '', category: '' });
             setEditingStore(null);
             setView('list');
         } catch (error) {
@@ -766,6 +768,23 @@ const StoreManagement = () => {
                                     required
                                 />
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Category')}</label>
+                                <select
+                                    value={storeForm.category}
+                                    onChange={(e) => setStoreForm({ ...storeForm, category: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required
+                                >
+                                    <option value="">{t('Select Category')}</option>
+                                    {categories && categories.length > 0 && categories.map((cat) => (
+                                        <option key={cat._id || cat.id} value={cat.name}>
+                                            {t(cat.name)}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Store Image')}</label>
                                 <div className="flex items-center gap-4">
@@ -823,7 +842,11 @@ const StoreManagement = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                    {products.filter(p => p.storeId === (selectedStore._id || selectedStore.id)).map(product => (
+                                    {products.filter(p => {
+                                        const pStoreId = p.storeId?._id || p.storeId;
+                                        const targetId = selectedStore._id || selectedStore.id;
+                                        return pStoreId == targetId || String(pStoreId) === String(targetId);
+                                    }).map(product => (
                                         <tr key={product._id || product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                             <td className="p-4">
                                                 <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
@@ -848,13 +871,17 @@ const StoreManagement = () => {
                                             </td>
                                         </tr>
                                     ))}
-                                    {products.filter(p => p.storeId === selectedStore.id).length === 0 && (
-                                        <tr>
-                                            <td colSpan="4" className="p-8 text-center text-gray-500 dark:text-gray-400">
-                                                {t('No products found in this store. Add one to get started!')}
-                                            </td>
-                                        </tr>
-                                    )}
+                                    {products.filter(p => {
+                                        const pStoreId = p.storeId?._id || p.storeId;
+                                        const targetId = selectedStore._id || selectedStore.id;
+                                        return pStoreId == targetId || String(pStoreId) === String(targetId);
+                                    }).length === 0 && (
+                                            <tr>
+                                                <td colSpan="4" className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                                    {t('No products found in this store. Add one to get started!')}
+                                                </td>
+                                            </tr>
+                                        )}
                                 </tbody>
                             </table>
                         </div>

@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { CreditCard, Truck, MapPin, ShieldCheck, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { CreditCard, Truck, MapPin, ShieldCheck, ShoppingBag, ArrowLeft, Store } from 'lucide-react';
 
 const Checkout = () => {
     const navigate = useNavigate();
     const { cartItems, cartTotal, clearCart } = useCart();
+    const { user } = useAuth();
     const { t } = useLanguage();
     const [formData, setFormData] = useState({
         fullName: '',
@@ -17,6 +19,21 @@ const Checkout = () => {
         deliveryTime: '',
         paymentMethod: 'cod'
     });
+
+    // Check if user is authenticated
+    useEffect(() => {
+        if (!user) {
+            // Store the current path to redirect back after login
+            sessionStorage.setItem('redirectAfterLogin', '/checkout');
+            alert(t('Please sign in to continue with checkout'));
+            navigate('/login');
+        }
+    }, [user, navigate, t]);
+
+    // If no user, don't render the form (will redirect)
+    if (!user) {
+        return null;
+    }
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -254,8 +271,16 @@ const Checkout = () => {
                                                 className="h-full w-full object-cover object-center"
                                             />
                                         </div>
-                                        <div className="flex flex-1 flex-col justify-center">
+                                        <div className="flex flex-1 flex-col justify-center min-w-0">
                                             <h3 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-1">{t(item, 'title') || item.title || item.name || t('Product')}</h3>
+                                            {item.storeId && (
+                                                <div className="flex items-center gap-1 mt-0.5">
+                                                    <Store size={10} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                        {item.storeId.name || 'Unknown Store'}
+                                                    </p>
+                                                </div>
+                                            )}
                                             <p className="text-sm text-gray-500 dark:text-gray-400">{t('Qty')}: {item.quantity}</p>
                                             <p className="text-sm font-medium text-gray-900 dark:text-white">₹{(item.price * item.quantity).toFixed(0)}</p>
                                         </div>
