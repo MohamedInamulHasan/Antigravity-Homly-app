@@ -80,6 +80,12 @@ export const getOrder = async (req, res, next) => {
             throw new Error('Order not found');
         }
 
+        // Check if the order belongs to the requesting user
+        if (order.user.toString() !== req.user._id.toString()) {
+            res.status(403);
+            throw new Error('Not authorized to view this order');
+        }
+
         res.status(200).json({
             success: true,
             data: order

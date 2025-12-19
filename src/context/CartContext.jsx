@@ -25,6 +25,23 @@ export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState(() => {
         const currentUserId = getUserId();
         const cartKey = `cart_${currentUserId}`;
+
+        // Clean up old cart data (migration)
+        const oldCart = localStorage.getItem('cart');
+        if (oldCart && !localStorage.getItem(cartKey)) {
+            // If old cart exists and no user-specific cart, migrate it
+            try {
+                const oldItems = JSON.parse(oldCart);
+                localStorage.setItem(cartKey, JSON.stringify(oldItems));
+                localStorage.removeItem('cart'); // Remove old cart
+            } catch (e) {
+                console.error('Failed to migrate old cart:', e);
+            }
+        } else if (oldCart) {
+            // Just remove the old cart if user already has a new one
+            localStorage.removeItem('cart');
+        }
+
         const localData = localStorage.getItem(cartKey);
         if (!localData) return [];
 
