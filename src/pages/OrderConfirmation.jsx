@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useLocation, useNavigate, Link, Navigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
+import { getStoreName } from '../utils/storeHelpers';
 import { useLanguage } from '../context/LanguageContext';
-import { CheckCircle, ArrowLeft, MapPin, ClipboardList, ShoppingBag, Store } from 'lucide-react';
+import { CheckCircle, ArrowLeft, ClipboardList, ShoppingBag, MapPin, Store } from 'lucide-react';
 
 const OrderConfirmation = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { clearCart } = useCart();
-    const { addOrder } = useData();
+    const { addOrder, stores } = useData();
     const { t } = useLanguage();
 
     const { formData, cartItems, cartTotal, deliveryCharge } = location.state || {};
@@ -64,14 +65,17 @@ const OrderConfirmation = () => {
                 last4: ''
             },
             scheduledDeliveryTime: formData.deliveryTime ? (() => {
+                console.log('🕐 formData.deliveryTime:', formData.deliveryTime);
                 const today = new Date();
                 const [hours, minutes] = formData.deliveryTime.split(':');
                 today.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                console.log('📅 Converted scheduledDeliveryTime:', today.toISOString());
                 return today.toISOString();
             })() : null
         };
 
         console.log('📦 Creating order with data:', newOrder);
+        console.log('⏰ scheduledDeliveryTime in order:', newOrder.scheduledDeliveryTime);
 
         try {
             const createdOrder = await addOrder(newOrder);
@@ -80,18 +84,15 @@ const OrderConfirmation = () => {
             setCreatedOrderId(createdOrder?._id || 'NEW');
             setShowConfirmModal(false);
             setShowSuccessModal(true);
+
+            // Send WhatsApp notification to admin
+            sendWhatsAppNotification(createdOrder, formData, cartItems, cartTotal);
         } catch (error) {
             console.error('❌ Failed to create order:', error);
 
             let errorMessage = t('Failed to place order. Please try again.');
-
-            // Handle different error types
-            if (error.message && error.message.includes('timeout')) {
-                errorMessage = t('Request timed out. The server might be starting up. Please try again in a moment.');
-            } else if (error.message && error.message.includes('Network Error')) {
-                errorMessage = t('Network error. Please check your internet connection.');
-            } else if (error.data?.message) {
-                errorMessage = error.data.message;
+            if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
             } else if (error.message) {
                 errorMessage = error.message;
             }
@@ -99,6 +100,50 @@ const OrderConfirmation = () => {
             alert(`${t('Error')}: ${errorMessage}`);
             setIsSubmitting(false);
         }
+    };
+
+    // Function to send WhatsApp notification to admin
+    const sendWhatsAppNotification = (order, customerInfo, items, total) => {
+        // Admin WhatsApp number
+        const adminWhatsAppNumber = '919500171980'; // Format: country code + number (no + or spaces)
+
+        // Format order details message
+        const orderId = String(order._id || order.id).slice(-6).toUpperCase();
+        const itemsList = items.map((item, index) =>
+            `${index + 1}. ${item.name || item.title} x${item.quantity} - ₹${item.price}`
+        ).join('\n');
+
+        const deliveryTime = formData.deliveryTime ?
+            `\n📅 *Scheduled Delivery:* ${new Date().toLocaleDateString()} at ${formData.deliveryTime}` : '';
+
+        const message = `🛒 *NEW ORDER RECEIVED!*\n\n` +
+            `📋 *Order ID:* #${orderId}\n\n` +
+            `👤 *Customer Details:*\n` +
+            `Name: ${customerInfo.fullName}\n` +
+            `Mobile: ${customerInfo.mobile}\n` +
+            `Address: ${customerInfo.address}, ${customerInfo.city}, ${customerInfo.zip}\n` +
+            `${deliveryTime}\n\n` +
+            `🛍️ *Items Ordered:*\n${itemsList}\n\n` +
+            `💰 *Total Amount:* ₹${(total + 20).toFixed(0)}\n` +
+            `(Subtotal: ₹${total.toFixed(0)} + Delivery: ₹20)\n\n` +
+            `⏰ *Order Time:* ${new Date().toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            })}\n\n` +
+            `✅ Please confirm and process this order.`;
+
+        // Encode message for URL
+        const encodedMessage = encodeURIComponent(message);
+
+        // WhatsApp URL
+        const whatsappUrl = `https://wa.me/${adminWhatsAppNumber}?text=${encodedMessage}`;
+
+        // Open WhatsApp in new tab
+        window.open(whatsappUrl, '_blank');
     };
 
     const handleCloseSuccess = () => {
@@ -145,7 +190,7 @@ const OrderConfirmation = () => {
                                                     <div className="flex items-center gap-1 mt-0.5">
                                                         <Store size={12} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
                                                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                                            {item.storeId.name || 'Unknown Store'}
+                                                            {getStoreName(item.storeId, stores)}
                                                         </p>
                                                     </div>
                                                 )}

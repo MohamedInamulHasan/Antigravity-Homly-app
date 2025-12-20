@@ -5,7 +5,7 @@ import Product from '../models/Product.js';
 // @access  Public
 export const getProducts = async (req, res, next) => {
     try {
-        const { category, search, featured } = req.query;
+        const { category, search, featured, page, limit, fields } = req.query;
         let query = {};
 
         if (category) {
@@ -27,11 +27,36 @@ export const getProducts = async (req, res, next) => {
             query.storeId = req.query.storeId;
         }
 
-        const products = await Product.find(query).populate('storeId', 'name').sort({ createdAt: -1 });
+        // Pagination
+        const pageNum = parseInt(page, 10) || 1;
+        const limitNum = parseInt(limit, 10) || 50; // Default 50 items per page
+        const skip = (pageNum - 1) * limitNum;
+
+        // Field selection (if specified)
+        let selectFields = '';
+        if (fields) {
+            selectFields = fields.split(',').join(' ');
+        }
+
+        // Execute query with pagination
+        // Removed .populate() to avoid N+1 query issue - frontend already has stores
+        const productsQuery = Product.find(query)
+            .select(selectFields)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limitNum);
+
+        const products = await productsQuery;
+
+        // Get total count for pagination
+        const total = await Product.countDocuments(query);
 
         res.status(200).json({
             success: true,
             count: products.length,
+            total,
+            page: pageNum,
+            pages: Math.ceil(total / limitNum),
             data: products
         });
     } catch (error) {

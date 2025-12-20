@@ -56,7 +56,18 @@ api.interceptors.response.use(
 // API methods
 export const apiService = {
     // Products
-    getProducts: () => api.get('/products'),
+    getProducts: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append('page', params.page);
+        if (params.limit) queryParams.append('limit', params.limit);
+        if (params.category) queryParams.append('category', params.category);
+        if (params.search) queryParams.append('search', params.search);
+        if (params.featured) queryParams.append('featured', params.featured);
+        if (params.storeId) queryParams.append('storeId', params.storeId);
+
+        const queryString = queryParams.toString();
+        return api.get(`/products${queryString ? `?${queryString}` : ''}`);
+    },
     getProduct: (id) => api.get(`/products/${id}`),
     createProduct: (data) => api.post('/products', data),
     updateProduct: (id, data) => api.put(`/products/${id}`, data),

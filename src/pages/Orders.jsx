@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Package, Search, ChevronRight, Truck, CheckCircle, Clock, RotateCcw, ShoppingBag, Trash2, AlertTriangle, X, Store } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { getStoreName } from '../utils/storeHelpers';
 import { useLanguage } from '../context/LanguageContext';
 import { formatOrderDateTime, formatDeliveryTime } from '../utils/dateUtils';
 
 const Orders = () => {
     const navigate = useNavigate();
-    const { orders, deleteOrder } = useData();
+    const { orders, deleteOrder, stores } = useData();
     const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
@@ -78,8 +79,8 @@ const Orders = () => {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${activeTab === tab
-                                ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/20'
-                                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700'
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/20'
+                                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700'
                                 }`}
                         >
                             {t(tab)}
@@ -146,7 +147,7 @@ const Orders = () => {
                                                         <div className="flex items-center gap-1 mt-0.5">
                                                             <Store size={10} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
                                                             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                                                {item.storeId.name || 'Unknown Store'}
+                                                                {getStoreName(item.storeId, stores)}
                                                             </p>
                                                         </div>
                                                     )}

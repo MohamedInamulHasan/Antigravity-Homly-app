@@ -2,13 +2,14 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, CreditCard, RotateCcw, Store } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
+import { getStoreName } from '../utils/storeHelpers';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const OrderDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { t } = useLanguage();
-    const { orders, loading } = useData();
+    const { orders, loading, stores } = useData();
 
     const order = orders.find(o => (o._id || o.id) === id);
 
@@ -111,7 +112,7 @@ const OrderDetails = () => {
                                         <div className="flex items-center gap-1 mb-1">
                                             <Store size={12} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
                                             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                                {item.storeId.name || 'Unknown Store'}
+                                                {getStoreName(item.storeId, stores)}
                                             </p>
                                         </div>
                                     )}
@@ -125,6 +126,37 @@ const OrderDetails = () => {
 
                 {/* Order Info Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {/* Scheduled Delivery Time - Prominent Display */}
+                    {order.scheduledDeliveryTime && (
+                        <div className="md:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl shadow-sm border-2 border-blue-200 dark:border-blue-800 p-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 bg-blue-600 rounded-xl">
+                                    <Clock size={24} className="text-white" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
+                                        {t('Scheduled Delivery Time')}
+                                    </p>
+                                    <p className="text-xl font-bold text-gray-900 dark:text-white">
+                                        {new Date(order.scheduledDeliveryTime).toLocaleDateString('en-US', {
+                                            weekday: 'long',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            year: 'numeric'
+                                        })}
+                                    </p>
+                                    <p className="text-lg font-semibold text-blue-600 dark:text-blue-400 mt-1">
+                                        {new Date(order.scheduledDeliveryTime).toLocaleTimeString('en-US', {
+                                            hour: 'numeric',
+                                            minute: '2-digit',
+                                            hour12: true
+                                        })}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Shipping Address */}
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-4">
@@ -137,29 +169,6 @@ const OrderDetails = () => {
                             <p>{order.shippingAddress?.city || ''}, {order.shippingAddress?.state || ''} {order.shippingAddress?.zip || ''}</p>
                             <p>{order.shippingAddress?.country || ''}</p>
                         </address>
-
-                        {/* Delivery Time Display */}
-                        {order.scheduledDeliveryTime && (
-                            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                                    <Clock size={18} />
-                                    <div>
-                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('Scheduled Delivery')}</p>
-                                        <p className="font-semibold text-gray-900 dark:text-white">
-                                            {new Date(order.scheduledDeliveryTime).toLocaleDateString('en-US', {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                year: 'numeric'
-                                            })} at {new Date(order.scheduledDeliveryTime).toLocaleTimeString('en-US', {
-                                                hour: 'numeric',
-                                                minute: '2-digit',
-                                                hour12: true
-                                            })}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                     </div>
 
                     {/* Payment Info */}

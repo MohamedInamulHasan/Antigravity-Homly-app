@@ -2,10 +2,16 @@ import { Plus, Minus, Store } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useData } from '../context/DataContext';
 
 const SimpleProductCard = ({ product }) => {
     const { t } = useLanguage();
+    const { stores } = useData();
     const productId = product._id || product.id;
+
+    // Look up store name from stores context
+    const store = stores?.find(s => (s._id || s.id) === product.storeId);
+    const storeName = store?.name || 'Unknown Store';
 
     return (
         <Link
@@ -16,6 +22,7 @@ const SimpleProductCard = ({ product }) => {
                 <img
                     src={product.image}
                     alt={t(product, 'title')}
+                    loading="lazy"
                     className="absolute top-0 left-0 w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
                 />
             </div>
@@ -28,7 +35,7 @@ const SimpleProductCard = ({ product }) => {
                         <div className="flex items-center gap-1 mb-2">
                             <Store size={12} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
                             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                {product.storeId.name || 'Unknown Store'}
+                                {storeName}
                             </p>
                         </div>
                     )}

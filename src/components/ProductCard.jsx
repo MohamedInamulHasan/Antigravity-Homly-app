@@ -16,6 +16,7 @@ const ProductCard = ({ product }) => {
                     <img
                         src={product.image}
                         alt={t(product, 'title')}
+                        loading="lazy"
                         className="absolute top-0 left-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                     />
                 </div>

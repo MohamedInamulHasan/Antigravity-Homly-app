@@ -13,7 +13,8 @@ export const createOrder = async (req, res, next) => {
             shipping,
             tax,
             discount,
-            total
+            total,
+            scheduledDeliveryTime
         } = req.body;
 
         if (!items || items.length === 0) {
@@ -30,7 +31,8 @@ export const createOrder = async (req, res, next) => {
             shipping,
             tax,
             discount,
-            total
+            total,
+            scheduledDeliveryTime
         });
 
         res.status(201).json({

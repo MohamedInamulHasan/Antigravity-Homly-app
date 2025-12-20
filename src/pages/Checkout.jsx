@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useData } from '../context/DataContext';
+import { getStoreName } from '../utils/storeHelpers';
 import { CreditCard, Truck, MapPin, ShieldCheck, ShoppingBag, ArrowLeft, Store } from 'lucide-react';
 
 const Checkout = () => {
@@ -10,6 +12,7 @@ const Checkout = () => {
     const { cartItems, cartTotal, clearCart } = useCart();
     const { user } = useAuth();
     const { t } = useLanguage();
+    const { stores } = useData();
     const [formData, setFormData] = useState({
         fullName: '',
         mobile: '',
@@ -58,6 +61,12 @@ const Checkout = () => {
 
         if (!zipRegex.test(formData.zip)) {
             alert(t('Please enter a valid 6-digit ZIP code'));
+            return;
+        }
+
+        // Validate delivery time is selected
+        if (!formData.deliveryTime) {
+            alert(t('Please select a preferred delivery time'));
             return;
         }
 
@@ -176,10 +185,11 @@ const Checkout = () => {
 
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        {t('Preferred Delivery Time')} <span className="text-gray-500 text-xs">({t('Optional')})</span>
+                                        {t('Preferred Delivery Time')} <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                         name="deliveryTime"
+                                        required
                                         value={formData.deliveryTime}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
@@ -277,7 +287,7 @@ const Checkout = () => {
                                                 <div className="flex items-center gap-1 mt-0.5">
                                                     <Store size={10} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
                                                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                                        {item.storeId.name || 'Unknown Store'}
+                                                        {getStoreName(item.storeId, stores)}
                                                     </p>
                                                 </div>
                                             )}

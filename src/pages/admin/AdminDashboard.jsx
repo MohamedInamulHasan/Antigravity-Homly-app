@@ -1264,15 +1264,15 @@ const OrderManagement = () => {
     };
 
     const updateStatus = (id, newStatus) => {
-        const order = orders.find(o => o.id === id);
+        const order = orders.find(o => (o._id || o.id) === id);
         if (order) {
             updateOrder({ ...order, status: newStatus });
         }
     };
 
     const handleEditOrder = (order) => {
-        setEditingOrder(order.id);
-        setEditAddress(order.address);
+        setEditingOrder(order._id || order.id);
+        setEditAddress(order.shippingAddress?.street + ', ' + order.shippingAddress?.city || '');
     };
 
     const saveOrder = (id) => {
@@ -1295,6 +1295,119 @@ const OrderManagement = () => {
         }
     };
 
+    // Group orders by status
+    const processingOrders = orders.filter(o => o.status === 'Processing');
+    const shippedOrders = orders.filter(o => o.status === 'Shipped');
+    const deliveredOrders = orders.filter(o => o.status === 'Delivered');
+    const cancelledOrders = orders.filter(o => o.status === 'Cancelled');
+
+    const formatDateTime = (dateString) => {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+            ' at ' +
+            date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    };
+
+    const renderOrderTable = (ordersList, statusLabel, statusColor) => {
+        if (ordersList.length === 0) return null;
+
+        return (
+            <div key={statusLabel} className="mb-8">
+                <h3 className={`text-lg font-semibold mb-4 ${statusColor}`}>
+                    {t(statusLabel)} ({ordersList.length})
+                </h3>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-50 dark:bg-gray-700/50">
+                                <tr>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Order ID')}</th>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Customer')}</th>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Mobile')}</th>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Address')}</th>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Date & Time')}</th>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Total')}</th>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Status')}</th>
+                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Actions')}</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                                {ordersList.map(order => (
+                                    <tr key={order._id || order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                        <td className="p-4 font-medium text-gray-900 dark:text-white">#{String(order._id || order.id).slice(-6).toUpperCase()}</td>
+                                        <td className="p-4 text-gray-600 dark:text-gray-300">{order.shippingAddress?.name || order.user}</td>
+                                        <td className="p-4 text-gray-600 dark:text-gray-300">{order.shippingAddress?.mobile || 'N/A'}</td>
+                                        <td className="p-4 text-gray-500 dark:text-gray-400 text-sm max-w-xs">
+                                            {editingOrder === (order._id || order.id) ? (
+                                                <input
+                                                    type="text"
+                                                    value={editAddress}
+                                                    onChange={(e) => setEditAddress(e.target.value)}
+                                                    className="w-full px-2 py-1 border rounded"
+                                                />
+                                            ) : (
+                                                <span className="truncate block" title={`${order.shippingAddress?.street}, ${order.shippingAddress?.city}`}>
+                                                    {order.shippingAddress ? `${order.shippingAddress.street}, ${order.shippingAddress.city}` : 'N/A'}
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="p-4 text-gray-500 dark:text-gray-400 text-sm">
+                                            {formatDateTime(order.createdAt || order.date)}
+                                        </td>
+                                        <td className="p-4 font-medium text-gray-900 dark:text-white">₹{order.total.toFixed(0)}</td>
+                                        <td className="p-4">
+                                            <select
+                                                value={order.status}
+                                                onChange={(e) => updateStatus(order._id || order.id, e.target.value)}
+                                                className="text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                                            >
+                                                {/* Current status is always shown */}
+                                                <option value={order.status}>{t(order.status)}</option>
+
+                                                {/* Show valid next statuses based on current status */}
+                                                {order.status === 'Processing' && (
+                                                    <>
+                                                        <option value="Shipped">{t('Shipped')}</option>
+                                                        <option value="Cancelled">{t('Cancelled')}</option>
+                                                    </>
+                                                )}
+                                                {order.status === 'Shipped' && (
+                                                    <>
+                                                        <option value="Delivered">{t('Delivered')}</option>
+                                                        <option value="Cancelled">{t('Cancelled')}</option>
+                                                    </>
+                                                )}
+                                                {/* Delivered and Cancelled are final states - no changes allowed */}
+                                            </select>
+                                        </td>
+                                        <td className="p-4">
+                                            {editingOrder === (order._id || order.id) ? (
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => saveOrder(order._id || order.id)} className="text-green-600 hover:text-green-700"><CheckCircle size={18} /></button>
+                                                    <button onClick={() => setEditingOrder(null)} className="text-red-600 hover:text-red-700"><XCircle size={18} /></button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => handleEditOrder(order)} className="text-blue-600 hover:text-blue-700">
+                                                        <Edit2 size={18} />
+                                                    </button>
+                                                    <button onClick={() => handleDeleteOrder(order._id || order.id)} className="text-red-600 hover:text-red-700">
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="max-w-6xl">
             <div className="flex justify-between items-center mb-6">
@@ -1307,78 +1420,18 @@ const OrderManagement = () => {
                     <RefreshCw size={24} />
                 </button>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 dark:bg-gray-700/50">
-                            <tr>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Order ID')}</th>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Customer')}</th>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Mobile')}</th>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Address')}</th>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Date')}</th>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Total')}</th>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Status')}</th>
-                                <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Actions')}</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                            {orders.map(order => (
-                                <tr key={order._id || order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                    <td className="p-4 font-medium text-gray-900 dark:text-white">#{String(order._id || order.id).slice(-6).toUpperCase()}</td>
-                                    <td className="p-4 text-gray-600 dark:text-gray-300">{order.shippingAddress?.name || order.user}</td>
-                                    <td className="p-4 text-gray-600 dark:text-gray-300">{order.shippingAddress?.mobile || 'N/A'}</td>
-                                    <td className="p-4 text-gray-500 dark:text-gray-400 text-sm max-w-xs">
-                                        {editingOrder === (order._id || order.id) ? (
-                                            <input
-                                                type="text"
-                                                value={editAddress}
-                                                onChange={(e) => setEditAddress(e.target.value)}
-                                                className="w-full px-2 py-1 border rounded"
-                                            />
-                                        ) : (
-                                            <span className="truncate block" title={`${order.shippingAddress?.street}, ${order.shippingAddress?.city}`}>
-                                                {order.shippingAddress ? `${order.shippingAddress.street}, ${order.shippingAddress.city}` : 'N/A'}
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td className="p-4 text-gray-500 dark:text-gray-400">{order.date}</td>
-                                    <td className="p-4 font-medium text-gray-900 dark:text-white">₹{order.total.toFixed(0)}</td>
-                                    <td className="p-4">
-                                        <select
-                                            value={order.status}
-                                            onChange={(e) => updateStatus(order._id || order.id, e.target.value)}
-                                            className="text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
-                                        >
-                                            <option>{t('Processing')}</option>
-                                            <option>{t('Shipped')}</option>
-                                            <option>{t('Delivered')}</option>
-                                            <option>{t('Cancelled')}</option>
-                                        </select>
-                                    </td>
-                                    <td className="p-4">
-                                        {editingOrder === (order._id || order.id) ? (
-                                            <div className="flex gap-2">
-                                                <button onClick={() => saveOrder(order._id || order.id)} className="text-green-600 hover:text-green-700"><CheckCircle size={18} /></button>
-                                                <button onClick={() => setEditingOrder(null)} className="text-red-600 hover:text-red-700"><XCircle size={18} /></button>
-                                            </div>
-                                        ) : (
-                                            <div className="flex gap-2">
-                                                <button onClick={() => handleEditOrder(order)} className="text-blue-600 hover:text-blue-700">
-                                                    <Edit2 size={18} />
-                                                </button>
-                                                <button onClick={() => handleDeleteOrder(order._id || order.id)} className="text-red-600 hover:text-red-700">
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+
+            {/* Render orders grouped by status */}
+            {renderOrderTable(processingOrders, 'Processing Orders', 'text-amber-700 dark:text-amber-400')}
+            {renderOrderTable(shippedOrders, 'Shipped Orders', 'text-blue-700 dark:text-blue-400')}
+            {renderOrderTable(deliveredOrders, 'Delivered Orders', 'text-green-700 dark:text-green-400')}
+            {renderOrderTable(cancelledOrders, 'Cancelled Orders', 'text-red-700 dark:text-red-400')}
+
+            {orders.length === 0 && (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
+                    <p className="text-gray-500 dark:text-gray-400">{t('No orders found')}</p>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

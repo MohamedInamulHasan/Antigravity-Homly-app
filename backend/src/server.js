@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import dotenv from 'dotenv';
 import connectDB from './config/database.js';
 import errorHandler from './middleware/errorHandler.js';
@@ -47,6 +48,10 @@ app.use(cors({
     },
     credentials: true
 }));
+
+// Enable compression for all responses (reduces payload size by 60-80%)
+app.use(compression());
+
 app.use(express.json({ limit: '50mb' })); // Increased limit for Base64 images
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 

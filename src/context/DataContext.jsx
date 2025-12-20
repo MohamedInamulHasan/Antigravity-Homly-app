@@ -8,8 +8,23 @@ export const useData = () => {
 };
 
 export const DataProvider = ({ children }) => {
-    // Products State - always start fresh, fetch from database
-    const [products, setProducts] = useState([]);
+    // Products State - Load from localStorage as fallback (temporary solution while fixing MongoDB)
+    const [products, setProducts] = useState(() => {
+        try {
+            const saved = localStorage.getItem('products');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) {
+                    console.log('📦 Loaded products from cache:', parsed.length);
+                    return parsed;
+                }
+            }
+            return [];
+        } catch (e) {
+            console.error("Failed to parse products from local storage", e);
+            return [];
+        }
+    });
 
     // Stores State
     const [stores, setStores] = useState(() => {
@@ -68,12 +83,11 @@ export const DataProvider = ({ children }) => {
     // Users State
     const [users, setUsers] = useState([]);
 
-    // Clear stale localStorage on mount
+    // Clear stale localStorage on mount (keeping products cache for now)
     useEffect(() => {
-        // Remove old cached data to prevent stale content
-        localStorage.removeItem('products');
+        // Only clear ads cache, keep products for fallback
         localStorage.removeItem('ads');
-        console.log('🧹 Cleared stale cache from localStorage (products, ads)');
+        console.log('🧹 Cleared stale ads cache from localStorage');
     }, []);
 
     // Fetch data from API on mount
@@ -82,15 +96,22 @@ export const DataProvider = ({ children }) => {
             setLoading(prev => ({ ...prev, products: true }));
             setError(prev => ({ ...prev, products: null }));
             try {
-                const response = await apiService.getProducts();
+                // Fetch first 50 products for faster initial load
+                const response = await apiService.getProducts({ limit: 50, page: 1 });
                 if (response.success && response.data) {
                     setProducts(response.data);
-                    // localStorage.setItem('products', JSON.stringify(response.data)); // Disabled due to size limit
+                    // Save to localStorage for offline/fallback access
+                    try {
+                        localStorage.setItem('products', JSON.stringify(response.data));
+                        console.log(`✅ Loaded ${response.data.length} of ${response.total} products (cached)`);
+                    } catch (e) {
+                        console.log(`✅ Loaded ${response.data.length} of ${response.total} products`);
+                        console.warn('Could not cache products:', e.message);
+                    }
                 }
             } catch (err) {
                 console.error('Failed to fetch products:', err);
                 setError(prev => ({ ...prev, products: err.message }));
-                // Keep using localStorage data as fallback
             } finally {
                 setLoading(prev => ({ ...prev, products: false }));
             }
@@ -173,27 +194,49 @@ export const DataProvider = ({ children }) => {
         fetchOrders();
     }, []);
 
-    useEffect(() => {
-        const fetchAds = async () => {
-            setLoading(prev => ({ ...prev, ads: true }));
-            setError(prev => ({ ...prev, ads: null }));
-            try {
-                const response = await apiService.getAds();
-                if (response.success && response.data) {
-                    setAds(response.data);
-                    // No longer saving to localStorage - always fetch fresh
-                }
-            } catch (err) {
-                console.error('Failed to fetch ads:', err);
-                setError(prev => ({ ...prev, ads: err.message }));
-                // Keep using localStorage data as fallback
-            } finally {
-                setLoading(prev => ({ ...prev, ads: false }));
+    // Category Management - Define before use
+    const fetchCategories = async () => {
+        try {
+            console.log('DataContext: Fetching categories...');
+            const response = await apiService.getCategories();
+            console.log('DataContext: Categories response:', response);
+            if (response.success && response.data) {
+                setCategories(response.data);
+                console.log('DataContext: Categories set successfully, count:', response.data.length);
             }
-        };
+        } catch (err) {
+            console.error('DataContext: Failed to fetch categories - Full error:', err);
+            // Don't throw, just log - categories are optional
+        }
+    };
 
-        fetchAds();
-    }, []);
+    // Defer loading categories and ads until after products load
+    useEffect(() => {
+        if (!loading.products && products.length > 0) {
+            // Load categories after products
+            fetchCategories();
+
+            // Load ads after a short delay
+            setTimeout(() => {
+                const fetchAds = async () => {
+                    setLoading(prev => ({ ...prev, ads: true }));
+                    setError(prev => ({ ...prev, ads: null }));
+                    try {
+                        const response = await apiService.getAds();
+                        if (response.success && response.data) {
+                            setAds(response.data);
+                        }
+                    } catch (err) {
+                        console.error('Failed to fetch ads:', err);
+                        setError(prev => ({ ...prev, ads: err.message }));
+                    } finally {
+                        setLoading(prev => ({ ...prev, ads: false }));
+                    }
+                };
+                fetchAds();
+            }, 500);
+        }
+    }, [loading.products, products.length]);
 
     // Products are no longer cached in localStorage - always fetch fresh from database
 
@@ -404,21 +447,7 @@ export const DataProvider = ({ children }) => {
         }
     };
 
-    // Category Management
-    const fetchCategories = async () => {
-        try {
-            console.log('DataContext: Fetching categories...');
-            const response = await apiService.getCategories();
-            console.log('DataContext: Categories response:', response);
-            if (response.success && response.data) {
-                setCategories(response.data);
-                console.log('DataContext: Categories set successfully, count:', response.data.length);
-            }
-        } catch (err) {
-            console.error('DataContext: Failed to fetch categories - Full error:', err);
-            throw err; // Propagate error to component
-        }
-    };
+    // Category Management functions (fetchCategories moved earlier)
 
     const addCategory = async (category) => {
         try {

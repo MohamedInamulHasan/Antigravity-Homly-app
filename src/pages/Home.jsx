@@ -8,14 +8,11 @@ import SimpleProductCard from '../components/SimpleProductCard';
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
-    const { ads, products, categories, fetchCategories } = useData();
+    const { ads, products, categories } = useData();
     const { t } = useLanguage();
     const navigate = useNavigate();
 
-    // Fetch categories on mount
-    useEffect(() => {
-        fetchCategories();
-    }, []);
+    // Categories are now loaded automatically via deferred loading in DataContext
 
     // Use ads from backend only, no dummy fallback
     const slides = (ads && ads.length > 0) ? ads : [];

@@ -9,11 +9,15 @@ const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addToCart, cartItems, updateQuantity } = useCart();
-    const { products } = useData();
+    const { products, stores } = useData();
     const { t } = useLanguage();
 
     const [product, setProduct] = useState(null);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    // Look up store name from stores context
+    const store = product && stores?.find(s => (s._id || s.id) === product.storeId);
+    const storeName = store?.name || 'Unknown Store';
 
     useEffect(() => {
         if (products.length > 0) {
@@ -150,7 +154,7 @@ const ProductDetails = () => {
                                         <div className="flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
                                             <Store size={12} className="text-gray-500 dark:text-gray-400" />
                                             <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                                                {product.storeId.name || 'Unknown Store'}
+                                                {storeName}
                                             </span>
                                         </div>
                                     )}

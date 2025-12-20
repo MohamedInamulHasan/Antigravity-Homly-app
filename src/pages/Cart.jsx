@@ -2,10 +2,13 @@ import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Store } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useData } from '../context/DataContext';
+import { getStoreName } from '../utils/storeHelpers';
 
 const Cart = () => {
     const { cartItems, removeFromCart, updateQuantity, cartTotal } = useCart();
     const { t } = useLanguage();
+    const { stores } = useData();
 
     if (cartItems.length === 0) {
         return (
@@ -63,7 +66,7 @@ const Cart = () => {
                                                 <div className="flex items-center gap-1 mt-1">
                                                     <Store size={12} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
                                                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                                        {item.storeId.name || 'Unknown Store'}
+                                                        {getStoreName(item.storeId, stores)}
                                                     </p>
                                                 </div>
                                             )}

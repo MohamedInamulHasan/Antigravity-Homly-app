@@ -47,13 +47,7 @@ export const CartProvider = ({ children }) => {
 
         try {
             const items = JSON.parse(localData);
-            // Migrate old cart items: ensure storeId is properly structured
-            return items.map(item => ({
-                ...item,
-                storeId: item.storeId && typeof item.storeId === 'object'
-                    ? item.storeId
-                    : null // Clear invalid storeId references
-            }));
+            return items;
         } catch (e) {
             console.error('Failed to parse cart from localStorage:', e);
             return [];
@@ -72,12 +66,7 @@ export const CartProvider = ({ children }) => {
                 if (localData) {
                     try {
                         const items = JSON.parse(localData);
-                        setCartItems(items.map(item => ({
-                            ...item,
-                            storeId: item.storeId && typeof item.storeId === 'object'
-                                ? item.storeId
-                                : null
-                        })));
+                        setCartItems(items);
                     } catch (e) {
                         setCartItems([]);
                     }
@@ -119,10 +108,7 @@ export const CartProvider = ({ children }) => {
             title: product.title || product.name,
             price: product.price,
             image: product.image,
-            storeId: product.storeId ? {
-                _id: product.storeId._id || product.storeId,
-                name: product.storeId.name || null
-            } : null, // Save complete store object
+            storeId: product.storeId || null, // Just save the storeId string
             quantity: 1
         };
 
