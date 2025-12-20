@@ -15,6 +15,12 @@ const createTransporter = () => {
 // Send order notification email to admin
 export const sendOrderNotificationEmail = async (order) => {
     try {
+        // Skip email if not configured
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            console.log('⚠️ Email not configured - skipping email notification');
+            return { success: false, error: 'Email not configured' };
+        }
+
         const transporter = createTransporter();
 
         // Format order items
