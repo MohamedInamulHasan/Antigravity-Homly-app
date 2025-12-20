@@ -49,13 +49,16 @@ export const createOrder = async (req, res, next) => {
 // @access  Private
 export const getOrders = async (req, res, next) => {
     try {
-        // For admin purposes, return all orders
-        // If user is authenticated, filter by user, otherwise return all
-        const query = req.user ? { user: req.user._id } : {};
+        // If user is admin, return all orders
+        // If user is customer, return only their orders
+        const query = req.user && req.user.role === 'admin'
+            ? {} // Admin sees all orders
+            : { user: req.user._id }; // Customer sees only their orders
 
         const orders = await Order.find(query)
             .populate('items.product', 'title image')
             .populate('items.storeId', 'name')
+            .populate('user', 'name email mobile') // Also populate user details for admin
             .sort({ createdAt: -1 });
 
         res.status(200).json({
