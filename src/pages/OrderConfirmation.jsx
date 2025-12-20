@@ -84,6 +84,9 @@ const OrderConfirmation = () => {
             setCreatedOrderId(createdOrder?._id || 'NEW');
             setShowConfirmModal(false);
             setShowSuccessModal(true);
+
+            // Send WhatsApp notification (opens WhatsApp automatically)
+            sendWhatsAppNotification(createdOrder, formData, cartItems, cartTotal);
             // Email notification is sent automatically from backend
         } catch (error) {
             console.error('❌ Failed to create order:', error);

@@ -198,10 +198,12 @@ const Checkout = () => {
                                         {(() => {
                                             const slots = [];
                                             const now = new Date();
-
+                                            
+                                            console.log('Current time:', now.toLocaleString());
+                                            
                                             // Start from current time + 30 minutes
                                             const startTime = new Date(now.getTime() + 30 * 60000);
-
+                                            
                                             // Round to next 30-minute slot
                                             const minutes = startTime.getMinutes();
                                             if (minutes < 30) {
@@ -211,27 +213,32 @@ const Checkout = () => {
                                                 startTime.setHours(startTime.getHours() + 1);
                                             }
 
-                                            // Generate slots until 11:30 PM
-                                            const endOfDay = new Date();
+                                            // Set end of day to 11:30 PM
+                                            const endOfDay = new Date(startTime);
                                             endOfDay.setHours(23, 30, 0, 0);
-
-                                            // If start time is after end of day, show next day slots
-                                            if (startTime > endOfDay) {
+                                            
+                                            // If we're past 11:30 PM, start from 9 AM tomorrow
+                                            if (startTime.getHours() >= 23 && startTime.getMinutes() > 30) {
                                                 startTime.setDate(startTime.getDate() + 1);
-                                                startTime.setHours(9, 0, 0, 0); // Start from 9 AM next day
+                                                startTime.setHours(9, 0, 0, 0);
                                                 endOfDay.setDate(endOfDay.getDate() + 1);
                                             }
+                                            
+                                            console.log('Start time:', startTime.toLocaleString());
+                                            console.log('End time:', endOfDay.toLocaleString());
 
                                             // Generate all 30-minute slots
                                             const currentSlot = new Date(startTime);
-                                            while (currentSlot <= endOfDay) {
+                                            let slotCount = 0;
+                                            
+                                            while (currentSlot <= endOfDay && slotCount < 50) { // Safety limit
                                                 const hours = currentSlot.getHours();
-                                                const minutes = currentSlot.getMinutes();
-                                                const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-                                                const displayTime = currentSlot.toLocaleTimeString('en-US', {
-                                                    hour: 'numeric',
-                                                    minute: '2-digit',
-                                                    hour12: true
+                                                const mins = currentSlot.getMinutes();
+                                                const timeString = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+                                                const displayTime = currentSlot.toLocaleTimeString('en-US', { 
+                                                    hour: 'numeric', 
+                                                    minute: '2-digit', 
+                                                    hour12: true 
                                                 });
 
                                                 slots.push(
@@ -242,7 +249,10 @@ const Checkout = () => {
 
                                                 // Move to next 30-minute slot
                                                 currentSlot.setMinutes(currentSlot.getMinutes() + 30);
+                                                slotCount++;
                                             }
+                                            
+                                            console.log('Generated slots:', slotCount);
 
                                             return slots;
                                         })()}
