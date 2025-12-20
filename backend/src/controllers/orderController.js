@@ -1,4 +1,5 @@
 import Order from '../models/Order.js';
+import { sendOrderNotificationEmail } from '../services/emailService.js';
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -34,6 +35,11 @@ export const createOrder = async (req, res, next) => {
             total,
             scheduledDeliveryTime
         });
+
+        // Send email notification to admin (non-blocking)
+        sendOrderNotificationEmail(order).catch(err => 
+            console.error('Failed to send email notification:', err)
+        );
 
         res.status(201).json({
             success: true,
