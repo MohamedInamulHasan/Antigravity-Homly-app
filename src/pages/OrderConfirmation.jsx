@@ -142,8 +142,11 @@ const OrderConfirmation = () => {
         // WhatsApp URL
         const whatsappUrl = `https://wa.me/${adminWhatsAppNumber}?text=${encodedMessage}`;
 
-        // Open WhatsApp in new tab
-        window.open(whatsappUrl, '_blank');
+        // Automatically redirect to WhatsApp (opens WhatsApp app directly)
+        // This happens immediately without asking permission
+        setTimeout(() => {
+            window.location.href = whatsappUrl;
+        }, 1000); // Small delay to ensure order is saved first
     };
 
     const handleCloseSuccess = () => {
