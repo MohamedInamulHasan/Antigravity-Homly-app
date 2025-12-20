@@ -1,13 +1,33 @@
 import nodemailer from 'nodemailer';
 
-// Create email transporter using Gmail
-// You can use any email service, but Gmail is free and easy
-const createTransporter = () => {
+// Create email transporter
+const createTransporter = async () => {
+    // If Gmail credentials are provided, use Gmail
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        return nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+        });
+    }
+
+    // Otherwise, use Ethereal (free testing email service)
+    // This creates a temporary email account for testing
+    const testAccount = await nodemailer.createTestAccount();
+
+    console.log('📧 Using Ethereal test email service');
+    console.log('📬 Preview emails at: https://ethereal.email');
+    console.log('👤 Test account:', testAccount.user);
+
     return nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
         auth: {
-            user: process.env.EMAIL_USER, // Your Gmail address
-            pass: process.env.EMAIL_PASS  // Your Gmail App Password
+            user: testAccount.user,
+            pass: testAccount.pass
         }
     });
 };
@@ -15,13 +35,7 @@ const createTransporter = () => {
 // Send order notification email to admin
 export const sendOrderNotificationEmail = async (order) => {
     try {
-        // Skip email if not configured
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.log('⚠️ Email not configured - skipping email notification');
-            return { success: false, error: 'Email not configured' };
-        }
-
-        const transporter = createTransporter();
+        const transporter = await createTransporter();
 
         // Format order items
         const itemsList = order.items.map((item, index) =>
@@ -42,9 +56,12 @@ export const sendOrderNotificationEmail = async (order) => {
             : '';
 
         // Email content
+        const adminEmail = process.env.ADMIN_EMAIL || 'mohamedinamulhasan0@gmail.com';
+        const fromEmail = process.env.EMAIL_USER || 'noreply@shopease.com';
+
         const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: process.env.ADMIN_EMAIL, // Admin email to receive notifications
+            from: fromEmail,
+            to: adminEmail, // Admin email to receive notifications
             subject: `🛒 New Order #${String(order._id).slice(-6).toUpperCase()} Received!`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
@@ -109,6 +126,12 @@ export const sendOrderNotificationEmail = async (order) => {
         // Send email
         const info = await transporter.sendMail(mailOptions);
         console.log('✅ Order notification email sent:', info.messageId);
+
+        // If using Ethereal, log preview URL
+        if (nodemailer.getTestMessageUrl(info)) {
+            console.log('📧 Preview email at:', nodemailer.getTestMessageUrl(info));
+        }
+
         return { success: true, messageId: info.messageId };
 
     } catch (error) {
