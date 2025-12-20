@@ -198,26 +198,41 @@ const Checkout = () => {
                                         {(() => {
                                             const slots = [];
                                             const now = new Date();
-                                            now.setMinutes(now.getMinutes() + 30);
+
+                                            // Start from current time + 30 minutes
+                                            const startTime = new Date(now.getTime() + 30 * 60000);
 
                                             // Round to next 30-minute slot
-                                            const minutes = now.getMinutes();
+                                            const minutes = startTime.getMinutes();
                                             if (minutes < 30) {
-                                                now.setMinutes(30, 0, 0);
+                                                startTime.setMinutes(30, 0, 0);
                                             } else {
-                                                now.setMinutes(0, 0, 0);
-                                                now.setHours(now.getHours() + 1);
+                                                startTime.setMinutes(0, 0, 0);
+                                                startTime.setHours(startTime.getHours() + 1);
                                             }
 
-                                            // Generate slots until end of day (11:30 PM)
+                                            // Generate slots until 11:30 PM
                                             const endOfDay = new Date();
                                             endOfDay.setHours(23, 30, 0, 0);
 
-                                            while (now <= endOfDay) {
-                                                const hours = now.getHours();
-                                                const minutes = now.getMinutes();
+                                            // If start time is after end of day, show next day slots
+                                            if (startTime > endOfDay) {
+                                                startTime.setDate(startTime.getDate() + 1);
+                                                startTime.setHours(9, 0, 0, 0); // Start from 9 AM next day
+                                                endOfDay.setDate(endOfDay.getDate() + 1);
+                                            }
+
+                                            // Generate all 30-minute slots
+                                            const currentSlot = new Date(startTime);
+                                            while (currentSlot <= endOfDay) {
+                                                const hours = currentSlot.getHours();
+                                                const minutes = currentSlot.getMinutes();
                                                 const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-                                                const displayTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                                                const displayTime = currentSlot.toLocaleTimeString('en-US', {
+                                                    hour: 'numeric',
+                                                    minute: '2-digit',
+                                                    hour12: true
+                                                });
 
                                                 slots.push(
                                                     <option key={timeString} value={timeString}>
@@ -225,14 +240,15 @@ const Checkout = () => {
                                                     </option>
                                                 );
 
-                                                now.setMinutes(now.getMinutes() + 30);
+                                                // Move to next 30-minute slot
+                                                currentSlot.setMinutes(currentSlot.getMinutes() + 30);
                                             }
 
                                             return slots;
                                         })()}
                                     </select>
                                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        {t('Choose your preferred delivery time (slots start 30 minutes from now)')}
+                                        {t('Choose your preferred delivery time (available slots from now until 11:30 PM)')}
                                     </p>
                                 </div>
                             </div>
