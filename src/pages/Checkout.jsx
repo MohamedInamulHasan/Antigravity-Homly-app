@@ -12,7 +12,7 @@ const Checkout = () => {
     const { cartItems, cartTotal, clearCart } = useCart();
     const { user } = useAuth();
     const { t } = useLanguage();
-    const { stores } = useData();
+    const { stores, updateUser } = useData();
     const [formData, setFormData] = useState({
         fullName: '',
         mobile: '',
@@ -33,6 +33,20 @@ const Checkout = () => {
         }
     }, [user, navigate, t]);
 
+    // Autofill form with user's saved address data
+    useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                fullName: user.name || user.fullName || prev.fullName,
+                mobile: user.mobile || user.phone || prev.mobile,
+                address: user.address || prev.address,
+                city: user.city || prev.city,
+                zip: user.zip || user.pincode || prev.zip
+            }));
+        }
+    }, [user]);
+
     // If no user, don't render the form (will redirect)
     if (!user) {
         return null;
@@ -42,7 +56,7 @@ const Checkout = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Validation
@@ -68,6 +82,31 @@ const Checkout = () => {
         if (!formData.deliveryTime) {
             alert(t('Please select a preferred delivery time'));
             return;
+        }
+
+        // Save updated address to user profile for future autofill
+        try {
+            const updatedUserData = {
+                ...user,
+                name: formData.fullName,
+                fullName: formData.fullName,
+                mobile: formData.mobile,
+                phone: formData.mobile,
+                address: formData.address,
+                city: formData.city,
+                zip: formData.zip,
+                pincode: formData.zip
+            };
+
+            await updateUser(updatedUserData);
+
+            // Update localStorage so the changes are immediately available
+            localStorage.setItem('userInfo', JSON.stringify(updatedUserData));
+
+            console.log('✅ User address updated successfully');
+        } catch (error) {
+            console.error('❌ Failed to update user address:', error);
+            // Don't block checkout if address update fails
         }
 
         // Navigate to order confirmation with form data and cart details
@@ -198,12 +237,12 @@ const Checkout = () => {
                                         {(() => {
                                             const slots = [];
                                             const now = new Date();
-                                            
+
                                             console.log('Current time:', now.toLocaleString());
-                                            
+
                                             // Start from current time + 30 minutes
                                             const startTime = new Date(now.getTime() + 30 * 60000);
-                                            
+
                                             // Round to next 30-minute slot
                                             const minutes = startTime.getMinutes();
                                             if (minutes < 30) {
@@ -216,29 +255,29 @@ const Checkout = () => {
                                             // Set end of day to 11:30 PM
                                             const endOfDay = new Date(startTime);
                                             endOfDay.setHours(23, 30, 0, 0);
-                                            
+
                                             // If we're past 11:30 PM, start from 9 AM tomorrow
                                             if (startTime.getHours() >= 23 && startTime.getMinutes() > 30) {
                                                 startTime.setDate(startTime.getDate() + 1);
                                                 startTime.setHours(9, 0, 0, 0);
                                                 endOfDay.setDate(endOfDay.getDate() + 1);
                                             }
-                                            
+
                                             console.log('Start time:', startTime.toLocaleString());
                                             console.log('End time:', endOfDay.toLocaleString());
 
                                             // Generate all 30-minute slots
                                             const currentSlot = new Date(startTime);
                                             let slotCount = 0;
-                                            
+
                                             while (currentSlot <= endOfDay && slotCount < 50) { // Safety limit
                                                 const hours = currentSlot.getHours();
                                                 const mins = currentSlot.getMinutes();
                                                 const timeString = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-                                                const displayTime = currentSlot.toLocaleTimeString('en-US', { 
-                                                    hour: 'numeric', 
-                                                    minute: '2-digit', 
-                                                    hour12: true 
+                                                const displayTime = currentSlot.toLocaleTimeString('en-US', {
+                                                    hour: 'numeric',
+                                                    minute: '2-digit',
+                                                    hour12: true
                                                 });
 
                                                 slots.push(
@@ -251,7 +290,7 @@ const Checkout = () => {
                                                 currentSlot.setMinutes(currentSlot.getMinutes() + 30);
                                                 slotCount++;
                                             }
-                                            
+
                                             console.log('Generated slots:', slotCount);
 
                                             return slots;

@@ -177,7 +177,14 @@ const ProductDetails = () => {
                                 {/* Quantity & Total Section */}
                                 <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-6 mb-8">
                                     <div className="flex items-center justify-between mb-6">
-                                        <span className="text-gray-900 dark:text-white font-medium">{t('Quantity')}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-900 dark:text-white font-medium">{t('Quantity')}</span>
+                                            {product.unit && (
+                                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                                    ({product.unit})
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
                                             <button
                                                 onClick={() => {
@@ -228,7 +235,7 @@ const ProductDetails = () => {
                                         ) : (
                                             <>
                                                 <ShoppingCart size={22} />
-                                                {t('Add to Cart')}
+                                                {t('Buy Now')}
                                             </>
                                         )}
                                     </button>
@@ -259,7 +266,7 @@ const ProductDetails = () => {
                         ) : (
                             <>
                                 <ShoppingCart size={20} />
-                                {t('Add to Cart')}
+                                {t('Buy Now')}
                             </>
                         )}
                     </button>

@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { User, Package, Settings, ChevronRight, Globe, LogOut, Moon, Sun, Shield } from 'lucide-react';
+import { User, Package, Settings, ChevronRight, Globe, LogOut, Moon, Sun, Shield, Languages } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -9,7 +9,7 @@ import { formatOrderDate } from '../utils/dateUtils';
 
 const Profile = () => {
     const { theme, toggleTheme } = useTheme();
-    const { language, t } = useLanguage();
+    const { language, setLanguage, t } = useLanguage();
     const { user, logout } = useContext(AuthContext);
     const { orders } = useData();
     const navigate = useNavigate();
@@ -164,6 +164,26 @@ const Profile = () => {
                             </div>
                         </div>
 
+                        {/* Language Switcher */}
+                        <div className="p-4 sm:p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}>
+                            <div className="flex items-center gap-4">
+                                <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                    <Languages className="text-blue-600 dark:text-blue-400" size={20} />
+                                </div>
+                                <div>
+                                    <p className="font-medium text-gray-900 dark:text-white">{t('Language')}</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        {language === 'en' ? 'English' : 'தமிழ்'}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-gray-200 dark:bg-blue-600">
+                                <span
+                                    className={`${language === 'ta' ? 'translate-x-6' : 'translate-x-1'
+                                        } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                                />
+                            </div>
+                        </div>
 
 
                         <div className="p-4 sm:p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer text-red-600 dark:text-red-400" onClick={handleLogout}>

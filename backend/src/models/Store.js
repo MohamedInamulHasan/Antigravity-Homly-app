@@ -23,6 +23,14 @@ const storeSchema = new mongoose.Schema({
         type: String,
         default: '9:00 AM - 9:00 PM'
     },
+    openingTime: {
+        type: String,
+        default: '09:00' // 24-hour format HH:MM
+    },
+    closingTime: {
+        type: String,
+        default: '21:00' // 24-hour format HH:MM
+    },
     mobile: {
         type: String,
         required: [true, 'Please add a mobile number']

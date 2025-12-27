@@ -164,6 +164,7 @@ const ProductManagement = () => {
     const { t } = useLanguage();
     const [view, setView] = useState('list'); // 'list' or 'form'
     const [editingProduct, setEditingProduct] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
     const [formData, setFormData] = useState({
         title: '',
         price: '',
@@ -291,49 +292,72 @@ const ProductManagement = () => {
             </div>
 
             {view === 'list' ? (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50 dark:bg-gray-700/50">
-                                <tr>
-                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Image')}</th>
-                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Title')}</th>
-                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Category')}</th>
-                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Price')}</th>
-                                    <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Actions')}</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                {products.filter(p => !p.storeId).map(product => (
-                                    <tr key={product.id || product._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                        <td className="p-4">
-                                            <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
-                                        </td>
-                                        <td className="p-4 font-medium text-gray-900 dark:text-white">{product.title}</td>
-                                        <td className="p-4 text-gray-500 dark:text-gray-400">{product.category}</td>
-                                        <td className="p-4 font-medium text-gray-900 dark:text-white">${product.price}</td>
-                                        <td className="p-4">
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => handleEdit(product)}
-                                                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                                >
-                                                    <Edit2 size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(product.id || product._id)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                <>
+                    {/* Search Bar */}
+                    <div className="mb-4">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder={t('Search products...')}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        </div>
                     </div>
-                </div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-50 dark:bg-gray-700/50">
+                                    <tr>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Image')}</th>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Title')}</th>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Category')}</th>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Price')}</th>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Actions')}</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                                    {products
+                                        .filter(p => !p.storeId)
+                                        .filter(p =>
+                                            p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                            p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                            (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()))
+                                        )
+                                        .map(product => (
+                                            <tr key={product.id || product._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                                <td className="p-4">
+                                                    <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
+                                                </td>
+                                                <td className="p-4 font-medium text-gray-900 dark:text-white">{product.title}</td>
+                                                <td className="p-4 text-gray-500 dark:text-gray-400">{product.category}</td>
+                                                <td className="p-4 font-medium text-gray-900 dark:text-white">${product.price}</td>
+                                                <td className="p-4">
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => handleEdit(product)}
+                                                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                        >
+                                                            <Edit2 size={18} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(product.id || product._id)}
+                                                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </>
             ) : (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -476,12 +500,14 @@ const StoreManagement = () => {
     const [selectedStore, setSelectedStore] = useState(null);
     const [editingStore, setEditingStore] = useState(null);
     const [editingProduct, setEditingProduct] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
     const [storeForm, setStoreForm] = useState({
         name: '',
         address: '',
         image: '',
         rating: 4.5,
-        timing: '',
+        openingTime: '09:00',
+        closingTime: '21:00',
         mobile: '',
         category: ''
     });
@@ -538,7 +564,8 @@ const StoreManagement = () => {
             address: store.address || '',
             image: store.image,
             rating: store.rating,
-            timing: store.timing || '9:00 AM - 9:00 PM',
+            openingTime: store.openingTime || '09:00',
+            closingTime: store.closingTime || '21:00',
             mobile: store.mobile || '',
             category: store.type || ''
         });
@@ -560,12 +587,25 @@ const StoreManagement = () => {
     const handleStoreSubmit = async (e) => {
         e.preventDefault();
 
+        // Generate timing string from time fields for backward compatibility
+        const formatTime = (time24) => {
+            const [hours, minutes] = time24.split(':');
+            const hour = parseInt(hours);
+            const period = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+            return `${hour12}:${minutes} ${period}`;
+        };
+
+        const timingString = `${formatTime(storeForm.openingTime)} - ${formatTime(storeForm.closingTime)}`;
+
         const storeData = {
             name: storeForm.name,
             type: storeForm.category || 'General Store', // Use selected category as type
             address: storeForm.address,
             city: storeForm.address.split(',').pop().trim() || 'Unknown', // Extract city from address
-            timing: storeForm.timing || '9:00 AM - 9:00 PM',
+            timing: timingString,
+            openingTime: storeForm.openingTime,
+            closingTime: storeForm.closingTime,
             mobile: storeForm.mobile,
             image: storeForm.image,
             rating: storeForm.rating || 4.5
@@ -579,7 +619,7 @@ const StoreManagement = () => {
                 await addStore(storeData);
                 alert(t('Store added successfully!'));
             }
-            setStoreForm({ name: '', address: '', image: '', rating: 4.5, timing: '', mobile: '', category: '' });
+            setStoreForm({ name: '', address: '', image: '', rating: 4.5, openingTime: '09:00', closingTime: '21:00', mobile: '', category: '' });
             setEditingStore(null);
             setView('list');
         } catch (error) {
@@ -673,41 +713,61 @@ const StoreManagement = () => {
                             {t('Add Store')}
                         </button>
                     </div>
+
+                    {/* Search Bar */}
+                    <div className="mb-4">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder={t('Search by store name or location...')}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {stores.map(store => (
-                            <div key={store.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden group">
-                                <div className="h-48 overflow-hidden relative">
-                                    <img src={store.image} alt={store.name} className="w-full h-full object-cover" />
-                                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                        {stores
+                            .filter(s =>
+                                s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                (s.address && s.address.toLowerCase().includes(searchQuery.toLowerCase()))
+                            )
+                            .map(store => (
+                                <div key={store.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden group">
+                                    <div className="h-48 overflow-hidden relative">
+                                        <img src={store.image} alt={store.name} className="w-full h-full object-cover" />
+                                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                            <button
+                                                onClick={() => handleEditStore(store)}
+                                                className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-blue-600 hover:text-blue-700 shadow-sm"
+                                            >
+                                                <Edit2 size={18} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteStore(store.id || store._id)}
+                                                className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-red-600 hover:text-red-700 shadow-sm"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="p-6">
+                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{store.name}</h3>
+                                        <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 flex items-center gap-2">
+                                            <MapPin size={16} />
+                                            {store.address || 'No address'}
+                                        </p>
                                         <button
-                                            onClick={() => handleEditStore(store)}
-                                            className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-blue-600 hover:text-blue-700 shadow-sm"
+                                            onClick={() => handleManageProducts(store)}
+                                            className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
                                         >
-                                            <Edit2 size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteStore(store.id || store._id)}
-                                            className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-red-600 hover:text-red-700 shadow-sm"
-                                        >
-                                            <Trash2 size={18} />
+                                            {t('Manage Products')}
                                         </button>
                                     </div>
                                 </div>
-                                <div className="p-6">
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{store.name}</h3>
-                                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 flex items-center gap-2">
-                                        <MapPin size={16} />
-                                        {store.address || 'No address'}
-                                    </p>
-                                    <button
-                                        onClick={() => handleManageProducts(store)}
-                                        className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
-                                    >
-                                        {t('Manage Products')}
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
                     </div>
                 </>
             )}
@@ -746,13 +806,23 @@ const StoreManagement = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Timing')}</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Opening Time')}</label>
                                 <input
-                                    type="text"
-                                    value={storeForm.timing}
-                                    onChange={(e) => setStoreForm({ ...storeForm, timing: e.target.value })}
+                                    type="time"
+                                    value={storeForm.openingTime}
+                                    onChange={(e) => setStoreForm({ ...storeForm, openingTime: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder="e.g., 9:00 AM - 9:00 PM"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Closing Time')}</label>
+                                <input
+                                    type="time"
+                                    value={storeForm.closingTime}
+                                    onChange={(e) => setStoreForm({ ...storeForm, closingTime: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                     required
                                 />
                             </div>
@@ -1643,6 +1713,7 @@ const UserManagement = () => {
         mobile: '',
         address: ''
     });
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const loadUsers = async () => {
@@ -1705,6 +1776,20 @@ const UserManagement = () => {
         <div className="max-w-5xl">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('User Database')}</h2>
 
+            {/* Search Bar */}
+            <div className="mb-6">
+                <div className="relative">
+                    <input
+                        type="text"
+                        placeholder={t('Search users by name or email...')}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
+                    />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                </div>
+            </div>
+
             {loading && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 text-center">
                     <p className="text-gray-500 dark:text-gray-400">{t('Loading users...')}</p>
@@ -1725,7 +1810,15 @@ const UserManagement = () => {
 
             {!loading && !error && (
                 <div className="grid gap-6">
-                    {users.length > 0 ? users.map(user => (
+                    {users.filter(user => {
+                        const query = searchQuery.toLowerCase();
+                        return user.name?.toLowerCase().includes(query) ||
+                            user.email?.toLowerCase().includes(query);
+                    }).length > 0 ? users.filter(user => {
+                        const query = searchQuery.toLowerCase();
+                        return user.name?.toLowerCase().includes(query) ||
+                            user.email?.toLowerCase().includes(query);
+                    }).map(user => (
                         <div key={user._id || user.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                             {editingUser && (editingUser._id || editingUser.id) === (user._id || user.id) ? (
                                 <div className="space-y-4">

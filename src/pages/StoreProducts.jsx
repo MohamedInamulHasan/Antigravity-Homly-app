@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Clock, Phone, ChevronRight } from 'lucide-react';
+import { ArrowLeft, MapPin, Clock, Phone, ChevronRight, AlertCircle } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
+import { isStoreOpen } from '../utils/storeHelpers';
 import ProductCard from '../components/ProductCard';
 
 const StoreProducts = () => {
@@ -55,6 +56,8 @@ const StoreProducts = () => {
         );
     }
 
+    const storeIsOpen = isStoreOpen(store);
+
     return (
         <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
             {/* Header / Breadcrumbs */}
@@ -76,6 +79,19 @@ const StoreProducts = () => {
                         </>
                     )}
                 </nav>
+
+                {/* Store Closed Banner */}
+                {!storeIsOpen && (
+                    <div className="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-center gap-3">
+                        <AlertCircle className="text-red-600 dark:text-red-400 flex-shrink-0" size={24} />
+                        <div>
+                            <p className="font-semibold text-red-900 dark:text-red-200">{t('Store Currently Closed')}</p>
+                            <p className="text-sm text-red-700 dark:text-red-300">
+                                {t('Opens at')} {store.openingTime || '9:00 AM'}
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{store.name}</h1>

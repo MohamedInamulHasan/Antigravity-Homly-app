@@ -3,9 +3,11 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { MapPin, Search, Star, Clock, Phone } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
+import { isStoreOpen } from '../utils/storeHelpers';
 
 const Shop = () => {
     const [searchQuery, setSearchQuery] = useState('');
+    const [showOnlyOpen, setShowOnlyOpen] = useState(true);
     const [searchParams, setSearchParams] = useSearchParams();
     const { stores, categories: dbCategories } = useData();
     const { t } = useLanguage();
@@ -34,7 +36,10 @@ const Shop = () => {
         const matchesCategory = categoryFilter === 'All' ||
             (store.type && store.type.toLowerCase() === categoryFilter.toLowerCase());
 
-        return matchesSearch && matchesCategory;
+        // Time-based filtering
+        const matchesTimeFilter = !showOnlyOpen || isStoreOpen(store);
+
+        return matchesSearch && matchesCategory && matchesTimeFilter;
     });
 
     const handleCategoryClick = (categoryName) => {
@@ -55,6 +60,22 @@ const Shop = () => {
                             className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                         />
                         <Search className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" size={20} />
+                    </div>
+
+                    {/* Toggle and Count */}
+                    <div className="flex items-center justify-between mb-4">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {t('Showing')} <span className="font-semibold text-gray-900 dark:text-white">{filteredStores.length}</span> {t('stores')}
+                        </p>
+                        <button
+                            onClick={() => setShowOnlyOpen(!showOnlyOpen)}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${showOnlyOpen
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                                }`}
+                        >
+                            {showOnlyOpen ? t('Open Now') : t('All Stores')}
+                        </button>
                     </div>
 
                     {/* Category Pills */}
@@ -90,6 +111,18 @@ const Shop = () => {
                                         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    {/* Store Status Badge */}
+                                    <div className="absolute top-3 right-3">
+                                        {isStoreOpen(store) ? (
+                                            <span className="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg">
+                                                {t('Open')}
+                                            </span>
+                                        ) : (
+                                            <span className="px-3 py-1 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
+                                                {t('Closed')}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="p-6">
                                     <div className="flex justify-between items-start mb-4">

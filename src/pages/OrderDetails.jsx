@@ -192,13 +192,10 @@ const OrderDetails = () => {
                             <span>₹{Number(order.subtotal || 0).toFixed(0)}</span>
                         </div>
                         <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                            <span>{t('Shipping')}</span>
+                            <span>{t('Delivery Charge')}</span>
                             <span>{Number(order.shipping || 0) === 0 ? t('Free') : `₹${Number(order.shipping).toFixed(0)}`}</span>
                         </div>
-                        <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                            <span>{t('Tax')}</span>
-                            <span>₹{Number(order.tax || 0).toFixed(0)}</span>
-                        </div>
+
                         {Number(order.discount || 0) !== 0 && (
                             <div className="flex justify-between text-green-600 dark:text-green-400">
                                 <span>{t('Discount')}</span>

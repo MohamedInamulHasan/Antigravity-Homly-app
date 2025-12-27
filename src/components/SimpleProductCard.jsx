@@ -1,4 +1,4 @@
-import { Plus, Minus, Store } from 'lucide-react';
+import { Plus, Minus, Store, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -7,11 +7,16 @@ import { useData } from '../context/DataContext';
 const SimpleProductCard = ({ product }) => {
     const { t } = useLanguage();
     const { stores } = useData();
+    const { cartItems } = useCart();
     const productId = product._id || product.id;
 
     // Look up store name from stores context
     const store = stores?.find(s => (s._id || s.id) === product.storeId);
     const storeName = store?.name || 'Unknown Store';
+
+    // Get cart quantity for this product
+    const cartItem = cartItems.find(item => item.id === productId);
+    const cartQuantity = cartItem ? cartItem.quantity : 0;
 
     return (
         <Link
@@ -25,6 +30,13 @@ const SimpleProductCard = ({ product }) => {
                     loading="lazy"
                     className="absolute top-0 left-0 w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
                 />
+                {/* Cart Quantity Badge */}
+                {cartQuantity > 0 && (
+                    <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
+                        <ShoppingCart size={12} />
+                        {cartQuantity}
+                    </div>
+                )}
             </div>
             <div className="p-3 flex flex-col justify-between flex-1">
                 <div>

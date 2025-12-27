@@ -8,23 +8,8 @@ export const useData = () => {
 };
 
 export const DataProvider = ({ children }) => {
-    // Products State - Load from localStorage as fallback (temporary solution while fixing MongoDB)
-    const [products, setProducts] = useState(() => {
-        try {
-            const saved = localStorage.getItem('products');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed)) {
-                    console.log('📦 Loaded products from cache:', parsed.length);
-                    return parsed;
-                }
-            }
-            return [];
-        } catch (e) {
-            console.error("Failed to parse products from local storage", e);
-            return [];
-        }
-    });
+    // Products State - Always load fresh from database, no localStorage fallback
+    const [products, setProducts] = useState([]);
 
     // Stores State
     const [stores, setStores] = useState(() => {
@@ -83,11 +68,12 @@ export const DataProvider = ({ children }) => {
     // Users State
     const [users, setUsers] = useState([]);
 
-    // Clear stale localStorage on mount (keeping products cache for now)
+    // Clear stale localStorage on mount
     useEffect(() => {
-        // Only clear ads cache, keep products for fallback
+        // Clear products and ads cache to ensure fresh data from database
+        localStorage.removeItem('products');
         localStorage.removeItem('ads');
-        console.log('🧹 Cleared stale ads cache from localStorage');
+        console.log('🧹 Cleared stale products and ads cache from localStorage');
     }, []);
 
     // Fetch data from API on mount
@@ -100,14 +86,7 @@ export const DataProvider = ({ children }) => {
                 const response = await apiService.getProducts({ limit: 50, page: 1 });
                 if (response.success && response.data) {
                     setProducts(response.data);
-                    // Save to localStorage for offline/fallback access
-                    try {
-                        localStorage.setItem('products', JSON.stringify(response.data));
-                        console.log(`✅ Loaded ${response.data.length} of ${response.total} products (cached)`);
-                    } catch (e) {
-                        console.log(`✅ Loaded ${response.data.length} of ${response.total} products`);
-                        console.warn('Could not cache products:', e.message);
-                    }
+                    console.log(`✅ Loaded ${response.data.length} of ${response.total} products from database`);
                 }
             } catch (err) {
                 console.error('Failed to fetch products:', err);

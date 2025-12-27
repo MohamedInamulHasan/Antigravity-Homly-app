@@ -85,8 +85,8 @@ const OrderConfirmation = () => {
             setShowConfirmModal(false);
             setShowSuccessModal(true);
 
-            // Send WhatsApp notification (opens WhatsApp automatically)
-            sendWhatsAppNotification(createdOrder, formData, cartItems, cartTotal);
+            // WhatsApp notification removed as per user request
+            // sendWhatsAppNotification(createdOrder, formData, cartItems, cartTotal);
             // Email notification is sent automatically from backend
         } catch (error) {
             console.error('❌ Failed to create order:', error);
@@ -103,6 +103,8 @@ const OrderConfirmation = () => {
         }
     };
 
+    /*
+    // WhatsApp notification function - removed as per user request
     // Function to send WhatsApp notification to admin
     const sendWhatsAppNotification = (order, customerInfo, items, total) => {
         // Admin WhatsApp number
@@ -149,6 +151,7 @@ const OrderConfirmation = () => {
             window.location.href = whatsappUrl;
         }, 1000); // Small delay to ensure order is saved first
     };
+    */
 
     const handleCloseSuccess = () => {
         if (createdOrderId) {

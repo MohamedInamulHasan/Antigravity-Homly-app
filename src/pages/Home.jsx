@@ -3,12 +3,13 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext.jsx';
 import { useLanguage } from '../context/LanguageContext';
+import { isStoreOpen } from '../utils/storeHelpers';
 import SimpleProductCard from '../components/SimpleProductCard';
 
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
-    const { ads, products, categories } = useData();
+    const { ads, products, categories, stores } = useData();
     const { t } = useLanguage();
     const navigate = useNavigate();
 
@@ -17,17 +18,26 @@ const Home = () => {
     // Use ads from backend only, no dummy fallback
     const slides = (ads && ads.length > 0) ? ads : [];
 
+    // Filter products to only show from open stores
+    const openStoreProducts = (products && Array.isArray(products) && stores)
+        ? products.filter(product => {
+            // Find the store for this product
+            const productStoreId = product.storeId?._id || product.storeId;
+            const productStore = stores.find(s => (s._id || s.id) === productStoreId);
+            // Only include products from open stores
+            return productStore && isStoreOpen(productStore);
+        })
+        : [];
+
     // Group products by category - with safety check
-    const groupedProducts = (products && Array.isArray(products))
-        ? products.reduce((acc, product) => {
-            const category = product.category || 'Other';
-            if (!acc[category]) {
-                acc[category] = [];
-            }
-            acc[category].push(product);
-            return acc;
-        }, {})
-        : {};
+    const groupedProducts = openStoreProducts.reduce((acc, product) => {
+        const category = product.category || 'Other';
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(product);
+        return acc;
+    }, {});
 
     // Auto-scroll functionality for hero slider
     useEffect(() => {
