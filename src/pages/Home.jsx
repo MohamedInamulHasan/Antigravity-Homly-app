@@ -18,7 +18,14 @@ const Home = () => {
     // Use ads from backend only, no dummy fallback
     const slides = (ads && ads.length > 0) ? ads : [];
 
+
     // Filter products to only show from open stores
+    // TEMPORARILY DISABLED - Show all products regardless of store hours
+    const openStoreProducts = (products && Array.isArray(products))
+        ? products
+        : [];
+
+    /* Original code with store hours filter:
     const openStoreProducts = (products && Array.isArray(products) && stores)
         ? products.filter(product => {
             // Find the store for this product
@@ -28,6 +35,7 @@ const Home = () => {
             return productStore && isStoreOpen(productStore);
         })
         : [];
+    */
 
     // Group products by category - with safety check
     const groupedProducts = openStoreProducts.reduce((acc, product) => {
