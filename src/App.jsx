@@ -13,6 +13,7 @@ import OrderConfirmation from './pages/OrderConfirmation';
 import News from './pages/News';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import MobileFooter from './components/MobileFooter';
+import InstallPrompt from './components/InstallPrompt';
 import { CartProvider } from './context/CartContext';
 
 import ScrollToTop from './components/ScrollToTop';
@@ -35,6 +36,7 @@ const Layout = ({ children }) => {
                 {children}
             </main>
             {!isAuthPage && <MobileFooter />}
+            {!isAuthPage && <InstallPrompt />}
         </div>
     );
 };

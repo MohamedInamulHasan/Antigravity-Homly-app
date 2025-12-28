@@ -11,20 +11,8 @@ export const DataProvider = ({ children }) => {
     // Products State - Always load fresh from database, no localStorage fallback
     const [products, setProducts] = useState([]);
 
-    // Stores State
-    const [stores, setStores] = useState(() => {
-        try {
-            const saved = localStorage.getItem('stores');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed)) return parsed;
-            }
-            return [];
-        } catch (e) {
-            console.error("Failed to parse stores from local storage", e);
-            return [];
-        }
-    });
+    // Stores State - Always load fresh from database, no localStorage fallback
+    const [stores, setStores] = useState([]);
 
     // Loading and Error States
     const [loading, setLoading] = useState({
@@ -70,10 +58,11 @@ export const DataProvider = ({ children }) => {
 
     // Clear stale localStorage on mount
     useEffect(() => {
-        // Clear products and ads cache to ensure fresh data from database
+        // Clear products, ads, and stores cache to ensure fresh data from database
         localStorage.removeItem('products');
         localStorage.removeItem('ads');
-        console.log('🧹 Cleared stale products and ads cache from localStorage');
+        localStorage.removeItem('stores');
+        console.log('🧹 Cleared stale products, ads, and stores cache from localStorage');
     }, []);
 
     // Fetch data from API on mount
@@ -107,16 +96,11 @@ export const DataProvider = ({ children }) => {
                 const response = await apiService.getStores();
                 if (response.success && response.data) {
                     setStores(response.data);
-                    try {
-                        localStorage.setItem('stores', JSON.stringify(response.data));
-                    } catch (e) {
-                        console.error('Failed to save stores to local storage', e);
-                    }
+                    console.log(`✅ Loaded ${response.data.length} stores from database`);
                 }
             } catch (err) {
                 console.error('Failed to fetch stores:', err);
                 setError(prev => ({ ...prev, stores: err.message }));
-                // Keep using localStorage data as fallback
             } finally {
                 setLoading(prev => ({ ...prev, stores: false }));
             }
@@ -217,17 +201,7 @@ export const DataProvider = ({ children }) => {
         }
     }, [loading.products, products.length]);
 
-    // Products are no longer cached in localStorage - always fetch fresh from database
-
-    useEffect(() => {
-        if (stores.length > 0) {
-            try {
-                localStorage.setItem('stores', JSON.stringify(stores));
-            } catch (e) {
-                console.error('Failed to save stores to local storage', e);
-            }
-        }
-    }, [stores]);
+    // Products and stores are no longer cached in localStorage - always fetch fresh from database
 
     // useEffect(() => {
     //     localStorage.setItem('orders', JSON.stringify(orders));

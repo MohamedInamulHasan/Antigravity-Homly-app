@@ -10,7 +10,7 @@ import { CreditCard, Truck, MapPin, ShieldCheck, ShoppingBag, ArrowLeft, Store }
 const Checkout = () => {
     const navigate = useNavigate();
     const { cartItems, cartTotal, clearCart } = useCart();
-    const { user } = useAuth();
+    const { user, setUser } = useAuth();
     const { t } = useLanguage();
     const { stores, updateUser } = useData();
     const [formData, setFormData] = useState({
@@ -22,6 +22,7 @@ const Checkout = () => {
         deliveryTime: '',
         paymentMethod: 'cod'
     });
+    const [isNavigating, setIsNavigating] = useState(false);
 
     // Check if user is authenticated
     useEffect(() => {
@@ -34,11 +35,12 @@ const Checkout = () => {
     }, [user, navigate, t]);
 
     // Autofill form with user's saved address data
+    // Priority: fullName > name (to use updated profile name instead of signup username)
     useEffect(() => {
         if (user) {
             setFormData(prev => ({
                 ...prev,
-                fullName: user.name || user.fullName || prev.fullName,
+                fullName: user.fullName || user.name || prev.fullName,
                 mobile: user.mobile || user.phone || prev.mobile,
                 address: user.address || prev.address,
                 city: user.city || prev.city,
@@ -84,33 +86,34 @@ const Checkout = () => {
             return;
         }
 
-        // Save updated address to user profile for future autofill
-        try {
-            const updatedUserData = {
-                ...user,
-                name: formData.fullName,
-                fullName: formData.fullName,
-                mobile: formData.mobile,
-                phone: formData.mobile,
-                address: formData.address,
-                city: formData.city,
-                zip: formData.zip,
-                pincode: formData.zip
-            };
+        // Show loading state for instant feedback
+        setIsNavigating(true);
 
-            await updateUser(updatedUserData);
+        // Save updated address to user profile in background (non-blocking)
+        const updatedUserData = {
+            ...user,
+            name: formData.fullName,
+            fullName: formData.fullName,
+            mobile: formData.mobile,
+            phone: formData.mobile,
+            address: formData.address,
+            city: formData.city,
+            zip: formData.zip,
+            pincode: formData.zip
+        };
 
-            // Update localStorage so the changes are immediately available
-            localStorage.setItem('userInfo', JSON.stringify(updatedUserData));
+        // Update localStorage immediately for instant availability
+        localStorage.setItem('userInfo', JSON.stringify(updatedUserData));
 
-            console.log('✅ User address updated successfully');
-        } catch (error) {
-            console.error('❌ Failed to update user address:', error);
-            // Don't block checkout if address update fails
-        }
+        // Update AuthContext state immediately so autofill uses new data
+        setUser(updatedUserData);
 
-        // Navigate to order confirmation with form data and cart details
-        // We map the fields to match what OrderConfirmation expects
+        // Update database in background (don't await to avoid delay)
+        updateUser(updatedUserData)
+            .then(() => console.log('✅ User address updated successfully'))
+            .catch(error => console.error('❌ Failed to update user address:', error));
+
+        // Navigate immediately without waiting for API call
         const deliveryCharge = 20;
         navigate('/order-confirmation', {
             state: {
@@ -380,10 +383,20 @@ const Checkout = () => {
 
                             <button
                                 onClick={handleSubmit}
-                                className="hidden md:flex w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg items-center justify-center gap-2 transition-all transform hover:-translate-y-1"
+                                disabled={isNavigating}
+                                className="hidden md:flex w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg items-center justify-center gap-2 transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                             >
-                                <ShoppingBag size={22} />
-                                {t('Review Order')}
+                                {isNavigating ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        {t('Loading...')}
+                                    </>
+                                ) : (
+                                    <>
+                                        <ShoppingBag size={22} />
+                                        {t('Review Order')}
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>
@@ -399,10 +412,20 @@ const Checkout = () => {
                     </div>
                     <button
                         onClick={handleSubmit}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 text-sm rounded-xl shadow-lg flex items-center justify-center gap-2"
+                        disabled={isNavigating}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 text-sm rounded-xl shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <ShoppingBag size={20} />
-                        {t('Review Order')}
+                        {isNavigating ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                {t('Loading...')}
+                            </>
+                        ) : (
+                            <>
+                                <ShoppingBag size={20} />
+                                {t('Review Order')}
+                            </>
+                        )}
                     </button>
                 </div>
             </div>
