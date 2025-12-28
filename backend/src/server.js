@@ -33,8 +33,13 @@ app.use(cors({
             'http://localhost:5175'
         ];
 
-        // Allow requests with no origin (like mobile apps or curl requests)
+        // Allow requests with no origin (like mobile apps, Capacitor, or curl requests)
         if (!origin) return callback(null, true);
+
+        // Allow Capacitor apps (they use capacitor:// or file:// protocol)
+        if (origin.startsWith('capacitor://') || origin.startsWith('file://') || origin.startsWith('ionic://')) {
+            return callback(null, true);
+        }
 
         // Allow allowed origins, any Vercel app, and the backend itself
         if (allowedOrigins.includes(origin) ||
