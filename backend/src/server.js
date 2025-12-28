@@ -30,14 +30,20 @@ app.use(cors({
             process.env.CLIENT_URL,
             'http://localhost:5173',
             'http://localhost:5174',
-            'http://localhost:5175'
+            'http://localhost:5175',
+            'https://localhost',  // Capacitor Android WebView
+            'http://localhost'    // Capacitor Android WebView
         ];
 
         // Allow requests with no origin (like mobile apps, Capacitor, or curl requests)
         if (!origin) return callback(null, true);
 
-        // Allow Capacitor apps (they use capacitor:// or file:// protocol)
-        if (origin.startsWith('capacitor://') || origin.startsWith('file://') || origin.startsWith('ionic://')) {
+        // Allow Capacitor apps (they use capacitor:// or file:// protocol or localhost)
+        if (origin.startsWith('capacitor://') ||
+            origin.startsWith('file://') ||
+            origin.startsWith('ionic://') ||
+            origin === 'https://localhost' ||
+            origin === 'http://localhost') {
             return callback(null, true);
         }
 
