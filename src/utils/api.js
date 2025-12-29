@@ -1,7 +1,12 @@
 import axios from 'axios';
 
-// Get API base URL from environment variable or default to localhost
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+// Get API base URL - HARDCODED for Android app
+// Using production backend URL directly to ensure it works in APK
+const API_BASE_URL = 'https://homly-backend-8616.onrender.com/api';
+
+// Log the API URL being used (helpful for debugging)
+console.log('🔗 API Base URL:', API_BASE_URL);
+console.log('📦 Environment:', import.meta.env.MODE);
 
 // Create axios instance with base configuration
 const api = axios.create({

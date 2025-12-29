@@ -56,6 +56,12 @@ export const DataProvider = ({ children }) => {
     // Users State
     const [users, setUsers] = useState([]);
 
+    // Initial Loading State - for intro animation
+    const [initialLoading, setInitialLoading] = useState(true);
+
+    // Track when component mounts to ensure minimum intro display time
+    const [mountTime] = useState(Date.now());
+
     // Clear stale localStorage on mount
     useEffect(() => {
         // Clear products, ads, and stores cache to ensure fresh data from database
@@ -68,18 +74,53 @@ export const DataProvider = ({ children }) => {
     // Fetch data from API on mount
     useEffect(() => {
         const fetchProducts = async () => {
+            console.log('🔄 Starting to fetch products...');
             setLoading(prev => ({ ...prev, products: true }));
             setError(prev => ({ ...prev, products: null }));
             try {
+                console.log('📡 Calling API: getProducts({ limit: 50, page: 1 })');
                 // Fetch first 50 products for faster initial load
                 const response = await apiService.getProducts({ limit: 50, page: 1 });
+                console.log('📦 API Response:', response);
                 if (response.success && response.data) {
                     setProducts(response.data);
                     console.log(`✅ Loaded ${response.data.length} of ${response.total} products from database`);
+
+                    // Ensure intro animation displays for at least 1.5 seconds
+                    const elapsedTime = Date.now() - mountTime;
+                    const minDisplayTime = 1500; // 1.5 seconds
+                    const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+
+                    setTimeout(() => {
+                        setInitialLoading(false);
+                    }, remainingTime);
+                } else {
+                    console.error('❌ API returned unsuccessful response:', response);
+                    // Still hide intro even on error, but respect minimum time
+                    const elapsedTime = Date.now() - mountTime;
+                    const minDisplayTime = 1500;
+                    const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+
+                    setTimeout(() => {
+                        setInitialLoading(false);
+                    }, remainingTime);
                 }
             } catch (err) {
-                console.error('Failed to fetch products:', err);
+                console.error('❌ Failed to fetch products:', err);
+                console.error('❌ Error details:', {
+                    message: err.message,
+                    status: err.status,
+                    data: err.data
+                });
                 setError(prev => ({ ...prev, products: err.message }));
+                // Hide intro even on error, but respect minimum time
+                const elapsedTime = Date.now() - mountTime;
+                const minDisplayTime = 1500;
+                const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+
+                setTimeout(() => {
+                    setInitialLoading(false);
+                }, remainingTime);
             } finally {
                 setLoading(prev => ({ ...prev, products: false }));
             }
@@ -489,6 +530,7 @@ export const DataProvider = ({ children }) => {
         users,
         loading,
         error,
+        initialLoading,
         addProduct,
         updateProduct,
         deleteProduct,

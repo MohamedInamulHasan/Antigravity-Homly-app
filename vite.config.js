@@ -106,6 +106,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0', // Expose to local network
     port: 5173,
+    strictPort: true,
   },
   preview: {
     port: 5173,

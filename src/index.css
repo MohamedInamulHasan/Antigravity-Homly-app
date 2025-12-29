@@ -5,6 +5,10 @@
 @layer base {
     body {
         @apply dark:bg-gray-900 dark:text-white transition-colors duration-200;
+        /* Add safe area padding for status bar (network/notification icons) */
+        padding-top: env(safe-area-inset-top);
+        /* Disable pull-to-refresh behavior */
+        overscroll-behavior-y: contain;
     }
 }
 
