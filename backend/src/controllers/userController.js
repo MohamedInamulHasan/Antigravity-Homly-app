@@ -13,7 +13,7 @@ const generateToken = (id) => {
 // @access  Public
 export const registerUser = async (req, res, next) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, mobile } = req.body;
 
         // Check if user exists
         const userExists = await User.findOne({ email });
@@ -27,7 +27,8 @@ export const registerUser = async (req, res, next) => {
         const user = await User.create({
             name,
             email,
-            password
+            password,
+            mobile
         });
 
         if (user) {

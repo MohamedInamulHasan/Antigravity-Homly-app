@@ -135,6 +135,7 @@ export const apiService = {
         create: (data) => api.post('/service-requests', data),
         getAll: () => api.get('/service-requests'),
         updateStatus: (id, status) => api.put(`/service-requests/${id}`, { status }),
+        delete: (id) => api.delete(`/service-requests/${id}`)
     },
 
     // User Management (Admin)

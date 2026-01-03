@@ -3,7 +3,8 @@ const router = express.Router();
 import {
     createServiceRequest,
     getServiceRequests,
-    updateServiceRequestStatus
+    updateServiceRequestStatus,
+    deleteServiceRequest
 } from '../controllers/serviceRequestController.js';
 import { protect, adminOnly } from '../middleware/authMiddleware.js';
 
@@ -12,6 +13,7 @@ router.route('/')
     .get(protect, adminOnly, getServiceRequests);
 
 router.route('/:id')
-    .put(protect, adminOnly, updateServiceRequestStatus);
+    .put(protect, adminOnly, updateServiceRequestStatus)
+    .delete(protect, adminOnly, deleteServiceRequest);
 
 export default router;

@@ -67,3 +67,21 @@ export const updateServiceRequestStatus = async (req, res) => {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
+
+// @desc    Delete service request
+// @route   DELETE /api/service-requests/:id
+// @access  Private/Admin
+export const deleteServiceRequest = async (req, res) => {
+    try {
+        const request = await ServiceRequest.findById(req.params.id);
+
+        if (request) {
+            await request.deleteOne();
+            res.json({ message: 'Service Request removed' });
+        } else {
+            res.status(404).json({ message: 'Service Request not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};

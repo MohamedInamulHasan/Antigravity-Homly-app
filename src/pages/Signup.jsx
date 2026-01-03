@@ -1,11 +1,12 @@
 import { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { User, Mail, Lock, ArrowRight, Loader } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Loader, Phone } from 'lucide-react';
 
 const Signup = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [mobile, setMobile] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState(null);
@@ -40,7 +41,7 @@ const Signup = () => {
         }
 
         setIsSubmitting(true);
-        const success = await register(name, email, password);
+        const success = await register(name, email, password, mobile);
         if (success) {
             // Check for saved redirect
             const savedRedirect = sessionStorage.getItem('redirectAfterLogin');
@@ -167,6 +168,29 @@ const Signup = () => {
                                 />
                             </div>
                         </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Mobile Number
+                            </label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Phone className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    id="mobile"
+                                    name="mobile"
+                                    type="tel"
+                                    autoComplete="tel"
+                                    required
+                                    className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm bg-gray-50 dark:bg-gray-700 transition-colors duration-200"
+                                    placeholder="+91 98765 43210"
+                                    value={mobile}
+                                    onChange={(e) => setMobile(e.target.value)}
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     <div>
@@ -185,18 +209,18 @@ const Signup = () => {
                             )}
                         </button>
                     </div>
-                </form>
+                </form >
 
-                <div className="mt-6 text-center">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Already have an account?{' '}
-                        <Link to={redirect ? `/login?redirect=${redirect}` : '/login'} className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
-                            Sign in
-                        </Link>
-                    </p>
-                </div>
-            </div>
-        </div>
+    <div className="mt-6 text-center">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+            Already have an account?{' '}
+            <Link to={redirect ? `/login?redirect=${redirect}` : '/login'} className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
+                Sign in
+            </Link>
+        </p>
+    </div>
+            </div >
+        </div >
     );
 };
 

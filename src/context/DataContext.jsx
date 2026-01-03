@@ -637,6 +637,16 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    const deleteServiceRequest = async (id) => {
+        try {
+            await apiService.serviceRequests.delete(id);
+            return true;
+        } catch (err) {
+            console.error('Failed to delete service request:', err);
+            throw err;
+        }
+    };
+
     const updateService = async (updatedService) => {
         setLoading(prev => ({ ...prev, services: true }));
         try {
@@ -742,6 +752,7 @@ export const DataProvider = ({ children }) => {
         requestService,
         fetchServiceRequests,
         updateServiceRequestStatus,
+        deleteServiceRequest,
         refreshData, // Exposed for Pull to Refresh
         savedProducts,
         fetchSavedProducts,

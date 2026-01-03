@@ -40,10 +40,10 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const register = async (name, email, password) => {
+    const register = async (name, email, password, mobile) => {
         try {
             setError(null);
-            const data = await apiService.register({ name, email, password });
+            const data = await apiService.register({ name, email, password, mobile });
 
             setUser(data.data);
             localStorage.setItem('userInfo', JSON.stringify(data.data));

@@ -2298,7 +2298,7 @@ const ServiceManagement = () => {
 };
 
 const ServiceRequestManagement = () => {
-    const { fetchServiceRequests, updateServiceRequestStatus } = useData();
+    const { fetchServiceRequests, updateServiceRequestStatus, deleteServiceRequest } = useData();
     const { t } = useLanguage();
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -2328,96 +2328,118 @@ const ServiceRequestManagement = () => {
             console.error('Error updating status:', error);
             alert(t('Failed to update status'));
         }
-    };
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-        );
+        alert(t('Failed to update status'));
     }
+};
 
+const handleDeleteRequest = async (id) => {
+    if (window.confirm(t('Are you sure you want to delete this service request?'))) {
+        try {
+            await deleteServiceRequest(id);
+            setRequests(prev => prev.filter(req => (req._id || req.id) !== id));
+        } catch (error) {
+            console.error('Error deleting request:', error);
+            alert(t('Failed to delete request'));
+        }
+    }
+};
+
+if (loading) {
     return (
-        <div className="max-w-6xl">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                <ClipboardList className="text-blue-600" />
-                {t('Service Requests')}
-            </h2>
-
-            <div className="grid gap-6">
-                {requests.length === 0 ? (
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center text-gray-500">
-                        {t('No service requests found')}
-                    </div>
-                ) : (
-                    requests.map(request => (
-                        <div key={request._id || request.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col md:flex-row gap-6">
-                            {/* Service Image */}
-                            <div className="w-full md:w-32 h-32 flex-shrink-0">
-                                <img
-                                    src={request.service?.image || 'https://via.placeholder.com/150'}
-                                    alt={request.service?.name}
-                                    className="w-full h-full object-cover rounded-xl"
-                                />
-                            </div>
-
-                            {/* Details */}
-                            <div className="flex-1 space-y-4">
-                                <div>
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                                        {request.service?.name || t('Unknown Service')}
-                                    </h3>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        {t('Requested on')} {new Date(request.createdAt).toLocaleDateString()}
-                                    </p>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('Customer Name')}</p>
-                                        <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                                            <Users size={16} className="text-blue-600" />
-                                            {request.user?.name || t('Unknown User')}
-                                        </p>
-                                    </div>
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('Customer Mobile')}</p>
-                                        <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                                            <Phone size={16} className="text-green-600" />
-                                            {request.user?.mobile || t('N/A')}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Status Control */}
-                            <div className="flex flex-col gap-2 min-w-[200px]">
-                                <label className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
-                                    {t('Current Status')}
-                                </label>
-                                <select
-                                    value={request.status}
-                                    onChange={(e) => handleStatusUpdate(request._id || request.id, e.target.value)}
-                                    className={`w-full p-3 rounded-xl border appearance-none font-medium cursor-pointer outline-none transition-colors
-                                        ${request.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                            request.status === 'In Progress' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                                request.status === 'Completed' ? 'bg-green-50 text-green-700 border-green-200' :
-                                                    'bg-red-50 text-red-700 border-red-200'
-                                        }`}
-                                >
-                                    <option value="Pending">{t('Pending')}</option>
-                                    <option value="In Progress">{t('In Progress')}</option>
-                                    <option value="Completed">{t('Completed')}</option>
-                                    <option value="Cancelled">{t('Cancelled')}</option>
-                                </select>
-                            </div>
-                        </div>
-                    ))
-                )}
-            </div>
+        <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
     );
+}
+
+return (
+    <div className="max-w-6xl">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+            <ClipboardList className="text-blue-600" />
+            {t('Service Requests')}
+        </h2>
+
+        <div className="grid gap-6">
+            {requests.length === 0 ? (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center text-gray-500">
+                    {t('No service requests found')}
+                </div>
+            ) : (
+                requests.map(request => (
+                    <div key={request._id || request.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col md:flex-row gap-6">
+                        {/* Service Image */}
+                        <div className="w-full md:w-32 h-32 flex-shrink-0">
+                            <img
+                                src={request.service?.image || 'https://via.placeholder.com/150'}
+                                alt={request.service?.name}
+                                className="w-full h-full object-cover rounded-xl"
+                            />
+                        </div>
+
+                        {/* Details */}
+                        <div className="flex-1 space-y-4">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                                    {request.service?.name || t('Unknown Service')}
+                                </h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    {t('Requested on')} {new Date(request.createdAt).toLocaleDateString()}
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('Customer Name')}</p>
+                                    <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                        <Users size={16} className="text-blue-600" />
+                                        {request.user?.name || t('Unknown User')}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('Customer Mobile')}</p>
+                                    <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                        <Phone size={16} className="text-green-600" />
+                                        {request.user?.mobile || t('N/A')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Status Control */}
+                        <div className="flex flex-col gap-2 min-w-[200px]">
+                            <label className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+                                {t('Current Status')}
+                            </label>
+                            <select
+                                value={request.status}
+                                onChange={(e) => handleStatusUpdate(request._id || request.id, e.target.value)}
+                                className={`w-full p-3 rounded-xl border appearance-none font-medium cursor-pointer outline-none transition-colors
+                                        ${request.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                        request.status === 'In Progress' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                            request.status === 'Completed' ? 'bg-green-50 text-green-700 border-green-200' :
+                                                'bg-red-50 text-red-700 border-red-200'
+                                    }`}
+                            >
+                                <option value="Pending">{t('Pending')}</option>
+                                <option value="In Progress">{t('In Progress')}</option>
+                                <option value="Completed">{t('Completed')}</option>
+                                <option value="Cancelled">{t('Cancelled')}</option>
+                            </select>
+                            <button
+                                onClick={() => handleDeleteRequest(request._id || request.id)}
+                                className="p-3 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
+                                title={t('Delete Request')}
+                            >
+                                <Trash2 size={16} />
+                                <span className="text-sm font-medium">{t('Delete')}</span>
+                            </button>
+                        </div>
+                    </div>
+                ))
+            )}
+        </div>
+    </div>
+);
 };
 
 export default AdminDashboard;
