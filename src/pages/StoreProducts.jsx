@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+ import { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, MapPin, Clock, Phone, ChevronRight, AlertCircle } from 'lucide-react';
 import { useData } from '../context/DataContext';

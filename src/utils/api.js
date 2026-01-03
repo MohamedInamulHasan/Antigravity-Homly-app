@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Get API base URL - HARDCODED for Android app
 // Using production backend URL directly to ensure it works in APK
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://homly-backend-8616.onrender.com/api';
 
 // Log the API URL being used (helpful for debugging)
 console.log('🔗 API Base URL:', API_BASE_URL);
