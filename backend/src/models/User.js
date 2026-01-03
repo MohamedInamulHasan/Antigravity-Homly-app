@@ -34,7 +34,11 @@ const userSchema = new mongoose.Schema({
         state: String,
         zip: String,
         country: { type: String, default: 'India' }
-    }
+    },
+    savedProducts: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product'
+    }]
 }, {
     timestamps: true
 });

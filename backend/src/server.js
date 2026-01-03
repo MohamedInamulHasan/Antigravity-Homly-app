@@ -13,6 +13,7 @@ import storeRoutes from './routes/stores.js';
 import newsRoutes from './routes/news.js';
 import adRoutes from './routes/ads.js';
 import categoryRoutes from './routes/categories.js';
+import serviceRoutes from './routes/services.js';
 
 // Load environment variables
 dotenv.config();
@@ -78,7 +79,8 @@ app.get('/', (req, res) => {
             stores: '/api/stores',
             news: '/api/news',
             ads: '/api/ads',
-            categories: '/api/categories'
+            categories: '/api/categories',
+            services: '/api/services'
         }
     });
 });
@@ -90,6 +92,7 @@ app.use('/api/stores', storeRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/ads', adRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/services', serviceRoutes);
 
 // Error handler middleware (must be last)
 app.use(errorHandler);

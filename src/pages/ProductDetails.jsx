@@ -9,7 +9,7 @@ const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addToCart, cartItems, updateQuantity } = useCart();
-    const { products, stores } = useData();
+    const { products, stores, savedProducts, toggleSaveProduct } = useData();
     const { t } = useLanguage();
 
     const [product, setProduct] = useState(null);
@@ -30,6 +30,15 @@ const ProductDetails = () => {
     const productId = product ? (product._id || product.id) : null;
     const cartItem = product ? cartItems.find(item => item.id === productId) : null;
     const quantity = cartItem ? cartItem.quantity : 0;
+
+    // Check if product is saved (savedProducts contains objects now due to populate, so check IDs)
+    const isSaved = product && savedProducts.some(p => (p._id || p.id || p) === (product._id || product.id));
+
+    const handleToggleSave = async () => {
+        if (product) {
+            await toggleSaveProduct(product._id || product.id);
+        }
+    };
 
     const handleCheckout = () => {
         if (!cartItem) {
@@ -80,8 +89,11 @@ const ProductDetails = () => {
                         <span className="font-medium">{t('Back')}</span>
                     </button>
                     <div className="flex gap-4">
-                        <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
-                            <Heart size={24} />
+                        <button
+                            onClick={handleToggleSave}
+                            className={`p-2 transition-colors ${isSaved ? 'text-red-500 fill-current' : 'text-gray-400 hover:text-red-500'}`}
+                        >
+                            <Heart size={24} fill={isSaved ? "currentColor" : "none"} />
                         </button>
                         <button className="p-2 text-gray-400 hover:text-blue-500 transition-colors">
                             <Share2 size={24} />

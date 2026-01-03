@@ -24,7 +24,8 @@ import {
 
     Trash2,
     Image as ImageIcon,
-    RefreshCw
+    RefreshCw,
+    Wrench
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -51,6 +52,8 @@ const AdminDashboard = () => {
                 return <CategoryManagement />;
             case 'ads':
                 return <AdsManagement />;
+            case 'services':
+                return <ServiceManagement />;
             default:
                 return <ProductManagement />;
         }
@@ -130,6 +133,12 @@ const AdminDashboard = () => {
                         label={t('Ads Slider')}
                         active={activeTab === 'ads'}
                         onClick={() => { setActiveTab('ads'); setIsMobileMenuOpen(false); }}
+                    />
+                    <SidebarItem
+                        icon={<Wrench size={20} />}
+                        label={t('Services')}
+                        active={activeTab === 'services'}
+                        onClick={() => { setActiveTab('services'); setIsMobileMenuOpen(false); }}
                     />
                 </nav>
             </div>
@@ -2041,6 +2050,223 @@ const AdsManagement = () => {
                     </div>
                 ))}
             </div>
+        </div>
+    );
+};
+
+
+const ServiceManagement = () => {
+    const { services, addService, updateService, deleteService } = useData();
+    const { t } = useLanguage();
+    const [view, setView] = useState('list');
+    const [editingService, setEditingService] = useState(null);
+    const [formData, setFormData] = useState({
+        name: '',
+        description: '',
+        image: '',
+        address: '',
+        mobile: ''
+    });
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData(prev => ({ ...prev, image: reader.result }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleEdit = (service) => {
+        setEditingService(service);
+        setFormData({
+            name: service.name,
+            description: service.description,
+            image: service.image,
+            address: service.address || '',
+            mobile: service.mobile || ''
+        });
+        setView('form');
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm(t('Are you sure you want to delete this service?'))) {
+            try {
+                await deleteService(id);
+                alert(t('Service deleted successfully!'));
+            } catch (error) {
+                console.error('Error deleting service:', error);
+                const errorMessage = error.response?.data?.message || error.message || t('Failed to delete service.');
+                alert(errorMessage);
+            }
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            if (editingService) {
+                await updateService({ ...editingService, ...formData });
+                alert(t('Service updated successfully!'));
+            } else {
+                await addService(formData);
+                alert(t('Service added successfully!'));
+            }
+            setFormData({ name: '', description: '', image: '', address: '', mobile: '' });
+            setEditingService(null);
+            setView('list');
+        } catch (error) {
+            console.error('Error saving service:', error);
+            const errorMessage = error.response?.data?.message || error.message || t('Failed to save service.');
+            alert(errorMessage);
+        }
+    };
+
+    return (
+        <div className="max-w-6xl">
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {view === 'list' ? t('Service Management') : editingService ? t('Edit Service') : t('Add New Service')}
+                </h2>
+                <button
+                    onClick={() => {
+                        if (view === 'list') {
+                            setEditingService(null);
+                            setFormData({ name: '', description: '', image: '', address: '', mobile: '' });
+                            setView('form');
+                        } else {
+                            setView('list');
+                        }
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                >
+                    {view === 'list' ? <Plus size={20} /> : <List size={20} />}
+                    {view === 'list' ? t('Add Service') : t('View List')}
+                </button>
+            </div>
+
+            {view === 'list' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {services.map(service => (
+                        <div key={service._id || service.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden group">
+                            <div className="h-48 overflow-hidden relative">
+                                <img src={service.image} alt={service.name} className="w-full h-full object-cover" />
+                                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                    <button
+                                        onClick={() => handleEdit(service)}
+                                        className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-blue-600 hover:text-blue-700 shadow-sm"
+                                    >
+                                        <Edit2 size={18} />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(service._id || service.id)}
+                                        className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-red-600 hover:text-red-700 shadow-sm"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{service.name}</h3>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 line-clamp-2">{service.description}</p>
+                                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                                    <div className="flex items-center gap-2">
+                                        <MapPin size={16} />
+                                        <span>{service.address}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Phone size={16} />
+                                        <span>{service.mobile}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Service Name')}</label>
+                            <input
+                                type="text"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Image')}</label>
+                            <div className="flex items-center gap-4">
+                                {formData.image && (
+                                    <img src={formData.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
+                                )}
+                                <label className="flex-1 cursor-pointer">
+                                    <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
+                                        <Upload size={20} />
+                                        <span>{t('Upload Image')}</span>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                        required={!formData.image}
+                                    />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Description')}</label>
+                            <textarea
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                rows="4"
+                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                required
+                            ></textarea>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Address')}</label>
+                                <input
+                                    type="text"
+                                    value={formData.address}
+                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Mobile Number')}</label>
+                                <input
+                                    type="text"
+                                    value={formData.mobile}
+                                    onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end">
+                            <button
+                                type="submit"
+                                className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+                            >
+                                <Save size={20} />
+                                {editingService ? t('Update Service') : t('Add Service')}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
         </div>
     );
 };

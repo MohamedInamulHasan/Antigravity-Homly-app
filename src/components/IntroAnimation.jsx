@@ -2,18 +2,9 @@ import { useEffect, useState } from 'react';
 import { Home } from 'lucide-react';
 
 const IntroAnimation = () => {
-    const [show, setShow] = useState(true);
+    // Component is now controlled purely by parent's conditional rendering
+    // No internal state or timeout needed
 
-    useEffect(() => {
-        // Ensure minimum display time of 1.5 seconds for smooth experience
-        const timer = setTimeout(() => {
-            setShow(false);
-        }, 1500);
-
-        return () => clearTimeout(timer);
-    }, []);
-
-    if (!show) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-600 via-purple-600 to-teal-500 animate-gradient">

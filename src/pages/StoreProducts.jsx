@@ -8,7 +8,7 @@ import ProductCard from '../components/ProductCard';
 
 const StoreProducts = () => {
     const { id } = useParams();
-    const { products, stores } = useData();
+    const { products, stores, savedProducts } = useData();
     const { t } = useLanguage();
     const [selectedCategory, setSelectedCategory] = useState(null);
     const storeId = id;
@@ -112,22 +112,53 @@ const StoreProducts = () => {
                 </div>
             </div>
 
+            {/* Categories Scroller */}
+            {categories.length > 0 && (
+                <div className="mb-8 overflow-x-auto pb-4 scrollbar-hide">
+                    <div className="flex space-x-4">
+                        <button
+                            onClick={() => setSelectedCategory(null)}
+                            className={`flex - shrink - 0 px - 4 py - 2 rounded - full border transition - all duration - 300 ${!selectedCategory
+                                ? 'bg-blue-600 text-white border-blue-600'
+                                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:text-blue-500'
+                                } `}
+                        >
+                            <span className="font-medium whitespace-nowrap text-sm">{t('All')}</span>
+                        </button>
+                        {categories.map((cat, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => setSelectedCategory(cat.name)}
+                                className={`flex - shrink - 0 px - 4 py - 2 rounded - full border transition - all duration - 300 ${selectedCategory === cat.name
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:text-blue-500'
+                                    } `}
+                            >
+                                <span className="font-medium whitespace-nowrap text-sm">
+                                    {t(cat.name)} <span className="text-xs opacity-75 ml-1">({cat.count})</span>
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Content Area */}
             <div>
                 {/* Products Grid */}
-                {storeProducts.length > 0 ? (
+                {displayedProducts.length > 0 ? (
                     <div>
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                                {t('All Products')}
+                                {selectedCategory ? t(selectedCategory) : t('All Products')}
                             </h2>
                             <span className="text-gray-500 dark:text-gray-400 text-sm">
-                                {storeProducts.length} {t('products')}
+                                {displayedProducts.length} {t('products')}
                             </span>
                         </div>
                         <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-                            {storeProducts.map((product) => (
-                                <ProductCard key={product._id || product.id} product={product} />
+                            {displayedProducts.map((product) => (
+                                <ProductCard key={product._id || product.id} product={product} showHeart={false} />
                             ))}
                         </div>
                     </div>

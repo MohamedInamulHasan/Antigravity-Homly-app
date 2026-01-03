@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { MapPin, Search, Star, Clock, Phone } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -7,10 +7,10 @@ import { isStoreOpen } from '../utils/storeHelpers';
 
 const Shop = () => {
     const [searchQuery, setSearchQuery] = useState('');
-    const [showOnlyOpen, setShowOnlyOpen] = useState(true);
     const [searchParams, setSearchParams] = useSearchParams();
     const { stores, categories: dbCategories } = useData();
     const { t } = useLanguage();
+    const navigate = useNavigate();
 
     const categoryFilter = searchParams.get('category') || 'All';
 
@@ -36,10 +36,7 @@ const Shop = () => {
         const matchesCategory = categoryFilter === 'All' ||
             (store.type && store.type.toLowerCase() === categoryFilter.toLowerCase());
 
-        // Time-based filtering
-        const matchesTimeFilter = !showOnlyOpen || isStoreOpen(store);
-
-        return matchesSearch && matchesCategory && matchesTimeFilter;
+        return matchesSearch && matchesCategory;
     });
 
     const handleCategoryClick = (categoryName) => {
@@ -67,15 +64,6 @@ const Shop = () => {
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                             {t('Showing')} <span className="font-semibold text-gray-900 dark:text-white">{filteredStores.length}</span> {t('stores')}
                         </p>
-                        <button
-                            onClick={() => setShowOnlyOpen(!showOnlyOpen)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${showOnlyOpen
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-                                }`}
-                        >
-                            {showOnlyOpen ? t('Open Now') : t('All Stores')}
-                        </button>
                     </div>
 
                     {/* Category Pills */}
@@ -151,12 +139,21 @@ const Shop = () => {
                                         </div>
                                     </div>
 
-                                    <Link
-                                        to={`/store/${store._id || store.id}`}
-                                        className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-md hover:shadow-lg"
+                                    <button
+                                        onClick={() => {
+                                            if (isStoreOpen(store)) {
+                                                navigate(`/store/${store._id || store.id}`);
+                                            } else {
+                                                alert(t('This store is currently closed.'));
+                                            }
+                                        }}
+                                        className={`block w-full text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${isStoreOpen(store)
+                                                ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg focus:ring-blue-500'
+                                                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                                            }`}
                                     >
-                                        {t('Visit Store')}
-                                    </Link>
+                                        {isStoreOpen(store) ? t('Visit Store') : t('Closed')}
+                                    </button>
                                 </div>
                             </div>
                         ))}

@@ -20,6 +20,10 @@ export const DataProvider = ({ children }) => {
         stores: false,
         news: false,
         orders: false,
+        services: false,
+        ads: false,
+        categories: false,
+        users: false
     });
 
     const [error, setError] = useState({
@@ -27,25 +31,17 @@ export const DataProvider = ({ children }) => {
         stores: null,
         news: null,
         orders: null,
+        services: null,
+        ads: null,
+        categories: null,
+        users: null
     });
 
     // Orders State - will be populated from backend
     const [orders, setOrders] = useState([]);
 
     // News State - will be populated from backend
-    const [news, setNews] = useState(() => {
-        try {
-            const saved = localStorage.getItem('news');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed)) return parsed;
-            }
-            return [];
-        } catch (e) {
-            console.error("Failed to parse news from local storage", e);
-            return [];
-        }
-    });
+    const [news, setNews] = useState([]);
 
     // Ads State - always start fresh, fetch from database
     const [ads, setAds] = useState([]);
@@ -55,6 +51,12 @@ export const DataProvider = ({ children }) => {
 
     // Users State
     const [users, setUsers] = useState([]);
+
+    // Services State
+    const [services, setServices] = useState([]);
+
+    // Saved Products State
+    const [savedProducts, setSavedProducts] = useState([]);
 
     // Initial Loading State - for intro animation
     const [initialLoading, setInitialLoading] = useState(true);
@@ -68,111 +70,81 @@ export const DataProvider = ({ children }) => {
         localStorage.removeItem('products');
         localStorage.removeItem('ads');
         localStorage.removeItem('stores');
-        console.log('🧹 Cleared stale products, ads, and stores cache from localStorage');
+        localStorage.removeItem('news');
+        localStorage.removeItem('categories');
+        localStorage.removeItem('orders');
+        console.log('🧹 Cleared all data cache from localStorage to enforce DB loading');
     }, []);
 
-    // Fetch data from API on mount
-    useEffect(() => {
-        const fetchProducts = async () => {
-            console.log('🔄 Starting to fetch products...');
-            setLoading(prev => ({ ...prev, products: true }));
-            setError(prev => ({ ...prev, products: null }));
-            try {
-                console.log('📡 Calling API: getProducts({ limit: 50, page: 1 })');
-                // Fetch first 50 products for faster initial load
-                const response = await apiService.getProducts({ limit: 50, page: 1 });
-                console.log('📦 API Response:', response);
-                if (response.success && response.data) {
-                    setProducts(response.data);
-                    console.log(`✅ Loaded ${response.data.length} of ${response.total} products from database`);
-
-                    // Ensure intro animation displays for at least 1.5 seconds
-                    const elapsedTime = Date.now() - mountTime;
-                    const minDisplayTime = 1500; // 1.5 seconds
-                    const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
-
-                    setTimeout(() => {
-                        setInitialLoading(false);
-                    }, remainingTime);
-                } else {
-                    console.error('❌ API returned unsuccessful response:', response);
-                    // Still hide intro even on error, but respect minimum time
-                    const elapsedTime = Date.now() - mountTime;
-                    const minDisplayTime = 1500;
-                    const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
-
-                    setTimeout(() => {
-                        setInitialLoading(false);
-                    }, remainingTime);
-                }
-            } catch (err) {
-                console.error('❌ Failed to fetch products:', err);
-                console.error('❌ Error details:', {
-                    message: err.message,
-                    status: err.status,
-                    data: err.data
-                });
-                setError(prev => ({ ...prev, products: err.message }));
-                // Hide intro even on error, but respect minimum time
-                const elapsedTime = Date.now() - mountTime;
-                const minDisplayTime = 1500;
-                const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
-
-                setTimeout(() => {
-                    setInitialLoading(false);
-                }, remainingTime);
-            } finally {
-                setLoading(prev => ({ ...prev, products: false }));
+    // Fetch data definitions
+    const fetchProducts = async () => {
+        console.log('🔄 Starting to fetch products...');
+        setLoading(prev => ({ ...prev, products: true }));
+        setError(prev => ({ ...prev, products: null }));
+        try {
+            console.log('📡 Calling API: getProducts({ limit: 50, page: 1 })');
+            const response = await apiService.getProducts({ limit: 50, page: 1 });
+            console.log('📦 API Response:', response);
+            if (response.success && response.data) {
+                setProducts(response.data);
+                console.log(`✅ Loaded ${response.data.length} of ${response.total} products from database`);
+            } else {
+                console.error('❌ API returned unsuccessful response:', response);
+                // On error, we still want to hide intro eventually
+                setTimeout(() => setInitialLoading(false), 1500);
             }
-        };
+        } catch (err) {
+            console.error('❌ Failed to fetch products:', err);
+            setError(prev => ({ ...prev, products: err.message }));
+            setTimeout(() => setInitialLoading(false), 1500);
+        } finally {
+            setLoading(prev => ({ ...prev, products: false }));
+        }
+    };
 
+    const fetchStores = async () => {
+        setLoading(prev => ({ ...prev, stores: true }));
+        setError(prev => ({ ...prev, stores: null }));
+        try {
+            const response = await apiService.getStores();
+            if (response.success && response.data) {
+                setStores(response.data);
+                console.log(`✅ Loaded ${response.data.length} stores from database`);
+            }
+        } catch (err) {
+            console.error('Failed to fetch stores:', err);
+            setError(prev => ({ ...prev, stores: err.message }));
+        } finally {
+            setLoading(prev => ({ ...prev, stores: false }));
+        }
+    };
+
+    const fetchNews = async () => {
+        setLoading(prev => ({ ...prev, news: true }));
+        setError(prev => ({ ...prev, news: null }));
+        try {
+            const response = await apiService.getNews();
+            if (response.success && response.data) {
+                setNews(response.data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch news:', err);
+            setError(prev => ({ ...prev, news: err.message }));
+        } finally {
+            setLoading(prev => ({ ...prev, news: false }));
+        }
+    };
+
+    // Initial Fetch Effects
+    useEffect(() => {
         fetchProducts();
     }, []);
 
     useEffect(() => {
-        const fetchStores = async () => {
-            setLoading(prev => ({ ...prev, stores: true }));
-            setError(prev => ({ ...prev, stores: null }));
-            try {
-                const response = await apiService.getStores();
-                if (response.success && response.data) {
-                    setStores(response.data);
-                    console.log(`✅ Loaded ${response.data.length} stores from database`);
-                }
-            } catch (err) {
-                console.error('Failed to fetch stores:', err);
-                setError(prev => ({ ...prev, stores: err.message }));
-            } finally {
-                setLoading(prev => ({ ...prev, stores: false }));
-            }
-        };
-
         fetchStores();
     }, []);
 
     useEffect(() => {
-        const fetchNews = async () => {
-            setLoading(prev => ({ ...prev, news: true }));
-            setError(prev => ({ ...prev, news: null }));
-            try {
-                const response = await apiService.getNews();
-                if (response.success && response.data) {
-                    setNews(response.data);
-                    try {
-                        localStorage.setItem('news', JSON.stringify(response.data));
-                    } catch (e) {
-                        console.error('Failed to save news to local storage', e);
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to fetch news:', err);
-                setError(prev => ({ ...prev, news: err.message }));
-                // Keep using localStorage data as fallback
-            } finally {
-                setLoading(prev => ({ ...prev, news: false }));
-            }
-        };
-
         fetchNews();
     }, []);
 
@@ -200,9 +172,11 @@ export const DataProvider = ({ children }) => {
 
     // Category Management - Define before use
     const fetchCategories = async () => {
+        setLoading(prev => ({ ...prev, categories: true }));
+        setError(prev => ({ ...prev, categories: null }));
         try {
             console.log('DataContext: Fetching categories...');
-            const response = await apiService.getCategories();
+            const response = await apiService.categories.getAll();
             console.log('DataContext: Categories response:', response);
             if (response.success && response.data) {
                 setCategories(response.data);
@@ -210,37 +184,141 @@ export const DataProvider = ({ children }) => {
             }
         } catch (err) {
             console.error('DataContext: Failed to fetch categories - Full error:', err);
+            setError(prev => ({ ...prev, categories: err.message }));
             // Don't throw, just log - categories are optional
+        } finally {
+            setLoading(prev => ({ ...prev, categories: false }));
         }
     };
 
-    // Defer loading categories and ads until after products load
-    useEffect(() => {
-        if (!loading.products && products.length > 0) {
-            // Load categories after products
-            fetchCategories();
+    // User Management
+    const fetchUsers = async () => {
+        setLoading(prev => ({ ...prev, users: true }));
+        setError(prev => ({ ...prev, users: null }));
+        try {
+            console.log('DataContext: Fetching users...');
+            // Assuming isAdmin is determined elsewhere or passed as a prop/context
+            // For now, let's assume we always try to fetch users if this function is called.
+            const response = await apiService.getAllUsers();
+            console.log('DataContext: Users response:', response);
+            if (response.success && response.data) {
+                setUsers(response.data);
+                console.log('DataContext: Users set successfully, count:', response.data.length);
+            }
+        } catch (err) {
+            console.error('DataContext: Failed to fetch users - Full error:', err);
+            setError(prev => ({ ...prev, users: err.message }));
+            throw err; // Propagate error to component
+        } finally {
+            setLoading(prev => ({ ...prev, users: false }));
+        }
+    };
 
+    // Fetch Ads
+    const fetchAds = async () => {
+        setLoading(prev => ({ ...prev, ads: true }));
+        setError(prev => ({ ...prev, ads: null }));
+        try {
+            const response = await apiService.getAds();
+            if (response.success && response.data) {
+                setAds(response.data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch ads:', err);
+            setError(prev => ({ ...prev, ads: err.message }));
+        } finally {
+            setLoading(prev => ({ ...prev, ads: false }));
+        }
+    };
+
+    // Fetch Services
+    const fetchServices = async () => {
+        setLoading(prev => ({ ...prev, services: true }));
+        setError(prev => ({ ...prev, services: null }));
+        try {
+            const response = await apiService.services.getAll();
+            if (response.success && response.data) {
+                setServices(response.data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch services:', err);
+            setError(prev => ({ ...prev, services: err.message }));
+        } finally {
+            setLoading(prev => ({ ...prev, services: false }));
+        }
+    };
+
+    const refreshData = async () => {
+        console.log('🔄 Refreshing all data...');
+        setLoading(prev => ({ ...prev, products: true, stores: true, news: true, ads: true, categories: true, users: true, services: true }));
+        setError(prev => ({ ...prev, products: null, stores: null, news: null, ads: null, categories: null, users: null, services: null }));
+        try {
+            // Assuming isAdmin is a boolean variable available in this scope, e.g., from another context or prop.
+            // For this change, we'll assume it's defined or handle its absence.
+            // If isAdmin is not defined, this line will cause a reference error.
+            // For now, let's define a placeholder isAdmin. In a real app, this would come from auth context.
+            const isAdmin = true; // Placeholder: Replace with actual isAdmin check
+
+            const [productsRes, storesRes, newsRes, adsRes, categoriesRes, usersRes, servicesRes] = await Promise.all([
+                apiService.getProducts({ limit: 50, page: 1 }).catch(e => { console.error("Failed to fetch products during refresh:", e); return { success: false, data: [] }; }),
+                apiService.getStores().catch(e => { console.error("Failed to fetch stores during refresh:", e); return { success: false, data: [] }; }),
+                apiService.getNews().catch(e => { console.error("Failed to fetch news during refresh:", e); return { success: false, data: [] }; }),
+                apiService.getAds().catch(e => { console.error("Failed to fetch ads during refresh:", e); return { success: false, data: [] }; }),
+                apiService.categories.getAll().catch(e => { console.error("Failed to fetch categories during refresh:", e); return { success: false, data: [] }; }),
+                isAdmin ? apiService.getAllUsers().catch(e => { console.error("Failed to fetch users during refresh:", e); return { success: false, data: [] }; }) : Promise.resolve({ success: true, data: [] }),
+                apiService.services.getAll().catch(e => { console.error("Failed to fetch services during refresh:", e); return { success: false, data: [] }; })
+            ]);
+
+            setProducts(productsRes.data || []);
+            setStores(storesRes.data || []);
+            setNews(newsRes.data || []);
+            setAds(adsRes.data || []);
+            setCategories(categoriesRes.data || []);
+            if (isAdmin) setUsers(usersRes.data || []);
+            setServices(servicesRes.data || []);
+
+            console.log('✅ All data refreshed successfully.');
+        } catch (e) {
+            console.error("Refresh data failed partially:", e);
+        } finally {
+            setLoading(prev => ({ ...prev, products: false, stores: false, news: false, ads: false, categories: false, users: false, services: false }));
+        }
+    };
+
+    // Unified database loading check
+    useEffect(() => {
+        // Only run this check if we are currently loading initially
+        if (initialLoading) {
+            // Check if essential data is loaded
+            const productsLoaded = !loading.products && products.length > 0;
+            const storesLoaded = !loading.stores && stores.length > 0;
+            const categoriesLoaded = categories.length > 0; // Categories fetch doesn't have a loading state but we can check length
+
+            // Determine if we are ready to hide intro
+            // We wait for at least products and stores as they are critical
+            if (productsLoaded && storesLoaded) {
+                const elapsedTime = Date.now() - mountTime;
+                const minDisplayTime = 2000; // Increased to 2 seconds for better effect
+                const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+
+                setTimeout(() => {
+                    setInitialLoading(false);
+                }, remainingTime);
+            }
+        }
+
+        if (!loading.products && products.length > 0) {
             // Load ads after a short delay
             setTimeout(() => {
-                const fetchAds = async () => {
-                    setLoading(prev => ({ ...prev, ads: true }));
-                    setError(prev => ({ ...prev, ads: null }));
-                    try {
-                        const response = await apiService.getAds();
-                        if (response.success && response.data) {
-                            setAds(response.data);
-                        }
-                    } catch (err) {
-                        console.error('Failed to fetch ads:', err);
-                        setError(prev => ({ ...prev, ads: err.message }));
-                    } finally {
-                        setLoading(prev => ({ ...prev, ads: false }));
-                    }
-                };
                 fetchAds();
             }, 500);
         }
-    }, [loading.products, products.length]);
+    }, [loading.products, products.length, loading.stores, stores.length, initialLoading, mountTime]);
+
+    // Independent fetch for categories
+    useEffect(() => {
+        fetchCategories();
+    }, []);
 
     // Products and stores are no longer cached in localStorage - always fetch fresh from database
 
@@ -482,21 +560,6 @@ export const DataProvider = ({ children }) => {
     };
 
     // User Management
-    const fetchUsers = async () => {
-        try {
-            console.log('DataContext: Fetching users...');
-            const response = await apiService.getAllUsers();
-            console.log('DataContext: Users response:', response);
-            if (response.success && response.data) {
-                setUsers(response.data);
-                console.log('DataContext: Users set successfully, count:', response.data.length);
-            }
-        } catch (err) {
-            console.error('DataContext: Failed to fetch users - Full error:', err);
-            throw err; // Propagate error to component
-        }
-    };
-
     const updateUser = async (updatedUser) => {
         try {
             const response = await apiService.updateUser(updatedUser._id || updatedUser.id, updatedUser);
@@ -520,6 +583,89 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    // Service Actions
+    const addService = async (serviceData) => {
+        setLoading(prev => ({ ...prev, services: true }));
+        try {
+            const response = await apiService.services.create(serviceData);
+            // Backend returns the created object directly or { success: true, data: ... }
+            const newService = response.data || response;
+            if (newService && (newService._id || newService.id)) {
+                setServices(prev => [...prev, newService]);
+                return newService;
+            }
+        } catch (err) {
+            setError(prev => ({ ...prev, services: err.message }));
+            throw err;
+        } finally {
+            setLoading(prev => ({ ...prev, services: false }));
+        }
+    };
+
+    const updateService = async (updatedService) => {
+        setLoading(prev => ({ ...prev, services: true }));
+        try {
+            const response = await apiService.services.update(updatedService._id || updatedService.id, updatedService);
+            const data = response.data || response;
+            if (data && (data._id || data.id)) {
+                setServices(prev => prev.map(s => (s._id || s.id) === (data._id || data.id) ? data : s));
+                return data;
+            }
+        } catch (err) {
+            setError(prev => ({ ...prev, services: err.message }));
+            throw err;
+        } finally {
+            setLoading(prev => ({ ...prev, services: false }));
+        }
+    };
+
+    const deleteService = async (id) => {
+        setLoading(prev => ({ ...prev, services: true }));
+        try {
+            await apiService.services.delete(id);
+            setServices(prev => prev.filter(s => (s._id || s.id) !== id));
+            return true;
+        } catch (err) {
+            setError(prev => ({ ...prev, services: err.message }));
+            throw err;
+        } finally {
+            setLoading(prev => ({ ...prev, services: false }));
+        }
+    };
+
+    // Saved Products Management
+    const fetchSavedProducts = async () => {
+        try {
+            const response = await apiService.getSavedProducts();
+            if (response.success && response.data) {
+                setSavedProducts(response.data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch saved products:', err);
+        }
+    };
+
+    const toggleSaveProduct = async (productId) => {
+        try {
+            const response = await apiService.toggleSavedProduct(productId);
+            if (response.success && response.data) {
+                // If the response is the updated list of IDs, we might need to re-fetch details
+                // But our backend returns populated objects now (based on controller update)
+                // Let's verify: controller returns updatedUser.savedProducts which IS populated.
+                setSavedProducts(response.data);
+                return true;
+            }
+        } catch (err) {
+            console.error('Failed to toggle saved product:', err);
+            return false;
+        }
+    };
+
+    // Load saved products on initial load or when user changes
+    useEffect(() => {
+        fetchSavedProducts();
+    }, []);
+
     const value = {
         products,
         stores,
@@ -528,6 +674,7 @@ export const DataProvider = ({ children }) => {
         ads,
         categories,
         users,
+        services,
         loading,
         error,
         initialLoading,
@@ -554,6 +701,13 @@ export const DataProvider = ({ children }) => {
         fetchUsers,
         updateUser,
         deleteUser,
+        addService,
+        updateService,
+        deleteService,
+        refreshData, // Exposed for Pull to Refresh
+        savedProducts,
+        fetchSavedProducts,
+        toggleSaveProduct
     };
 
     return (

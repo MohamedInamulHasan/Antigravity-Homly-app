@@ -225,3 +225,67 @@ export const deleteUser = async (req, res, next) => {
         next(error);
     }
 };
+
+// @desc    Get saved products (wishlist)
+// @route   GET /api/users/profile/saved-products
+// @access  Private
+export const getSavedProducts = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user._id).populate('savedProducts');
+
+        if (!user) {
+            res.status(404);
+            throw new Error('User not found');
+        }
+
+        res.status(200).json({
+            success: true,
+            data: user.savedProducts || []
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Toggle saved product (add/remove from wishlist)
+// @route   POST /api/users/profile/saved-products
+// @access  Private
+export const toggleSavedProduct = async (req, res, next) => {
+    try {
+        const { productId } = req.body;
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            res.status(404);
+            throw new Error('User not found');
+        }
+
+        // Initialize savedProducts if it doesn't exist
+        if (!user.savedProducts) {
+            user.savedProducts = [];
+        }
+
+        // Check if product is already saved
+        const index = user.savedProducts.indexOf(productId);
+
+        if (index > -1) {
+            // Product exists, remove it
+            user.savedProducts.splice(index, 1);
+        } else {
+            // Product doesn't exist, add it
+            user.savedProducts.push(productId);
+        }
+
+        await user.save();
+
+        // Return updated list
+        const updatedUser = await User.findById(req.user._id).populate('savedProducts');
+
+        res.status(200).json({
+            success: true,
+            data: updatedUser.savedProducts
+        });
+    } catch (error) {
+        next(error);
+    }
+};

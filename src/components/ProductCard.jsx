@@ -1,17 +1,27 @@
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
 
 const ProductCard = ({ product }) => {
     const { addToCart, cartItems, updateQuantity } = useCart();
+    const { savedProducts, toggleSaveProduct } = useData();
     const { t } = useLanguage();
+
     const productId = product._id || product.id;
     const cartItem = cartItems.find(item => item.id === productId);
+    const isSaved = savedProducts.some(p => (p._id || p.id || p) === productId);
+
+    const handleToggleSave = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleSaveProduct(productId);
+    };
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full border border-gray-100 dark:border-gray-700">
-            <Link to={`/product/${productId}`} className="flex-1 group block">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full border border-gray-100 dark:border-gray-700 relative group">
+            <Link to={`/product/${productId}`} className="flex-1 block">
                 <div className="relative pb-[100%] overflow-hidden">
                     <img
                         src={product.image}
@@ -19,6 +29,16 @@ const ProductCard = ({ product }) => {
                         loading="lazy"
                         className="absolute top-0 left-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                     />
+                    {/* Heart Button */}
+                    <button
+                        onClick={handleToggleSave}
+                        className="absolute top-2 right-2 p-2 rounded-full bg-white/80 dark:bg-black/40 hover:bg-white dark:hover:bg-black/60 transition-colors shadow-sm z-10"
+                    >
+                        <Heart
+                            size={18}
+                            className={`${isSaved ? 'text-red-500 fill-current' : 'text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400'}`}
+                        />
+                    </button>
                 </div>
                 <div className="p-4 pb-0">
                     <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-white mb-1 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{t(product, 'title')}</h3>

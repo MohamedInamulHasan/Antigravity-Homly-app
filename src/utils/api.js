@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Get API base URL - HARDCODED for Android app
 // Using production backend URL directly to ensure it works in APK
-const API_BASE_URL = 'https://homly-backend-8616.onrender.com/api';
+const API_BASE_URL = 'http://localhost:5000/api';
 
 // Log the API URL being used (helpful for debugging)
 console.log('🔗 API Base URL:', API_BASE_URL);
@@ -104,6 +104,8 @@ export const apiService = {
     login: (data) => api.post('/users/login', data),
     getProfile: () => api.get('/users/profile'),
     updateProfile: (data) => api.put('/users/profile', data),
+    getSavedProducts: () => api.get('/users/profile/saved-products'),
+    toggleSavedProduct: (productId) => api.post('/users/profile/saved-products', { productId }),
 
     // Ads
     getAds: () => api.get('/ads'),
@@ -113,11 +115,19 @@ export const apiService = {
     deleteAd: (id) => api.delete(`/ads/${id}`),
 
     // Categories
-    getCategories: () => api.get('/categories'),
-    getCategory: (id) => api.get(`/categories/${id}`),
-    createCategory: (data) => api.post('/categories', data),
-    updateCategory: (id, data) => api.put(`/categories/${id}`, data),
-    deleteCategory: (id) => api.delete(`/categories/${id}`),
+    categories: {
+        getAll: () => api.get('/categories'),
+        create: (data) => api.post('/categories', data),
+        delete: (id) => api.delete(`/categories/${id}`),
+    },
+
+    // Services
+    services: {
+        getAll: () => api.get('/services'),
+        create: (data) => api.post('/services', data),
+        update: (id, data) => api.put(`/services/${id}`, data),
+        delete: (id) => api.delete(`/services/${id}`),
+    },
 
     // User Management (Admin)
     getAllUsers: () => api.get('/users'),
