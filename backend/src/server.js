@@ -14,6 +14,7 @@ import newsRoutes from './routes/news.js';
 import adRoutes from './routes/ads.js';
 import categoryRoutes from './routes/categories.js';
 import serviceRoutes from './routes/services.js';
+import serviceRequestRoutes from './routes/serviceRequests.js';
 
 // Load environment variables
 dotenv.config();
@@ -93,6 +94,7 @@ app.use('/api/news', newsRoutes);
 app.use('/api/ads', adRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/api/service-requests', serviceRequestRoutes);
 
 // Error handler middleware (must be last)
 app.use(errorHandler);
