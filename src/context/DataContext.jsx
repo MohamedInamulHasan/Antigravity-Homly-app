@@ -583,6 +583,10 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+
+
+
+
     // Service Actions
     const addService = async (serviceData) => {
         setLoading(prev => ({ ...prev, services: true }));
@@ -599,6 +603,37 @@ export const DataProvider = ({ children }) => {
             throw err;
         } finally {
             setLoading(prev => ({ ...prev, services: false }));
+        }
+    };
+
+    // Service Request Actions
+    const requestService = async (serviceId) => {
+        try {
+            const response = await apiService.serviceRequests.create({ serviceId });
+            return response.data || response;
+        } catch (err) {
+            console.error('Failed to create service request:', err);
+            throw err;
+        }
+    };
+
+    const fetchServiceRequests = async () => {
+        try {
+            const response = await apiService.serviceRequests.getAll();
+            return response.data || response;
+        } catch (err) {
+            console.error('Failed to fetch service requests:', err);
+            return [];
+        }
+    };
+
+    const updateServiceRequestStatus = async (id, status) => {
+        try {
+            const response = await apiService.serviceRequests.updateStatus(id, status);
+            return response.data || response;
+        } catch (err) {
+            console.error('Failed to update service request status:', err);
+            throw err;
         }
     };
 
@@ -704,6 +739,9 @@ export const DataProvider = ({ children }) => {
         addService,
         updateService,
         deleteService,
+        requestService,
+        fetchServiceRequests,
+        updateServiceRequestStatus,
         refreshData, // Exposed for Pull to Refresh
         savedProducts,
         fetchSavedProducts,

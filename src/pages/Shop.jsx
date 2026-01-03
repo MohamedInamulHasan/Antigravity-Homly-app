@@ -99,15 +99,23 @@ const Shop = () => {
                                         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                    {/* Store Status Badge */}
-                                    <div className="absolute top-3 right-3">
-                                        {isStoreOpen(store) ? (
+                                    {/* Store Status Overlay */}
+                                    {!isStoreOpen(store) && (
+                                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                                            <span className="bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg transform -rotate-12 border-2 border-white">
+                                                {t('STORE CLOSED')}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Store Status Badge - Only for Open stores now, or keep separate? 
+                                        User asked for 'Store Closed tag like in home page', so the overlay above handles it.
+                                        We can keep the badge for 'Open' status, but hide the 'Closed' badge since we have the overlay.
+                                     */}
+                                    <div className="absolute top-3 right-3 z-20">
+                                        {isStoreOpen(store) && (
                                             <span className="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg">
                                                 {t('Open')}
-                                            </span>
-                                        ) : (
-                                            <span className="px-3 py-1 bg-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
-                                                {t('Closed')}
                                             </span>
                                         )}
                                     </div>
@@ -148,8 +156,8 @@ const Shop = () => {
                                             }
                                         }}
                                         className={`block w-full text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${isStoreOpen(store)
-                                                ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg focus:ring-blue-500'
-                                                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                                            ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg focus:ring-blue-500'
+                                            : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                                             }`}
                                     >
                                         {isStoreOpen(store) ? t('Visit Store') : t('Closed')}

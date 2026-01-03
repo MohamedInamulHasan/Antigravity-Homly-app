@@ -1,4 +1,4 @@
-import { Plus, Minus, Heart } from 'lucide-react';
+import { Plus, Minus, Bookmark } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
@@ -34,9 +34,9 @@ const ProductCard = ({ product }) => {
                         onClick={handleToggleSave}
                         className="absolute top-2 right-2 p-2 rounded-full bg-white/80 dark:bg-black/40 hover:bg-white dark:hover:bg-black/60 transition-colors shadow-sm z-10"
                     >
-                        <Heart
+                        <Bookmark
                             size={18}
-                            className={`${isSaved ? 'text-red-500 fill-current' : 'text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400'}`}
+                            className={`${isSaved ? 'text-blue-600 fill-current' : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'}`}
                         />
                     </button>
                 </div>

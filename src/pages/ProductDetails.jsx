@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Plus, ArrowLeft, Minus, ShoppingBag, ShoppingCart, ChevronLeft, ChevronRight, Star, Share2, Heart, Store } from 'lucide-react';
+import { Plus, ArrowLeft, Minus, ShoppingBag, ShoppingCart, ChevronLeft, ChevronRight, Star, Share2, Bookmark, Store } from 'lucide-react';
 
 const ProductDetails = () => {
     const { id } = useParams();
@@ -91,9 +91,9 @@ const ProductDetails = () => {
                     <div className="flex gap-4">
                         <button
                             onClick={handleToggleSave}
-                            className={`p-2 transition-colors ${isSaved ? 'text-red-500 fill-current' : 'text-gray-400 hover:text-red-500'}`}
+                            className={`p-2 transition-colors ${isSaved ? 'text-blue-600 fill-current' : 'text-gray-400 hover:text-blue-600'}`}
                         >
-                            <Heart size={24} fill={isSaved ? "currentColor" : "none"} />
+                            <Bookmark size={24} fill={isSaved ? "currentColor" : "none"} />
                         </button>
                         <button className="p-2 text-gray-400 hover:text-blue-500 transition-colors">
                             <Share2 size={24} />

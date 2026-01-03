@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
-import { ArrowLeft, Heart } from 'lucide-react';
+import { ArrowLeft, Bookmark } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 
@@ -30,7 +30,7 @@ const SavedProducts = () => {
                         <ArrowLeft size={24} />
                     </button>
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <Heart className="text-red-500 fill-current" size={28} />
+                        <Bookmark className="text-blue-600 fill-current" size={28} />
                         {t('Saved Products')}
                     </h1>
                 </div>
@@ -38,7 +38,7 @@ const SavedProducts = () => {
                 {savedProducts.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Heart className="text-gray-400 dark:text-gray-600" size={48} />
+                            <Bookmark className="text-gray-400 dark:text-gray-600" size={48} />
                         </div>
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                             {t('No saved products')}

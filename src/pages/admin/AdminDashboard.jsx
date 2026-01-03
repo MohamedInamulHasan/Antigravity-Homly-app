@@ -25,7 +25,8 @@ import {
     Trash2,
     Image as ImageIcon,
     RefreshCw,
-    Wrench
+    Wrench,
+    ClipboardList
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -54,6 +55,8 @@ const AdminDashboard = () => {
                 return <AdsManagement />;
             case 'services':
                 return <ServiceManagement />;
+            case 'service-requests':
+                return <ServiceRequestManagement />;
             default:
                 return <ProductManagement />;
         }
@@ -139,6 +142,12 @@ const AdminDashboard = () => {
                         label={t('Services')}
                         active={activeTab === 'services'}
                         onClick={() => { setActiveTab('services'); setIsMobileMenuOpen(false); }}
+                    />
+                    <SidebarItem
+                        icon={<ClipboardList size={20} />}
+                        label={t('Service Requests')}
+                        active={activeTab === 'service-requests'}
+                        onClick={() => { setActiveTab('service-requests'); setIsMobileMenuOpen(false); }}
                     />
                 </nav>
             </div>
@@ -1136,11 +1145,21 @@ const NewsManagement = () => {
         content: '',
     });
 
-    const handleNewsImageUpload = (e) => {
+    const handleNewsImageUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const imageUrl = URL.createObjectURL(file);
-            setNewsForm({ ...newsForm, image: imageUrl });
+            if (!validateImageSize(file, 5)) {
+                alert(t('Image is too large! Please select an image smaller than 5MB.'));
+                return;
+            }
+
+            try {
+                const compressedImage = await compressImage(file, 800, 800); // 800x800 max, 0.7 quality
+                setNewsForm({ ...newsForm, image: compressedImage });
+            } catch (error) {
+                console.error('Error compressing image:', error);
+                alert(t('Failed to process image. Please try another image.'));
+            }
         }
     };
 
@@ -2068,14 +2087,21 @@ const ServiceManagement = () => {
         mobile: ''
     });
 
-    const handleImageUpload = (e) => {
+    const handleImageUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData(prev => ({ ...prev, image: reader.result }));
-            };
-            reader.readAsDataURL(file);
+            if (!validateImageSize(file, 5)) {
+                alert(t('Image is too large! Please select an image smaller than 5MB.'));
+                return;
+            }
+
+            try {
+                const compressedImage = await compressImage(file, 800, 800);
+                setFormData(prev => ({ ...prev, image: compressedImage }));
+            } catch (error) {
+                console.error('Error compressing image:', error);
+                alert(t('Failed to process image. Please try another image.'));
+            }
         }
     };
 
@@ -2267,6 +2293,129 @@ const ServiceManagement = () => {
                     </form>
                 </div>
             )}
+        </div>
+    );
+};
+
+const ServiceRequestManagement = () => {
+    const { fetchServiceRequests, updateServiceRequestStatus } = useData();
+    const { t } = useLanguage();
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        loadRequests();
+    }, []);
+
+    const loadRequests = async () => {
+        try {
+            const data = await fetchServiceRequests();
+            setRequests(data);
+        } catch (error) {
+            console.error('Error loading service requests:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleStatusUpdate = async (id, newStatus) => {
+        try {
+            await updateServiceRequestStatus(id, newStatus);
+            setRequests(prev => prev.map(req =>
+                (req._id || req.id) === id ? { ...req, status: newStatus } : req
+            ));
+        } catch (error) {
+            console.error('Error updating status:', error);
+            alert(t('Failed to update status'));
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="max-w-6xl">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                <ClipboardList className="text-blue-600" />
+                {t('Service Requests')}
+            </h2>
+
+            <div className="grid gap-6">
+                {requests.length === 0 ? (
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center text-gray-500">
+                        {t('No service requests found')}
+                    </div>
+                ) : (
+                    requests.map(request => (
+                        <div key={request._id || request.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col md:flex-row gap-6">
+                            {/* Service Image */}
+                            <div className="w-full md:w-32 h-32 flex-shrink-0">
+                                <img
+                                    src={request.service?.image || 'https://via.placeholder.com/150'}
+                                    alt={request.service?.name}
+                                    className="w-full h-full object-cover rounded-xl"
+                                />
+                            </div>
+
+                            {/* Details */}
+                            <div className="flex-1 space-y-4">
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                                        {request.service?.name || t('Unknown Service')}
+                                    </h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        {t('Requested on')} {new Date(request.createdAt).toLocaleDateString()}
+                                    </p>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('Customer Name')}</p>
+                                        <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                            <Users size={16} className="text-blue-600" />
+                                            {request.user?.name || t('Unknown User')}
+                                        </p>
+                                    </div>
+                                    <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('Customer Mobile')}</p>
+                                        <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                            <Phone size={16} className="text-green-600" />
+                                            {request.user?.mobile || t('N/A')}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Status Control */}
+                            <div className="flex flex-col gap-2 min-w-[200px]">
+                                <label className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+                                    {t('Current Status')}
+                                </label>
+                                <select
+                                    value={request.status}
+                                    onChange={(e) => handleStatusUpdate(request._id || request.id, e.target.value)}
+                                    className={`w-full p-3 rounded-xl border appearance-none font-medium cursor-pointer outline-none transition-colors
+                                        ${request.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                            request.status === 'In Progress' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                                request.status === 'Completed' ? 'bg-green-50 text-green-700 border-green-200' :
+                                                    'bg-red-50 text-red-700 border-red-200'
+                                        }`}
+                                >
+                                    <option value="Pending">{t('Pending')}</option>
+                                    <option value="In Progress">{t('In Progress')}</option>
+                                    <option value="Completed">{t('Completed')}</option>
+                                    <option value="Cancelled">{t('Cancelled')}</option>
+                                </select>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
         </div>
     );
 };

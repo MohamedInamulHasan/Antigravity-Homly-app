@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { User, Package, Settings, ChevronRight, Globe, LogOut, Moon, Sun, Shield, Languages, Wrench, MessageCircle, Phone, Heart } from 'lucide-react';
+import { User, Package, Settings, ChevronRight, Globe, LogOut, Moon, Sun, Shield, Languages, Wrench, MessageCircle, Phone, Bookmark } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -13,6 +13,7 @@ const Profile = () => {
     const { user, logout } = useContext(AuthContext);
     const { orders } = useData();
     const navigate = useNavigate();
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
 
     // Calculate real-time order statistics
     const totalOrders = orders.length;
@@ -24,12 +25,41 @@ const Profile = () => {
     const recentOrder = orders.length > 0 ? orders[0] : null;
 
     const handleLogout = () => {
+        setShowLogoutModal(true);
+    };
+
+    const confirmLogout = () => {
         logout();
         navigate('/login');
     };
 
     return (
         <div className="bg-gray-50 dark:bg-gray-900 py-8 md:py-12 transition-colors duration-200">
+            {/* Logout Confirmation Modal */}
+            {showLogoutModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-xl transform transition-all">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('Sign Out')}</h3>
+                        <p className="text-gray-500 dark:text-gray-400 mb-6">
+                            {t('Are you sure you want to sign out?')}
+                        </p>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => setShowLogoutModal(false)}
+                                className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                            >
+                                {t('Cancel')}
+                            </button>
+                            <button
+                                onClick={confirmLogout}
+                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
+                            >
+                                {t('Sign Out')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
                 {/* Profile Header */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6 flex items-center gap-4 sm:gap-6 transition-colors duration-200">
@@ -183,8 +213,8 @@ const Profile = () => {
                         {/* Saved Products Link */}
                         <Link to="/saved-products" className="p-4 sm:p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <div className="flex items-center gap-4">
-                                <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                                    <Heart className="text-red-500 fill-current" size={20} />
+                                <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                    <Bookmark className="text-blue-600 fill-current" size={20} />
                                 </div>
                                 <div>
                                     <p className="font-medium text-gray-900 dark:text-white">{t('Saved Products')}</p>
@@ -216,7 +246,7 @@ const Profile = () => {
                 href="https://wa.me/919500171980"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="fixed bottom-24 md:bottom-6 right-6 p-4 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-50 flex items-center justify-center"
+                className="fixed bottom-32 md:bottom-6 right-6 p-4 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-50 flex items-center justify-center"
                 aria-label="Chat on WhatsApp"
             >
                 <svg

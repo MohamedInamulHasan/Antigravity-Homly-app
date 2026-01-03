@@ -3,6 +3,7 @@ import axios from 'axios';
 // Get API base URL - HARDCODED for Android app
 // Using production backend URL directly to ensure it works in APK
 const API_BASE_URL = 'https://homly-backend-8616.onrender.com/api';
+// const API_BASE_URL = 'http://localhost:5000/api';
 
 // Log the API URL being used (helpful for debugging)
 console.log('🔗 API Base URL:', API_BASE_URL);
@@ -127,6 +128,13 @@ export const apiService = {
         create: (data) => api.post('/services', data),
         update: (id, data) => api.put(`/services/${id}`, data),
         delete: (id) => api.delete(`/services/${id}`),
+    },
+
+    // Service Requests
+    serviceRequests: {
+        create: (data) => api.post('/service-requests', data),
+        getAll: () => api.get('/service-requests'),
+        updateStatus: (id, status) => api.put(`/service-requests/${id}`, { status }),
     },
 
     // User Management (Admin)

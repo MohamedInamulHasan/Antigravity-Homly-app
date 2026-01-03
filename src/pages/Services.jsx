@@ -7,22 +7,33 @@ import { useData } from '../context/DataContext';
 const Services = () => {
     const navigate = useNavigate();
     const { t } = useLanguage();
-    const { services, loading } = useData();
+    const { services, loading, requestService } = useData();
     const [selectedService, setSelectedService] = useState(null);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [requestSuccess, setRequestSuccess] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleRequestService = (service) => {
         setSelectedService(service);
         setShowConfirmation(true);
     };
 
-    const confirmRequest = () => {
-        // Here you would typically send a request to the backend
-        setShowConfirmation(false);
-        setTimeout(() => {
-            setRequestSuccess(true);
-        }, 300); // Small delay for smooth transition
+    const confirmRequest = async () => {
+        if (!selectedService) return;
+
+        setIsSubmitting(true);
+        try {
+            await requestService(selectedService._id || selectedService.id);
+            setShowConfirmation(false);
+            setTimeout(() => {
+                setRequestSuccess(true);
+                setIsSubmitting(false);
+            }, 300);
+        } catch (error) {
+            console.error("Failed to request service:", error);
+            setIsSubmitting(false);
+            alert(t('Failed to request service. Please try again.'));
+        }
     };
 
 
@@ -95,20 +106,7 @@ const Services = () => {
                     )}
                 </div>
 
-                <div className="mt-12 bg-blue-600 rounded-2xl p-8 text-center text-white shadow-xl relative overflow-hidden">
-                    <div className="relative z-10">
-                        <h2 className="text-2xl font-bold mb-4">{t('Need Help?')}</h2>
-                        <p className="text-blue-100 mb-6 max-w-lg mx-auto">
-                            {t('Contact our support team to learn more about our services or to book a service request.')}
-                        </p>
-                        <button className="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-blue-50 transition-colors">
-                            {t('Contact Support')}
-                        </button>
-                    </div>
-                    {/* Decorative circles */}
-                    <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full -translate-x-10 -translate-y-10"></div>
-                    <div className="absolute bottom-0 right-0 w-40 h-40 bg-white/10 rounded-full translate-x-10 translate-y-10"></div>
-                </div>
+
             </div>
 
             {/* Confirmation Modal */}
