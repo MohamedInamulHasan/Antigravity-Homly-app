@@ -103,6 +103,11 @@ const orderSchema = new mongoose.Schema({
     timestamps: true
 });
 
+// Index for fetching user orders efficiently (sorted by date)
+orderSchema.index({ user: 1, createdAt: -1 });
+// Index for admin dashboard to fetch latest orders efficiently
+orderSchema.index({ createdAt: -1 });
+
 const Order = mongoose.model('Order', orderSchema);
 
 export default Order;

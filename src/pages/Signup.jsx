@@ -168,8 +168,6 @@ const Signup = () => {
                                 />
                             </div>
                         </div>
-                            </div>
-                        </div>
                         <div>
                             <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Mobile Number
@@ -211,14 +209,14 @@ const Signup = () => {
                     </div>
                 </form >
 
-    <div className="mt-6 text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-            Already have an account?{' '}
-            <Link to={redirect ? `/login?redirect=${redirect}` : '/login'} className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
-                Sign in
-            </Link>
-        </p>
-    </div>
+                <div className="mt-6 text-center">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Already have an account?{' '}
+                        <Link to={redirect ? `/login?redirect=${redirect}` : '/login'} className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
+                            Sign in
+                        </Link>
+                    </p>
+                </div>
             </div >
         </div >
     );

@@ -37,7 +37,7 @@ export const createOrder = async (req, res, next) => {
         });
 
         // Send email notification to admin (non-blocking)
-        sendOrderNotificationEmail(order).catch(err => 
+        sendOrderNotificationEmail(order).catch(err =>
             console.error('Failed to send email notification:', err)
         );
 
@@ -62,10 +62,20 @@ export const getOrders = async (req, res, next) => {
             : { user: req.user._id }; // Customer sees only their orders
 
         const orders = await Order.find(query)
-            .populate('items.product', 'title image')
-            .populate('items.storeId', 'name')
-            .populate('user', 'name email mobile') // Also populate user details for admin
-            .sort({ createdAt: -1 });
+            .select('items.product items.image items.name items.quantity items.price total status createdAt user shippingAddress paymentMethod') // Select only needed fields
+            .populate({
+                path: 'items.product',
+                select: 'title image',
+                options: { lean: true } // Populate efficiently
+            })
+            // .populate('items.storeId', 'name') // Not strictly needed for list view, reduce load
+            .populate({
+                path: 'user',
+                select: 'name email mobile',
+                options: { lean: true }
+            })
+            .sort({ createdAt: -1 })
+            .lean(); // Convert to plain JavaScript objects
 
         res.status(200).json({
             success: true,
@@ -84,7 +94,8 @@ export const getOrder = async (req, res, next) => {
     try {
         const order = await Order.findById(req.params.id)
             .populate('items.product', 'title image price')
-            .populate('items.storeId', 'name');
+            .populate('items.storeId', 'name')
+            .lean();
 
         if (!order) {
             res.status(404);
@@ -92,7 +103,8 @@ export const getOrder = async (req, res, next) => {
         }
 
         // Check if the order belongs to the requesting user
-        if (order.user.toString() !== req.user._id.toString()) {
+        // Note: With lean(), order.user is an ObjectId, so we use string comparison
+        if (req.user.role !== 'admin' && order.user.toString() !== req.user._id.toString()) {
             res.status(403);
             throw new Error('Not authorized to view this order');
         }

@@ -6,19 +6,34 @@ import Service from '../models/Service.js';
 // @access  Private
 export const createServiceRequest = async (req, res) => {
     try {
+        console.log('Received service request payload:', req.body);
         const { serviceId } = req.body;
+
+        if (!serviceId) {
+            console.error('Service ID missing in payload');
+            return res.status(400).json({ message: 'Service ID is required' });
+        }
 
         const service = await Service.findById(serviceId);
         if (!service) {
+            console.error(`Service not found for ID: ${serviceId}`);
             return res.status(404).json({ message: 'Service not found' });
+        }
+
+        if (!req.user || !req.user._id) {
+            console.error('User not authenticated or missing from request object');
+            return res.status(401).json({ message: 'User not authenticated' });
         }
 
         const serviceRequest = new ServiceRequest({
             user: req.user._id,
-            service: serviceId
+            service: serviceId,
+            status: 'Pending' // Explicitly set default
         });
 
         const createdRequest = await serviceRequest.save();
+
+        console.log('Service Request created successfully:', createdRequest._id);
 
         // Populate service details for the response
         await createdRequest.populate('service');
@@ -26,6 +41,7 @@ export const createServiceRequest = async (req, res) => {
 
         res.status(201).json(createdRequest);
     } catch (error) {
+        console.error('Error creating service request:', error);
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
