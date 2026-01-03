@@ -166,8 +166,32 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    // Listen for user changes (custom event from AuthContext) to refresh sensitive data
     useEffect(() => {
-        fetchOrders();
+        const handleUserChange = () => {
+            console.log('👤 User changed detected in DataContext. Refreshing user-specific data...');
+            fetchOrders();
+            fetchSavedProducts();
+
+            // If user logged out (authToken gone), clear sensitive state
+            if (!localStorage.getItem('authToken')) {
+                console.log('🔒 User logged out. Clearing sensitive data.');
+                setOrders([]);
+                setSavedProducts([]);
+                setServices([]); // Clear services requests if they are user specific
+            }
+        };
+
+        window.addEventListener('userChanged', handleUserChange);
+
+        // Initial fetch if user is already logged in
+        if (localStorage.getItem('authToken')) {
+            fetchOrders();
+        }
+
+        return () => {
+            window.removeEventListener('userChanged', handleUserChange);
+        };
     }, []);
 
     // Category Management - Define before use

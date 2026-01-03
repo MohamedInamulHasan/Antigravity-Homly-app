@@ -82,16 +82,30 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /\/api\/.*/i,
+            // Cache public data (Products, News, Ads, Stores, Categories, Services)
+            urlPattern: /\/api\/(products|news|ads|stores|categories|services).*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'api-cache',
+              cacheName: 'public-api-cache',
               expiration: {
-                maxEntries: 50,
+                maxEntries: 100,
                 maxAgeSeconds: 60 * 5 // 5 minutes
               },
               cacheableResponse: {
                 statuses: [0, 200]
+              }
+            }
+          },
+          {
+            // NEVER cache sensitive user data (Orders, User Profile, Cart, Service Requests)
+            urlPattern: /\/api\/(orders|users|service-requests).*/i,
+            handler: 'NetworkOnly', // Force network, fail if offline (to protect data)
+            options: {
+              backgroundSync: {
+                name: 'sensitive-data-queue',
+                options: {
+                  maxRetentionTime: 24 * 60 // Retry for 24 hours
+                }
               }
             }
           }

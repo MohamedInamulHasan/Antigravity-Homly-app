@@ -62,13 +62,17 @@ export const getOrders = async (req, res, next) => {
             : { user: req.user._id }; // Customer sees only their orders
 
         const orders = await Order.find(query)
-            .select('items.product items.image items.name items.quantity items.price total status createdAt user shippingAddress paymentMethod') // Select only needed fields
+            .select('items.product items.image items.name items.storeId items.quantity items.price total status createdAt user shippingAddress paymentMethod') // Select only needed fields
             .populate({
                 path: 'items.product',
                 select: 'title image',
                 options: { lean: true } // Populate efficiently
             })
-            // .populate('items.storeId', 'name') // Not strictly needed for list view, reduce load
+            .populate({
+                path: 'items.storeId',
+                select: 'name',
+                options: { lean: true }
+            })
             .populate({
                 path: 'user',
                 select: 'name email mobile',

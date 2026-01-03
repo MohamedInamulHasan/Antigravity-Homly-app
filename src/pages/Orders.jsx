@@ -15,6 +15,7 @@ const Orders = () => {
     const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, orderId: null });
 
 
+
     const tabs = ['All', 'Active', 'Completed', 'Cancelled'];
 
     const filteredOrders = orders.filter(order => {
@@ -79,8 +80,8 @@ const Orders = () => {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${activeTab === tab
-                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/20'
-                                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700'
+                                ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/20'
+                                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-100 dark:border-gray-700'
                                 }`}
                         >
                             {t(tab)}
@@ -143,14 +144,12 @@ const Orders = () => {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{item.name}</p>
-                                                    {item.storeId && (
-                                                        <div className="flex items-center gap-1 mt-0.5">
-                                                            <Store size={10} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
-                                                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                                                {getStoreName(item.storeId, stores)}
-                                                            </p>
-                                                        </div>
-                                                    )}
+                                                    <div className="flex items-center gap-1 mt-0.5">
+                                                        <Store size={10} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                            {item.storeId?.name || getStoreName(item.storeId, stores) || t('Unknown Store')}
+                                                        </p>
+                                                    </div>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400">{t('Quantity')}: {item.quantity}</p>
                                                 </div>
                                             </div>
