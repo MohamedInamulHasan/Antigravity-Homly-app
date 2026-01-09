@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Please add a name'],
-        trim: true
+        trim: true // Names should be trimmed
     },
     email: {
         type: String,
@@ -22,8 +22,12 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['customer', 'admin'],
+        enum: ['customer', 'admin', 'store_admin'],
         default: 'customer'
+    },
+    storeId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Store'
     },
     mobile: {
         type: String

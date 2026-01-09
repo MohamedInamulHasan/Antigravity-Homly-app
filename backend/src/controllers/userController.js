@@ -149,7 +149,7 @@ export const updateUserProfile = async (req, res, next) => {
 // @access  Private/Admin
 export const getAllUsers = async (req, res, next) => {
     try {
-        const users = await User.find({}).select('-password');
+        const users = await User.find({}).select('-password').populate('storeId', 'name');
 
         res.status(200).json({
             success: true,
@@ -182,6 +182,13 @@ export const updateUserByAdmin = async (req, res, next) => {
             user.role = req.body.role;
         }
 
+        if (req.body.storeId) {
+            user.storeId = req.body.storeId;
+        } else if (req.body.role === 'customer' || req.body.role === 'admin') {
+            // If role changed to non-store-admin, remove storeId
+            user.storeId = undefined;
+        }
+
         if (req.body.password) {
             user.password = req.body.password;
         }
@@ -195,6 +202,7 @@ export const updateUserByAdmin = async (req, res, next) => {
                 name: updatedUser.name,
                 email: updatedUser.email,
                 role: updatedUser.role,
+                storeId: updatedUser.storeId,
                 mobile: updatedUser.mobile,
                 address: updatedUser.address
             }

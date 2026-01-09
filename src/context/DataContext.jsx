@@ -612,24 +612,7 @@ export const DataProvider = ({ children }) => {
 
 
 
-    // Service Actions
-    const fetchServices = async () => {
-        setLoading(prev => ({ ...prev, services: true }));
-        setError(prev => ({ ...prev, services: null }));
-        try {
-            console.log('🔄 Fetching services...');
-            const response = await apiService.services.getAll();
-            if (response.success && response.data) {
-                setServices(response.data);
-                console.log(`✅ Loaded ${response.data.length} services`);
-            }
-        } catch (err) {
-            console.error('Failed to fetch services:', err);
-            setError(prev => ({ ...prev, services: err.message }));
-        } finally {
-            setLoading(prev => ({ ...prev, services: false }));
-        }
-    };
+
 
     useEffect(() => {
         fetchServices();
@@ -774,6 +757,7 @@ export const DataProvider = ({ children }) => {
         updateProduct,
         deleteProduct,
         addStore,
+        updateStore,
         updateStore,
         deleteStore,
         addNews,

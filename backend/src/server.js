@@ -25,7 +25,7 @@ connectDB();
 // Initialize Express app
 const app = express();
 
-// Middleware
+// Middleware (Force Restart)
 app.use(cors({
     origin: (origin, callback) => {
         const allowedOrigins = [

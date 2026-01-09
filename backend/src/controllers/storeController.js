@@ -1,4 +1,5 @@
 import Store from '../models/Store.js';
+import bcrypt from 'bcryptjs';
 
 // @desc    Get all stores
 // @route   GET /api/stores
@@ -108,6 +109,41 @@ export const deleteStore = async (req, res, next) => {
         res.status(200).json({
             success: true,
             data: {}
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Verify store password
+// @route   POST /api/stores/:id/verify-password
+// @access  Private/Admin
+export const verifyStorePassword = async (req, res, next) => {
+    try {
+        const { password } = req.body;
+
+        if (!password) {
+            res.status(400);
+            throw new Error('Please provide a password');
+        }
+
+        const store = await Store.findById(req.params.id).select('+password');
+
+        if (!store) {
+            res.status(404);
+            throw new Error('Store not found');
+        }
+
+        const isMatch = await bcrypt.compare(password, store.password);
+
+        if (!isMatch) {
+            res.status(401);
+            throw new Error('Invalid password');
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Password verified'
         });
     } catch (error) {
         next(error);

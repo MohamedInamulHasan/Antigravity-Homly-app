@@ -83,6 +83,7 @@ export const apiService = {
     getStores: () => api.get('/stores'),
     getStore: (id) => api.get(`/stores/${id}`),
     createStore: (data) => api.post('/stores', data),
+    createStore: (data) => api.post('/stores', data),
     updateStore: (id, data) => api.put(`/stores/${id}`, data),
     deleteStore: (id) => api.delete(`/stores/${id}`),
 

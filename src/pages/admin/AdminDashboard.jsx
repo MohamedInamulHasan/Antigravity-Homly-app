@@ -26,16 +26,26 @@ import {
     Image as ImageIcon,
     RefreshCw,
     Wrench,
-    ClipboardList
+    ClipboardList,
+    Shield
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { compressImage, validateImageSize } from '../../utils/imageCompression';
 
 const AdminDashboard = () => {
-    const [activeTab, setActiveTab] = useState('products');
+    const { user } = useData(); // Get current user
+    const isStoreAdmin = user?.role === 'store_admin';
+    const [activeTab, setActiveTab] = useState(isStoreAdmin ? 'stores' : 'products');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { t } = useLanguage();
+
+    // Redirect Store Admin to 'stores' tab if they try to go elsewhere (basic protection)
+    useEffect(() => {
+        if (isStoreAdmin && activeTab !== 'stores' && activeTab !== 'products' && activeTab !== 'orders') {
+            setActiveTab('stores');
+        }
+    }, [isStoreAdmin, activeTab]);
 
     const renderContent = () => {
         switch (activeTab) {
@@ -91,63 +101,80 @@ const AdminDashboard = () => {
                 <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <LayoutDashboard className="text-blue-600 dark:text-blue-400" />
-                        {t('Admin Panel')}
+                        {isStoreAdmin ? 'My Store' : t('Admin Panel')}
                     </h1>
                 </div>
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                     <SidebarItem
+                        icon={<Store size={20} />}
+                        label={isStoreAdmin ? t('My Store') : t('Stores')}
+                        id="stores"
+                        active={activeTab === 'stores'}
+                        onClick={setActiveTab}
+                    />
+                    <SidebarItem
                         icon={<Package size={20} />}
                         label={t('Products')}
+                        id="products"
                         active={activeTab === 'products'}
-                        onClick={() => { setActiveTab('products'); setIsMobileMenuOpen(false); }}
-                    />
-                    <SidebarItem
-                        icon={<Store size={20} />}
-                        label={t('Stores')}
-                        active={activeTab === 'stores'}
-                        onClick={() => { setActiveTab('stores'); setIsMobileMenuOpen(false); }}
-                    />
-                    <SidebarItem
-                        icon={<Newspaper size={20} />}
-                        label={t('News & Offers')}
-                        active={activeTab === 'news'}
-                        onClick={() => { setActiveTab('news'); setIsMobileMenuOpen(false); }}
+                        onClick={setActiveTab}
                     />
                     <SidebarItem
                         icon={<ShoppingBag size={20} />}
                         label={t('Orders')}
+                        id="orders"
                         active={activeTab === 'orders'}
-                        onClick={() => { setActiveTab('orders'); setIsMobileMenuOpen(false); }}
+                        onClick={setActiveTab}
+                    />
+
+                    {/* Admin Only Sections */}
+                    <SidebarItem
+                        icon={<Newspaper size={20} />}
+                        label={t('News')}
+                        id="news"
+                        active={activeTab === 'news'}
+                        onClick={setActiveTab}
+                        hidden={isStoreAdmin}
                     />
                     <SidebarItem
                         icon={<Users size={20} />}
                         label={t('Users')}
+                        id="users"
                         active={activeTab === 'users'}
-                        onClick={() => { setActiveTab('users'); setIsMobileMenuOpen(false); }}
+                        onClick={setActiveTab}
+                        hidden={isStoreAdmin}
                     />
                     <SidebarItem
                         icon={<List size={20} />}
                         label={t('Categories')}
+                        id="categories"
                         active={activeTab === 'categories'}
-                        onClick={() => { setActiveTab('categories'); setIsMobileMenuOpen(false); }}
+                        onClick={setActiveTab}
+                        hidden={isStoreAdmin}
                     />
                     <SidebarItem
                         icon={<ImageIcon size={20} />}
-                        label={t('Ads Slider')}
+                        label={t('Ads')}
+                        id="ads"
                         active={activeTab === 'ads'}
-                        onClick={() => { setActiveTab('ads'); setIsMobileMenuOpen(false); }}
+                        onClick={setActiveTab}
+                        hidden={isStoreAdmin}
                     />
                     <SidebarItem
                         icon={<Wrench size={20} />}
                         label={t('Services')}
+                        id="services"
                         active={activeTab === 'services'}
-                        onClick={() => { setActiveTab('services'); setIsMobileMenuOpen(false); }}
+                        onClick={setActiveTab}
+                        hidden={isStoreAdmin}
                     />
                     <SidebarItem
                         icon={<ClipboardList size={20} />}
                         label={t('Service Requests')}
+                        id="service-requests"
                         active={activeTab === 'service-requests'}
-                        onClick={() => { setActiveTab('service-requests'); setIsMobileMenuOpen(false); }}
+                        onClick={setActiveTab}
+                        hidden={isStoreAdmin}
                     />
                 </nav>
             </div>
@@ -162,18 +189,22 @@ const AdminDashboard = () => {
     );
 };
 
-const SidebarItem = ({ icon, label, active, onClick }) => (
-    <button
-        onClick={onClick}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${active
-            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium'
-            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-            }`}
-    >
-        {icon}
-        {label}
-    </button>
-);
+const SidebarItem = ({ icon, label, id, active, onClick, hidden = false }) => {
+    if (hidden) return null;
+
+    return (
+        <button
+            onClick={() => onClick(id)}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${active
+                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                }`}
+        >
+            {icon}
+            {label}
+        </button>
+    );
+};
 
 // --- Sub-Components ---
 
@@ -512,11 +543,40 @@ const ProductManagement = () => {
 };
 
 const StoreManagement = () => {
-    const { stores, products, categories, addStore, updateStore, addProduct, updateProduct, deleteProduct, deleteStore } = useData();
+    const { user, stores, products, categories, addStore, updateStore, addProduct, updateProduct, deleteProduct, deleteStore } = useData();
     const { t } = useLanguage();
-    const [view, setView] = useState('list'); // 'list', 'form', 'storeProducts', 'addProductToStore', 'editProduct'
-    const [selectedStore, setSelectedStore] = useState(null);
-    const [editingStore, setEditingStore] = useState(null);
+
+    const isStoreAdmin = user?.role === 'store_admin';
+    const myStore = isStoreAdmin ? stores.find(s => s._id === user.storeId || s.id === user.storeId) : null;
+
+    const [view, setView] = useState(isStoreAdmin ? 'form' : 'list'); // 'list', 'form', 'storeProducts', 'addProductToStore', 'editProduct'
+    const [selectedStore, setSelectedStore] = useState(myStore);
+    const [editingStore, setEditingStore] = useState(myStore);
+
+    // Initial load for Store Admin
+    useEffect(() => {
+        if (isStoreAdmin && myStore && !editingStore) { // Only set if not already editing
+            setEditingStore(myStore);
+            setSelectedStore(myStore);
+            setStoreForm({
+                name: myStore.name,
+                address: myStore.address || '',
+                image: myStore.image,
+                rating: myStore.rating,
+                openingTime: myStore.openingTime || '09:00',
+                closingTime: myStore.closingTime || '21:00',
+                mobile: myStore.mobile || '',
+                category: myStore.type || ''
+            });
+            setView('form'); // Force form view
+        }
+    }, [isStoreAdmin, myStore, stores, editingStore]); // Add stores dep to re-run when stores load
+
+    // Add back button logic for Store Admin? Maybe not needed if we force view.
+    const handleBackToList = () => {
+        if (isStoreAdmin) return; // Store admin doesn't go back to list
+        setView('list');
+    };
     const [editingProduct, setEditingProduct] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [storeForm, setStoreForm] = useState({
@@ -651,6 +711,11 @@ const StoreManagement = () => {
         setView('storeProducts');
     };
 
+    const proceedToManageProducts = (store) => {
+        setSelectedStore(store);
+        setView('storeProducts');
+    };
+
     const handleAddProductToStore = () => {
         setProductForm({ title: '', price: '', category: '', description: '', image: '', sliderImages: [], stock: 0, unit: 'kg' });
         setEditingProduct(null);
@@ -719,19 +784,26 @@ const StoreManagement = () => {
 
     return (
         <div className="max-w-6xl">
+            {/* Header */}
+            {!isStoreAdmin && view === 'list' && (
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('Manage Stores')}</h2>
+                    <button
+                        onClick={() => {
+                            setEditingStore(null);
+                            setStoreForm({ name: '', address: '', image: '', rating: 4.5, openingTime: '09:00', closingTime: '21:00', mobile: '', category: '' });
+                            setView('form');
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                    >
+                        <Plus size={20} />
+                        {t('Add New Store')}
+                    </button>
+                </div>
+            )}
+
             {view === 'list' && (
                 <>
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{t('Store Management')}</h2>
-                        <button
-                            onClick={() => setView('form')}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm md:text-base"
-                        >
-                            <Plus size={20} />
-                            {t('Add Store')}
-                        </button>
-                    </div>
-
                     {/* Search Bar */}
                     <div className="mb-4">
                         <div className="relative">
@@ -792,11 +864,30 @@ const StoreManagement = () => {
 
             {view === 'form' && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                    <div className="flex items-center gap-4 mb-6">
-                        <button onClick={() => setView('list')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                            <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
-                        </button>
-                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{editingStore ? t('Edit Store') : t('Add New Store')}</h2>
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-4">
+                            {!isStoreAdmin && (
+                                <button
+                                    onClick={handleBackToList}
+                                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                                >
+                                    <ArrowLeft size={20} className="text-gray-500 dark:text-gray-400" />
+                                </button>
+                            )}
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                                {editingStore ? (isStoreAdmin ? t('My Store Settings') : t('Edit Store')) : t('Add New Store')}
+                            </h2>
+                        </div>
+                        {/* Store Admin specific actions could go here, e.g. "View Products" direct link */}
+                        {isStoreAdmin && editingStore && (
+                            <button
+                                onClick={() => proceedToManageProducts(editingStore)}
+                                className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2"
+                            >
+                                <Package size={18} />
+                                {t('Manage Products')}
+                            </button>
+                        )}
                     </div>
                     <form onSubmit={handleStoreSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -873,6 +964,7 @@ const StoreManagement = () => {
                                     ))}
                                 </select>
                             </div>
+
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Store Image')}</label>
                                 <div className="flex items-center gap-4">
@@ -901,13 +993,21 @@ const StoreManagement = () => {
 
             {view === 'storeProducts' && selectedStore && (
                 <div className="space-y-6">
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => setView('list')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                            <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
-                        </button>
-                        <div>
-                            <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{selectedStore.name}</h2>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm">{t('Manage Products')}</p>
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => {
+                                    if (isStoreAdmin) setView('form'); // Store admin goes back to store details
+                                    else setView('list');
+                                }}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            >
+                                <ArrowLeft size={20} className="text-gray-500 dark:text-gray-400" />
+                            </button>
+                            <div>
+                                <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{selectedStore.name}</h2>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm">{t('Manage Products')}</p>
+                            </div>
                         </div>
                         <button
                             onClick={handleAddProductToStore}
@@ -1730,7 +1830,7 @@ const CategoryManagement = () => {
 };
 
 const UserManagement = () => {
-    const { users, fetchUsers, updateUser, deleteUser } = useData();
+    const { users, fetchUsers, updateUser, deleteUser, stores } = useData();
     const { t } = useLanguage();
     const [editingUser, setEditingUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -1739,9 +1839,17 @@ const UserManagement = () => {
         name: '',
         email: '',
         mobile: '',
-        address: ''
+        address: '',
+        role: 'customer',
+        storeId: ''
     });
     const [searchQuery, setSearchQuery] = useState('');
+
+    // Stats for Top Card
+    const totalUsers = users.length;
+    const adminCount = users.filter(u => u.role === 'admin').length;
+    const storeAdminCount = users.filter(u => u.role === 'store_admin').length;
+    const customerCount = users.filter(u => u.role === 'customer').length;
 
     useEffect(() => {
         const loadUsers = async () => {
@@ -1767,7 +1875,9 @@ const UserManagement = () => {
             name: user.name,
             email: user.email,
             mobile: user.mobile || '',
-            address: user.address || ''
+            address: user.address || '',
+            role: user.role || 'customer',
+            storeId: user.storeId?._id || user.storeId || '' // Handle populated object or direct ID
         });
     };
 
@@ -1801,8 +1911,48 @@ const UserManagement = () => {
     };
 
     return (
-        <div className="max-w-5xl">
+        <div className="max-w-6xl">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('User Database')}</h2>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-lg">
+                            <Users size={20} />
+                        </div>
+                        <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">{t('Total Users')}</span>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalUsers}</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-lg">
+                            <CheckCircle size={20} />
+                        </div>
+                        <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">{t('Customers')}</span>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{customerCount}</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-lg">
+                            <Store size={20} />
+                        </div>
+                        <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">{t('Store Admins')}</span>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{storeAdminCount}</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-lg">
+                            <Shield size={20} />
+                        </div>
+                        <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">{t('Admins')}</span>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{adminCount}</p>
+                </div>
+            </div>
 
             {/* Search Bar */}
             <div className="mb-6">
@@ -1837,128 +1987,164 @@ const UserManagement = () => {
             )}
 
             {!loading && !error && (
-                <div className="grid gap-6">
-                    {users.filter(user => {
-                        const query = searchQuery.toLowerCase();
-                        return user.name?.toLowerCase().includes(query) ||
-                            user.email?.toLowerCase().includes(query);
-                    }).length > 0 ? users.filter(user => {
-                        const query = searchQuery.toLowerCase();
-                        return user.name?.toLowerCase().includes(query) ||
-                            user.email?.toLowerCase().includes(query);
-                    }).map(user => (
-                        <div key={user._id || user.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                            {editingUser && (editingUser._id || editingUser.id) === (user._id || user.id) ? (
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Name')}</label>
-                                            <input
-                                                type="text"
-                                                value={formData.name}
-                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Email')}</label>
-                                            <input
-                                                type="email"
-                                                value={formData.email}
-                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Mobile')}</label>
-                                            <input
-                                                type="tel"
-                                                value={formData.mobile}
-                                                onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Address')}</label>
-                                            <input
-                                                type="text"
-                                                value={formData.address}
-                                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2 justify-end">
-                                        <button
-                                            onClick={() => setEditingUser(null)}
-                                            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                                        >
-                                            {t('Cancel')}
-                                        </button>
-                                        <button
-                                            onClick={handleSave}
-                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-                                        >
-                                            <Save size={18} />
-                                            {t('Save')}
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="flex items-start justify-between">
-                                    <div className="flex gap-4">
-                                        <div className="h-12 w-12 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400">
-                                            <Users size={24} />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{user.name}</h3>
-                                            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                <Mail size={14} />
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead className="bg-gray-50 dark:bg-gray-700/50">
+                                <tr>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('User')}</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('Contact')}</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('Role')}</th>
+                                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('Actions')}</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                {users.filter(user => {
+                                    const query = searchQuery.toLowerCase();
+                                    return user.name?.toLowerCase().includes(query) ||
+                                        user.email?.toLowerCase().includes(query);
+                                }).length > 0 ? users.filter(user => {
+                                    const query = searchQuery.toLowerCase();
+                                    return user.name?.toLowerCase().includes(query) ||
+                                        user.email?.toLowerCase().includes(query);
+                                }).map((user) => (
+                                    <tr key={user._id || user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center">
+                                                <div className="h-10 w-10 flex-shrink-0 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 font-bold text-lg">
+                                                    {user.name.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div className="ml-4">
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</div>
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400">{t('Joined')}: {new Date(user.createdAt).toLocaleDateString()}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="text-sm text-gray-900 dark:text-white flex items-center gap-2">
+                                                <Mail size={14} className="text-gray-400" />
                                                 {user.email}
                                             </div>
                                             {user.mobile && (
-                                                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                    <Phone size={14} />
+                                                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
+                                                    <Phone size={14} className="text-gray-400" />
                                                     {user.mobile}
                                                 </div>
                                             )}
-                                            {user.address && (
-                                                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                    <MapPin size={14} />
-                                                    {typeof user.address === 'string'
-                                                        ? user.address
-                                                        : `${user.address.street || ''}, ${user.address.city || ''}, ${user.address.state || ''}`.replace(/, ,/g, ',').replace(/^, |, $/g, '')}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                ${user.role === 'admin' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                                                    user.role === 'store_admin' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' :
+                                                        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}`}>
+                                                {t(user.role === 'store_admin' ? 'Store Admin' : user.role.charAt(0).toUpperCase() + user.role.slice(1))}
+                                            </span>
+                                            {user.role === 'store_admin' && user.storeId && (
+                                                <div className="text-xs text-gray-500 mt-1">
+                                                    {user.storeId.name || 'Store Linked'}
                                                 </div>
                                             )}
-                                            <div className="mt-2">
-                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
-                                                    {user.role || 'user'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => handleEdit(user)}
-                                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                        >
-                                            <Edit2 size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(user._id || user.id)}
-                                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )) : (
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 text-center">
-                            <p className="text-gray-500 dark:text-gray-400">{t('No users found.')}</p>
-                        </div>
-                    )}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            {editingUser && (editingUser._id || editingUser.id) === (user._id || user.id) ? (
+                                                <div className="space-y-4">
+                                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{t('Edit User Role')}</h3>
+
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('Role')}</label>
+                                                            <select
+                                                                value={formData.role}
+                                                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                                            >
+                                                                <option value="customer">{t('Customer')}</option>
+                                                                <option value="store_admin">{t('Store Admin')}</option>
+                                                                <option value="admin">{t('Global Admin')}</option>
+                                                            </select>
+                                                        </div>
+
+                                                        {formData.role === 'store_admin' && (
+                                                            <div>
+                                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('Assign Store')}</label>
+                                                                <select
+                                                                    value={formData.storeId}
+                                                                    onChange={(e) => setFormData({ ...formData, storeId: e.target.value })}
+                                                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                                                >
+                                                                    <option value="">{t('Select Store')}</option>
+                                                                    {stores.map(store => (
+                                                                        <option key={store._id || store.id} value={store._id || store.id}>
+                                                                            {store.name}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                        )}
+
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('Full Name')}</label>
+                                                            <input
+                                                                type="text"
+                                                                value={formData.name}
+                                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('Email Address')}</label>
+                                                            <input
+                                                                type="email"
+                                                                value={formData.email}
+                                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                                className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-2 justify-end">
+                                                        <button
+                                                            onClick={() => setEditingUser(null)}
+                                                            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                                        >
+                                                            {t('Cancel')}
+                                                        </button>
+                                                        <button
+                                                            onClick={handleSave}
+                                                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                                        >
+                                                            <Save size={18} />
+                                                            {t('Save')}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="flex gap-2 justify-end">
+                                                    <button
+                                                        onClick={() => handleEdit(user)}
+                                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        <Edit2 size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(user._id || user.id)}
+                                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="4" className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                            {t('No users found.')}
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
         </div>
