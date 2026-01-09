@@ -118,6 +118,7 @@ const AdminDashboard = () => {
                         id="products"
                         active={activeTab === 'products'}
                         onClick={setActiveTab}
+                        hidden={isStoreAdmin}
                     />
                     <SidebarItem
                         icon={<ShoppingBag size={20} />}
@@ -125,6 +126,7 @@ const AdminDashboard = () => {
                         id="orders"
                         active={activeTab === 'orders'}
                         onClick={setActiveTab}
+                        hidden={isStoreAdmin}
                     />
 
                     {/* Admin Only Sections */}
