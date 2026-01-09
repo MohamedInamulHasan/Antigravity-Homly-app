@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { User, Package, Settings, ChevronRight, Globe, LogOut, Moon, Sun, Shield, Languages, Wrench, MessageCircle, Phone, Bookmark } from 'lucide-react';
+import { User, Package, Settings, ChevronRight, Globe, LogOut, Moon, Sun, Shield, Languages, Wrench, MessageCircle, Phone, Bookmark, Store } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -158,17 +158,25 @@ const Profile = () => {
                     </Link>
                 </div>
 
-                {/* Admin Dashboard (Visible only to specific admin) */}
-                {user && user.email === 'mohamedinamulhasan0@gmail.com' && (
+                {/* Admin Dashboard / My Store (Visible to Admin, Store Admin, or Specific User) */}
+                {user && (user.role === 'admin' || user.role === 'store_admin' || user.email === 'mohamedinamulhasan0@gmail.com' || user.email === 'mohamedinamulhasan28052004@gmail.com') && (
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-6 transition-colors duration-200">
                         <Link to="/admin" className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
                             <div className="flex items-center gap-4">
                                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                                    <Shield className="text-blue-600 dark:text-blue-400" size={24} />
+                                    {user.role === 'store_admin' ? (
+                                        <Store className="text-blue-600 dark:text-blue-400" size={24} />
+                                    ) : (
+                                        <Shield className="text-blue-600 dark:text-blue-400" size={24} />
+                                    )}
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t('Admin Dashboard')}</h2>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('Manage products, stores, and users')}</p>
+                                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                                        {user.role === 'store_admin' ? t('My Store') : t('Admin Dashboard')}
+                                    </h2>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        {user.role === 'store_admin' ? t('Manage your store products and details') : t('Manage products, stores, and users')}
+                                    </p>
                                 </div>
                             </div>
                             <ChevronRight className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" size={20} />
