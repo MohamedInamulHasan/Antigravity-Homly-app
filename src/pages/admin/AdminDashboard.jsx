@@ -76,13 +76,15 @@ const AdminDashboard = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex transition-colors duration-200 relative">
-            {/* Mobile Menu Button */}
-            <button
-                onClick={toggleMobileMenu}
-                className="md:hidden fixed top-4 right-4 z-50 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md text-gray-600 dark:text-gray-300"
-            >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            {/* Mobile Menu Button - Hidden for Store Admin */}
+            {!isStoreAdmin && (
+                <button
+                    onClick={toggleMobileMenu}
+                    className="md:hidden fixed top-4 right-4 z-50 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md text-gray-600 dark:text-gray-300"
+                >
+                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+            )}
 
             {/* Sidebar Overlay for Mobile */}
             {isMobileMenuOpen && (
@@ -92,98 +94,92 @@ const AdminDashboard = () => {
                 />
             )}
 
-            {/* Sidebar */}
-            <div className={`
+            {/* Sidebar - Hidden for Store Admin */}
+            {!isStoreAdmin && (
+                <div className={`
                 fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 
                 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:flex flex-col
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <LayoutDashboard className="text-blue-600 dark:text-blue-400" />
-                        {isStoreAdmin ? 'My Store' : t('Admin Panel')}
-                    </h1>
-                </div>
-                <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                    <SidebarItem
-                        icon={<Store size={20} />}
-                        label={isStoreAdmin ? t('My Store') : t('Stores')}
-                        id="stores"
-                        active={activeTab === 'stores'}
-                        onClick={setActiveTab}
-                    />
-                    <SidebarItem
-                        icon={<Package size={20} />}
-                        label={t('Products')}
-                        id="products"
-                        active={activeTab === 'products'}
-                        onClick={setActiveTab}
-                        hidden={isStoreAdmin}
-                    />
-                    <SidebarItem
-                        icon={<ShoppingBag size={20} />}
-                        label={t('Orders')}
-                        id="orders"
-                        active={activeTab === 'orders'}
-                        onClick={setActiveTab}
-                        hidden={isStoreAdmin}
-                    />
+                    <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <LayoutDashboard className="text-blue-600 dark:text-blue-400" />
+                            {t('Admin Panel')}
+                        </h1>
+                    </div>
+                    <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+                        <SidebarItem
+                            icon={<Store size={20} />}
+                            label={t('Stores')}
+                            id="stores"
+                            active={activeTab === 'stores'}
+                            onClick={setActiveTab}
+                        />
+                        <SidebarItem
+                            icon={<Package size={20} />}
+                            label={t('Products')}
+                            id="products"
+                            active={activeTab === 'products'}
+                            onClick={setActiveTab}
+                        />
+                        <SidebarItem
+                            icon={<ShoppingBag size={20} />}
+                            label={t('Orders')}
+                            id="orders"
+                            active={activeTab === 'orders'}
+                            onClick={setActiveTab}
+                        />
 
-                    {/* Admin Only Sections */}
-                    <SidebarItem
-                        icon={<Newspaper size={20} />}
-                        label={t('News')}
-                        id="news"
-                        active={activeTab === 'news'}
-                        onClick={setActiveTab}
-                        hidden={isStoreAdmin}
-                    />
-                    <SidebarItem
-                        icon={<Users size={20} />}
-                        label={t('Users')}
-                        id="users"
-                        active={activeTab === 'users'}
-                        onClick={setActiveTab}
-                        hidden={isStoreAdmin}
-                    />
-                    <SidebarItem
-                        icon={<List size={20} />}
-                        label={t('Categories')}
-                        id="categories"
-                        active={activeTab === 'categories'}
-                        onClick={setActiveTab}
-                        hidden={isStoreAdmin}
-                    />
-                    <SidebarItem
-                        icon={<ImageIcon size={20} />}
-                        label={t('Ads')}
-                        id="ads"
-                        active={activeTab === 'ads'}
-                        onClick={setActiveTab}
-                        hidden={isStoreAdmin}
-                    />
-                    <SidebarItem
-                        icon={<Wrench size={20} />}
-                        label={t('Services')}
-                        id="services"
-                        active={activeTab === 'services'}
-                        onClick={setActiveTab}
-                        hidden={isStoreAdmin}
-                    />
-                    <SidebarItem
-                        icon={<ClipboardList size={20} />}
-                        label={t('Service Requests')}
-                        id="service-requests"
-                        active={activeTab === 'service-requests'}
-                        onClick={setActiveTab}
-                        hidden={isStoreAdmin}
-                    />
-                </nav>
-            </div>
+                        {/* Admin Only Sections */}
+                        <SidebarItem
+                            icon={<Newspaper size={20} />}
+                            label={t('News')}
+                            id="news"
+                            active={activeTab === 'news'}
+                            onClick={setActiveTab}
+                        />
+                        <SidebarItem
+                            icon={<Users size={20} />}
+                            label={t('Users')}
+                            id="users"
+                            active={activeTab === 'users'}
+                            onClick={setActiveTab}
+                        />
+                        <SidebarItem
+                            icon={<List size={20} />}
+                            label={t('Categories')}
+                            id="categories"
+                            active={activeTab === 'categories'}
+                            onClick={setActiveTab}
+                        />
+                        <SidebarItem
+                            icon={<ImageIcon size={20} />}
+                            label={t('Ads')}
+                            id="ads"
+                            active={activeTab === 'ads'}
+                            onClick={setActiveTab}
+                        />
+                        <SidebarItem
+                            icon={<Wrench size={20} />}
+                            label={t('Services')}
+                            id="services"
+                            active={activeTab === 'services'}
+                            onClick={setActiveTab}
+                        />
+                        <SidebarItem
+                            icon={<ClipboardList size={20} />}
+                            label={t('Service Requests')}
+                            id="service-requests"
+                            active={activeTab === 'service-requests'}
+                            onClick={setActiveTab}
+                        />
+                    </nav>
+                </div>
+            )}
 
             {/* Main Content */}
             <div className="flex-1 overflow-auto w-full">
-                <div className="p-4 md:p-8 pt-16 md:pt-8">
+                <div className={`p-4 md:p-8 ${isStoreAdmin ? 'max-w-4xl mx-auto' : 'pt-16 md:pt-8'}`}>
                     {renderContent()}
                 </div>
             </div>
