@@ -758,7 +758,7 @@ export const DataProvider = ({ children }) => {
         deleteProduct,
         addStore,
         updateStore,
-        updateStore,
+
         deleteStore,
         addNews,
         updateNews,
