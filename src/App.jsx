@@ -18,6 +18,7 @@ import MobileFooter from './components/MobileFooter';
 import InstallPrompt from './components/InstallPrompt';
 import IntroAnimation from './components/IntroAnimation';
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
 import { useData } from './context/DataContext';
 import useBackButton from './utils/useBackButton';
 
@@ -49,7 +50,7 @@ const Layout = ({ children, onRefresh }) => {
     );
 };
 
-import { AuthProvider } from './context/AuthContext';
+import MyStore from './pages/MyStore';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
@@ -89,9 +90,9 @@ function App() {
                             <Route path="/orders/:id" element={<OrderDetails />} />
                             <Route path="/order-confirmation" element={<OrderConfirmation />} />
                             <Route path="/news" element={<News />} />
-                            <Route path="/news" element={<News />} />
                             <Route path="/saved-products" element={<SavedProducts />} />
                             <Route path="/services" element={<Services />} />
+                            <Route path="/my-store" element={<MyStore />} />
                             <Route path="/admin" element={<AdminDashboard />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/signup" element={<Signup />} />

@@ -191,11 +191,6 @@ const ProductDetails = () => {
                                     <div className="flex items-center justify-between mb-6">
                                         <div className="flex items-center gap-2">
                                             <span className="text-gray-900 dark:text-white font-medium">{t('Quantity')}</span>
-                                            {product.unit && (
-                                                <span className="text-sm text-gray-500 dark:text-gray-400">
-                                                    ({product.unit})
-                                                </span>
-                                            )}
                                         </div>
                                         <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
                                             <button

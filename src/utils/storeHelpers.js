@@ -5,23 +5,33 @@
 export const getStoreName = (storeId, stores) => {
     // Handle missing parameters
     if (!storeId) {
-        console.warn('getStoreName: storeId is missing');
+        // console.warn('getStoreName: storeId is missing'); // Remove warning to reduce noise
         return 'Unknown Store';
     }
 
+    // Check if storeId is likely a populated object (has name field)
+    if (typeof storeId === 'object' && storeId.name) {
+        return storeId.name;
+    }
+
+    // Check if storeId is an object but maybe just has _id (unlikely with select: 'name' but possible)
+    const idToSearch = (typeof storeId === 'object' && (storeId._id || storeId.id))
+        ? (storeId._id || storeId.id)
+        : storeId;
+
     if (!stores || !Array.isArray(stores)) {
-        console.warn('getStoreName: stores array is missing or invalid');
+        // console.warn('getStoreName: stores array is missing or invalid');
         return 'Unknown Store';
     }
 
     // Find the store by ID
     const store = stores.find(s => {
-        const id = s._id || s.id;
-        return id === storeId || String(id) === String(storeId);
+        const sId = s._id || s.id;
+        return sId === idToSearch || String(sId) === String(idToSearch);
     });
 
     if (!store) {
-        console.warn(`getStoreName: Store not found for storeId: ${storeId}. Available stores:`, stores.length);
+        // console.warn(`getStoreName: Store not found for storeId: ${idToSearch}`);
         return 'Unknown Store';
     }
 

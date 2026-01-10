@@ -67,38 +67,48 @@ const Services = () => {
                             </div>
                         ) : services.length > 0 ? (
                             services.map((service, index) => (
-                                <div key={service._id || index} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-300 flex flex-col h-full">
-                                    <div className="h-40 w-full mb-4 rounded-xl overflow-hidden relative">
+                                <div key={service._id || index} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 overflow-hidden group flex flex-col h-full">
+                                    {/* Image Section */}
+                                    <div className="relative h-56 overflow-hidden bg-gray-100 dark:bg-gray-900">
                                         <img
                                             src={service.image}
                                             alt={service.name}
-                                            className="w-full h-full object-cover"
-                                            onError={(e) => { e.target.src = 'https://via.placeholder.com/400x200?text=Service'; }}
+                                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                                            onError={(e) => { e.target.src = 'https://via.placeholder.com/400x250?text=Service'; }}
                                         />
-                                        <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-1.5 rounded-lg">
+                                        <div className="absolute top-4 right-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md p-2 rounded-full shadow-sm">
                                             <Wrench className="text-blue-600 dark:text-blue-400" size={16} />
                                         </div>
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{service.name}</h3>
-                                    <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-4 flex-grow line-clamp-3">
-                                        {service.description}
-                                    </p>
 
-                                    <div className="space-y-3 mt-auto">
-                                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                            <MapPin size={16} className="flex-shrink-0" />
-                                            <span className="truncate">{service.address}</span>
+                                    {/* Content Section */}
+                                    <div className="p-5 flex flex-col flex-grow">
+                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 line-clamp-1">{service.name}</h3>
+
+                                        <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-3 line-clamp-2">
+                                            {service.description}
+                                        </p>
+
+                                        {/* info rows - Compact spacing */}
+                                        <div className="space-y-2 mb-4">
+                                            <div className="flex items-start gap-2.5 w-full group/loc leading-snug">
+                                                <div className="mt-0.5 p-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg shrink-0">
+                                                    <MapPin size={14} className="text-blue-600 dark:text-blue-400" />
+                                                </div>
+                                                <span className="text-sm text-gray-600 dark:text-gray-300 font-medium truncate pt-0.5">{service.address}</span>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                            <Phone size={16} className="flex-shrink-0" />
-                                            <span>{service.mobile}</span>
+
+                                        {/* Action Button - Button pushed to bottom */}
+                                        <div className="pt-0 mt-auto">
+                                            <button
+                                                onClick={() => handleRequestService(service)}
+                                                className="w-full py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 active:scale-95 duration-200"
+                                            >
+                                                <span>{t('Book Now')}</span>
+                                                <ArrowLeft className="rotate-180 w-4 h-4" />
+                                            </button>
                                         </div>
-                                        <button
-                                            onClick={() => handleRequestService(service)}
-                                            className="w-full py-2.5 mt-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm hover:shadow active:scale-95 duration-200"
-                                        >
-                                            {t('Request Service')}
-                                        </button>
                                     </div>
                                 </div>
                             ))

@@ -161,7 +161,7 @@ const Profile = () => {
                 {/* Admin Dashboard / My Store (Visible to Admin, Store Admin, or Specific User) */}
                 {user && (user.role === 'admin' || user.role === 'store_admin' || user.email === 'mohamedinamulhasan0@gmail.com' || user.email === 'mohamedinamulhasan28052004@gmail.com') && (
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-6 transition-colors duration-200">
-                        <Link to="/admin" className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
+                        <Link to={user.role === 'store_admin' ? '/my-store' : '/admin'} className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
                             <div className="flex items-center gap-4">
                                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                                     {user.role === 'store_admin' ? (
@@ -183,6 +183,22 @@ const Profile = () => {
                         </Link>
                     </div>
                 )}
+
+                {/* Saved Products */}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-6 transition-colors duration-200">
+                    <Link to="/saved-products" className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                                <Bookmark className="text-blue-600 dark:text-blue-400 fill-current" size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t('Saved Products')}</h2>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{t('View your favorite items')}</p>
+                            </div>
+                        </div>
+                        <ChevronRight className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" size={20} />
+                    </Link>
+                </div>
 
                 {/* Settings */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-200">
@@ -219,20 +235,7 @@ const Profile = () => {
                         </div>
 
                         {/* Saved Products Link */}
-                        <Link to="/saved-products" className="p-4 sm:p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                            <div className="flex items-center gap-4">
-                                <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                                    <Bookmark className="text-blue-600 fill-current" size={20} />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-gray-900 dark:text-white">{t('Saved Products')}</p>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        {t('View your favorite items')}
-                                    </p>
-                                </div>
-                            </div>
-                            <ChevronRight className="text-gray-400" size={20} />
-                        </Link>
+
                     </div>
 
 
