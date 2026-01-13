@@ -202,7 +202,7 @@ export const sendPasswordResetEmail = async (email, resetUrl) => {
         return { success: true };
     } catch (error) {
         console.error('❌ Error sending password reset email:', error);
-        throw new Error('Email could not be sent');
+        throw error; // Throw original error to see the real cause (e.g. ETIMEDOUT, EAUTH)
     }
 };
 
