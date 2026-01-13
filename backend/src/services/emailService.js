@@ -5,11 +5,17 @@ const createTransporter = async () => {
     // If Gmail credentials are provided, use Gmail
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
         console.log('📧 API: Creating Gmail transporter with User:', process.env.EMAIL_USER);
+        console.log('📧 API: Creating Gmail transporter with User:', process.env.EMAIL_USER);
         return nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false, // true for 465, false for other ports
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS
+            },
+            tls: {
+                rejectUnauthorized: false // Fixes some SSL issues on cloud servers
             }
         });
     }
@@ -202,11 +208,20 @@ export const sendPasswordResetEmail = async (email, resetUrl) => {
 
 // Send order notification email to admin and customer
 export const sendOrderNotificationEmail = async (order) => {
+    console.log('🔹 sendOrderNotificationEmail called for Order #', order._id);
     try {
         const transporter = await createTransporter();
         const fromEmail = process.env.EMAIL_USER || 'noreply@shopease.com';
         const adminEmail = process.env.ADMIN_EMAIL || 'mohamedinamulhasan0@gmail.com';
-        const customerEmail = order.user?.email;
+        const customerEmail = order.user?.email || order.shippingAddress?.email; // Fallback to shipping email if available
+
+        console.log('🔹 Email Config:', {
+            from: fromEmail,
+            admin: adminEmail,
+            customer: customerEmail,
+            hasUser: !!process.env.EMAIL_USER,
+            hasPass: !!process.env.EMAIL_PASS
+        });
 
         // 1. Send to Admin
         console.log('📧 Sending Admin Notification with WhatsApp Button...');
@@ -231,6 +246,8 @@ export const sendOrderNotificationEmail = async (order) => {
             };
             await transporter.sendMail(customerMailOptions);
             console.log('✅ Customer email sent');
+        } else {
+            console.log('⚠️ No customer email found, skipping customer notification');
         }
 
         return { success: true, messageId: adminInfo.messageId };

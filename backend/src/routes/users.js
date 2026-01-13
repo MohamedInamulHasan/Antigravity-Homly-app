@@ -10,7 +10,9 @@ import {
     getSavedProducts,
     toggleSavedProduct,
     forgotPassword,
-    resetPassword
+    forgotPassword,
+    resetPassword,
+    testEmailController
 } from '../controllers/userController.js';
 
 import { protect, adminOnly } from '../middleware/authMiddleware.js';
@@ -21,6 +23,7 @@ router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.post('/forgotpassword', forgotPassword);
 router.put('/resetpassword/:resettoken', resetPassword);
+router.get('/test-email', testEmailController);
 
 router.route('/profile')
     .get(protect, getUserProfile)

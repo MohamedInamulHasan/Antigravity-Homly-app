@@ -305,30 +305,40 @@ export const toggleSavedProduct = async (req, res, next) => {
 // @route   POST /api/users/forgotpassword
 // @access  Public
 export const forgotPassword = async (req, res, next) => {
+    console.log('🔹 forgotPassword Request Received:', req.body.email);
     try {
         const user = await User.findOne({ email: req.body.email });
 
         if (!user) {
+            console.log('❌ User not found');
             res.status(404);
             throw new Error('There is no user with that email');
         }
 
         // Get reset token
         const resetToken = user.getResetPasswordToken();
+        console.log('🔹 Token Generated');
 
         await user.save({ validateBeforeSave: false });
+        console.log('🔹 User Saved with Token');
 
         // Create reset url
         const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
 
+        // DEBUG: Log URL to console for manual testing
+        console.log('🔗 MANUAL RESET LINK:', resetUrl);
+
         try {
-            await sendPasswordResetEmail(user.email, resetUrl);
+            console.log('🔹 Attempting to send email to:', user.email);
+            const result = await sendPasswordResetEmail(user.email, resetUrl);
+            console.log('✅ Email Service Result:', result);
 
             res.status(200).json({
                 success: true,
                 data: 'Email sent'
             });
         } catch (error) {
+            console.error('❌ Email Sending Failed:', error);
             user.resetPasswordToken = undefined;
             user.resetPasswordExpire = undefined;
 
@@ -338,6 +348,7 @@ export const forgotPassword = async (req, res, next) => {
             throw new Error('Email could not be sent');
         }
     } catch (error) {
+        console.error('❌ forgotPassword Controller Error:', error);
         next(error);
     }
 };
@@ -382,5 +393,40 @@ export const resetPassword = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
+    }
+};
+
+// @desc    Test Email Configuration
+// @route   GET /api/users/test-email
+// @access  Public
+export const testEmailController = async (req, res) => {
+    try {
+        console.log('🧪 Testing Email Configuration...');
+        const result = await sendPasswordResetEmail(
+            process.env.EMAIL_USER || 'test@example.com',
+            'http://test-url.com'
+        );
+        res.json({
+            success: true,
+            message: 'Email should have been sent!',
+            config: {
+                user: process.env.EMAIL_USER,
+                hasPass: !!process.env.EMAIL_PASS,
+                admin: process.env.ADMIN_EMAIL
+            },
+            result
+        });
+    } catch (error) {
+        console.error('❌ Test Email Failed:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Email Sending Failed',
+            error: error.message,
+            stack: error.stack,
+            config: {
+                user: process.env.EMAIL_USER,
+                hasPass: !!process.env.EMAIL_PASS
+            }
+        });
     }
 };
