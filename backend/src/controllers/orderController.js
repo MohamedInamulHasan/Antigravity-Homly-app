@@ -23,6 +23,8 @@ export const createOrder = async (req, res, next) => {
             throw new Error('No order items');
         }
 
+        console.log('📦 Creating new order for user:', req.user?._id);
+
         const order = await Order.create({
             user: req.user?._id, // Optional for guest checkout
             items,
@@ -36,10 +38,20 @@ export const createOrder = async (req, res, next) => {
             scheduledDeliveryTime
         });
 
+        console.log('✅ Order created successfully:', order._id);
+
+        // Populate store and user details for email
+        // We need deep population for store name in items
+        await order.populate([
+            { path: 'items.storeId', select: 'name' },
+            { path: 'user', select: 'name email' }
+        ]);
+
         // Send email notification to admin (non-blocking)
-        sendOrderNotificationEmail(order).catch(err =>
-            console.error('Failed to send email notification:', err)
-        );
+        console.log('📧 Attempting to send order notification email...');
+        sendOrderNotificationEmail(order)
+            .then(result => console.log('📧 Email service result:', result))
+            .catch(err => console.error('❌ Failed to send email notification:', err));
 
         res.status(201).json({
             success: true,
