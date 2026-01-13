@@ -10,7 +10,6 @@ import {
     getSavedProducts,
     toggleSavedProduct,
     forgotPassword,
-    forgotPassword,
     resetPassword,
     testEmailController
 } from '../controllers/userController.js';
