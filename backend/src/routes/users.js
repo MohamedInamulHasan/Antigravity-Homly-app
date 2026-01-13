@@ -8,7 +8,9 @@ import {
     updateUserByAdmin,
     deleteUser,
     getSavedProducts,
-    toggleSavedProduct
+    toggleSavedProduct,
+    forgotPassword,
+    resetPassword
 } from '../controllers/userController.js';
 
 import { protect, adminOnly } from '../middleware/authMiddleware.js';
@@ -17,6 +19,9 @@ const router = express.Router();
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
+router.post('/forgotpassword', forgotPassword);
+router.put('/resetpassword/:resettoken', resetPassword);
+
 router.route('/profile')
     .get(protect, getUserProfile)
     .put(protect, updateUserProfile);

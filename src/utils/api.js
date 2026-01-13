@@ -102,6 +102,8 @@ export const apiService = {
     // Users
     register: (data) => api.post('/users/register', data),
     login: (data) => api.post('/users/login', data),
+    forgotPassword: (email) => api.post('/users/forgotpassword', { email }),
+    resetPassword: (token, password) => api.put(`/users/resetpassword/${token}`, { password }),
     getProfile: () => api.get('/users/profile'),
     updateProfile: (data) => api.put('/users/profile', data),
     getSavedProducts: () => api.get('/users/profile/saved-products'),

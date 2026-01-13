@@ -145,6 +145,61 @@ const generateEmailHtml = (order, isForAdmin) => {
     `;
 };
 
+// Send password reset email
+export const sendPasswordResetEmail = async (email, resetUrl) => {
+    try {
+        const transporter = await createTransporter();
+        const fromEmail = process.env.EMAIL_USER || 'noreply@shopease.com';
+
+        const mailOptions = {
+            from: fromEmail,
+            to: email,
+            subject: '🔑 Password Reset Request - ShopEase',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+                    <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <h1 style="color: #2563eb; margin-bottom: 20px;">Password Reset Request</h1>
+                        
+                        <p style="color: #374151; font-size: 16px;">
+                            You are receiving this email because you (or someone else) has requested the reset of a password.
+                        </p>
+                        
+                        <div style="margin: 30px 0; text-align: center;">
+                            <a href="${resetUrl}" 
+                               style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                                Reset Password
+                            </a>
+                        </div>
+                        
+                        <p style="color: #6b7280; font-size: 14px;">
+                            Or verify using this link: <br>
+                            <a href="${resetUrl}" style="color: #2563eb; word-break: break-all;">${resetUrl}</a>
+                        </p>
+                        
+                        <div style="background-color: #fee2e2; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                            <p style="margin: 0; color: #991b1b; font-size: 14px;">
+                                ⚠️ If you did not request this, please ignore this email and your password will remain unchanged.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('✅ Password reset email sent:', info.messageId);
+
+        if (nodemailer.getTestMessageUrl(info)) {
+            console.log('📧 Preview reset email at:', nodemailer.getTestMessageUrl(info));
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('❌ Error sending password reset email:', error);
+        throw new Error('Email could not be sent');
+    }
+};
+
 // Send order notification email to admin and customer
 export const sendOrderNotificationEmail = async (order) => {
     try {

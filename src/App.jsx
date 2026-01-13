@@ -31,9 +31,14 @@ const Layout = ({ children, onRefresh }) => {
     // Only hide footer on order confirmation and auth pages
     const hideMobileFooter = location.pathname === '/order-confirmation' ||
         location.pathname === '/login' ||
-        location.pathname === '/signup';
+        location.pathname === '/signup' ||
+        location.pathname === '/forgot-password' ||
+        location.pathname.startsWith('/reset-password');
 
-    const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+    const isAuthPage = location.pathname === '/login' ||
+        location.pathname === '/signup' ||
+        location.pathname === '/forgot-password' ||
+        location.pathname.startsWith('/reset-password');
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
@@ -53,6 +58,8 @@ const Layout = ({ children, onRefresh }) => {
 import MyStore from './pages/MyStore';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 // ... existing imports ...
 
@@ -96,6 +103,8 @@ function App() {
                             <Route path="/admin" element={<AdminDashboard />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/signup" element={<Signup />} />
+                            <Route path="/forgot-password" element={<ForgotPassword />} />
+                            <Route path="/reset-password/:token" element={<ResetPassword />} />
                         </Routes>
                     </Layout>
                 </div>
