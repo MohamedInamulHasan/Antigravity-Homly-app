@@ -4,17 +4,21 @@ import nodemailer from 'nodemailer';
 const createTransporter = async () => {
     // If Gmail credentials are provided, use Gmail
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-        console.log('📧 API: Creating Gmail transporter with User:', process.env.EMAIL_USER);
-        console.log('📧 API: Creating Gmail transporter with User:', process.env.EMAIL_USER);
+        console.log('📧 API: Creating SMTP transporter...');
         return nodemailer.createTransport({
-            service: 'gmail', // Use built-in Gmail service settings
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
+            port: process.env.SMTP_PORT || 587,
+            secure: false, // true for 465, false for other ports
             auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
+                user: process.env.SMTP_USER || process.env.EMAIL_USER,
+                pass: process.env.SMTP_PASS || process.env.EMAIL_PASS
             },
-            family: 4, // Force IPv4 (Crucial for Render+Gmail)
-            logger: true,
-            debug: true
+            tls: {
+                rejectUnauthorized: false
+            },
+            connectionTimeout: 10000,
+            debug: true,
+            logger: true
         });
     }
 
