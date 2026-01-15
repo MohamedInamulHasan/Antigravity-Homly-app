@@ -139,7 +139,12 @@ app.get('/api/debug-email', async (req, res) => {
             res.status(500).json({
                 success: false,
                 message: '❌ Email Failed',
-                error: result.error
+                error: result.error,
+                config: {
+                    host: process.env.SMTP_HOST || 'DEFAULT (Gmail)',
+                    port: process.env.SMTP_PORT || 'DEFAULT (587)',
+                    user: process.env.SMTP_USER || process.env.EMAIL_USER || 'MISSING'
+                }
             });
         }
     } catch (error) {
