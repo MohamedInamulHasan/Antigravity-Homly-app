@@ -7,20 +7,14 @@ const createTransporter = async () => {
         console.log('📧 API: Creating Gmail transporter with User:', process.env.EMAIL_USER);
         console.log('📧 API: Creating Gmail transporter with User:', process.env.EMAIL_USER);
         return nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587, // Standard TLS port
-            secure: false, // Must be false for port 587
+            service: 'gmail', // Use built-in Gmail service settings
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS
             },
-            tls: {
-                rejectUnauthorized: false
-            },
             family: 4, // Force IPv4 (Crucial for Render+Gmail)
             logger: true,
-            debug: true,
-            connectionTimeout: 10000
+            debug: true
         });
     }
 
