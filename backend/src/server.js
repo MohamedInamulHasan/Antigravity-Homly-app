@@ -99,6 +99,59 @@ app.use('/api/service-requests', serviceRequestRoutes);
 // Error handler middleware (must be last)
 app.use(errorHandler);
 
+// DEBUG: Temporary Email Test Route
+import { sendOrderNotificationEmail } from './services/emailService.js';
+app.get('/api/debug-email', async (req, res) => {
+    try {
+        console.log('🧪 Triggering Test Email...');
+        // Mock order object
+        const mockOrder = {
+            _id: 'TEST_ORDER_' + Date.now(),
+            shippingAddress: {
+                name: 'Test Admin',
+                email: process.env.ADMIN_EMAIL || 'mohamedinamulhasan0@gmail.com',
+                mobile: '0000000000',
+                street: 'Test St',
+                city: 'Test City',
+                zip: '00000'
+            },
+            items: [{ name: 'Test Product', quantity: 1, price: 100 }],
+            total: 100,
+            subtotal: 100,
+            shipping: 0,
+            createdAt: new Date()
+        };
+
+        const result = await sendOrderNotificationEmail(mockOrder);
+
+        if (result.success) {
+            res.json({
+                success: true,
+                message: '✅ Email Sent Successfully!',
+                details: result,
+                config: {
+                    user: process.env.EMAIL_USER ? 'Set' : 'Missing',
+                    pass: process.env.EMAIL_PASS ? 'Set' : 'Missing',
+                    admin: process.env.ADMIN_EMAIL
+                }
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: '❌ Email Failed',
+                error: result.error
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: '❌ Critical Error',
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
+
 // Start server
 const PORT = process.env.PORT || 5000;
 
