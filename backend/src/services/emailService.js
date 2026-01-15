@@ -8,15 +8,16 @@ const createTransporter = async () => {
         console.log('📧 API: Creating Gmail transporter with User:', process.env.EMAIL_USER);
         return nodemailer.createTransport({
             host: 'smtp.gmail.com',
-            port: 465, // Use 465 for secure connection (SSL/TLS) - fixes timeouts on Render
-            secure: true, // true for 465, false for other ports
+            port: 465, // Use 465 for secure connection (SSL/TLS)
+            secure: true,
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS
             },
             tls: {
-                rejectUnauthorized: false // Fixes some SSL issues on cloud servers
-            }
+                rejectUnauthorized: false
+            },
+            family: 4 // Force IPv4 to prevent timeouts on systems preferring IPv6
         });
     }
 
