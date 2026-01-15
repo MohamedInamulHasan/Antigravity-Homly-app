@@ -17,7 +17,12 @@ const createTransporter = async () => {
             tls: {
                 rejectUnauthorized: false
             },
-            family: 4 // Force IPv4 to prevent timeouts on systems preferring IPv6
+            family: 4, // Force IPv4
+            logger: true, // Log SMTP details
+            debug: true, // Show debug info
+            connectionTimeout: 10000, // Fail after 10s if cannot connect
+            greetingTimeout: 5000,
+            socketTimeout: 10000
         });
     }
 
