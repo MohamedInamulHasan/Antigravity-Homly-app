@@ -251,6 +251,7 @@ const AdminDashboard = () => {
                         active={activeTab === 'settings'}
                         onClick={setActiveTab}
                     />
+                    {/* End Settings Link */}
                 </nav>
             </div>
 
