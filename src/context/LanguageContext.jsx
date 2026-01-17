@@ -202,7 +202,6 @@ export const LanguageProvider = ({ children }) => {
         'Automotive': { en: 'Automotive', ta: 'வாகனம்' },
         'Manage and track your recent orders': { en: 'Manage and track your recent orders', ta: 'உங்கள் சமீபத்திய ஆர்டர்களை நிர்வகிக்கவும் கண்காணிக்கவும்' },
         'Search orders...': { en: 'Search orders...', ta: 'ஆர்டர்களைத் தேடவும்...' },
-        'Delete Order': { en: 'Delete Order', ta: 'ஆர்டரை நீக்கு' },
         'Cancel Order': { en: 'Cancel Order', ta: 'ஆர்டரை ரத்து செய்' },
         'Are you sure you want to delete this order? This action cannot be undone.': { en: 'Are you sure you want to delete this order? This action cannot be undone.', ta: 'இந்த ஆர்டரை நிச்சயமாக நீக்க விரும்புகிறீர்களா? இந்த செயலை மாற்ற முடியாது.' },
         'Delete': { en: 'Delete', ta: 'நீக்கு' },

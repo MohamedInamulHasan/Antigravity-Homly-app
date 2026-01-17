@@ -851,8 +851,6 @@ export const DataProvider = ({ children }) => {
         refreshData, // Exposed for Pull to Refresh
         savedProducts,
         fetchSavedProducts,
-        savedProducts,
-        fetchSavedProducts,
         toggleSaveProduct,
         settings,           // Export settings
         updateDeliverySettings, // Export update function
