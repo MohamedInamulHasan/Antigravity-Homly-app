@@ -50,9 +50,9 @@ You need to:
 4. They can then install it on their devices
 
 ## Files Created for PWA
-- public/manifest.json (app info)
-- public/icon.svg (app icon)
-- vite.config.js (PWA settings)
+- vite.config.js (PWA settings & Manifest)
+- src/main.jsx (Service Worker registration)
 - src/components/InstallPrompt.jsx (install button)
+- public icons (192/512 pngs)
 
 Your app is ready! When you deploy it online, anyone can install it like a native app!

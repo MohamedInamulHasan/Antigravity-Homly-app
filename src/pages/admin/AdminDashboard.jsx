@@ -27,12 +27,14 @@ import {
     RefreshCw,
     Wrench,
     ClipboardList,
-    Shield
+    Shield,
+    Settings
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { compressImage, validateImageSize } from '../../utils/imageCompression';
 import StoreManagement from './StoreManagement';
+import SettingsManagement from './SettingsManagement';
 
 const AdminDashboard = () => {
     const { user } = useData(); // Get current user
@@ -68,6 +70,8 @@ const AdminDashboard = () => {
                 return <ServiceManagement />;
             case 'service-requests':
                 return <ServiceRequestManagement />;
+            case 'settings':
+                return <SettingsManagement />;
             default:
                 return <ProductManagement />;
         }
@@ -237,6 +241,14 @@ const AdminDashboard = () => {
                         label={t('Service Requests')}
                         id="service-requests"
                         active={activeTab === 'service-requests'}
+                        onClick={setActiveTab}
+                    />
+                    <div className="my-2 border-t border-gray-100 dark:border-gray-700"></div>
+                    <SidebarItem
+                        icon={<Settings size={20} />}
+                        label={t('Settings')}
+                        id="settings"
+                        active={activeTab === 'settings'}
                         onClick={setActiveTab}
                     />
                 </nav>

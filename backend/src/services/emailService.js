@@ -66,13 +66,31 @@ const generateEmailHtml = (order, isForAdmin) => {
     let actionButton = '';
     if (isForAdmin) {
         const customerMobile = order.shippingAddress.mobile || '';
-        // Basic order summary for WhatsApp message - concise and clean
+
+        // Helper to get store name safely
+        const getStoreName = (item) => item.storeId?.name ? `(${item.storeId.name})` : '';
+
+        // Format items for WhatsApp
+        const itemsListForWhatsapp = order.items.map(i => {
+            return `- ${i.name} ${getStoreName(i)} x${i.quantity}`;
+        }).join('\n');
+
+        // Format Address for WhatsApp
+        const addressDetails = `*Delivery To:*
+${order.shippingAddress.name}
+${order.shippingAddress.street}, ${order.shippingAddress.city}
+${order.shippingAddress.zip}
+Mobile: ${order.shippingAddress.mobile}`;
+
+        // Construct the full message
         const message = encodeURIComponent(
-            `Hi ${order.shippingAddress.name}, thank you for your order #${String(order._id).slice(-6).toUpperCase()} on ShopEase!\n\n` +
-            `Items:\n${order.items.map(i => `${i.name} x${i.quantity}`).join('\n')}\n` +
-            `Total: ₹${order.total.toFixed(0)}\n\n` +
-            `We'll update you when it ships!`
+            `Hi ${order.shippingAddress.name}, thank you for your order *#${String(order._id).slice(-6).toUpperCase()}* on ShopEase! 🛍️\n\n` +
+            `*Items:*\n${itemsListForWhatsapp}\n\n` +
+            `*Total Amount:* ₹${order.total.toFixed(0)}\n\n` +
+            `${addressDetails}\n\n` +
+            `We will update you when your order ships!`
         );
+
         // Use international format if possible, but assuming local +91 for now based on context
         const whatsappUrl = `https://wa.me/91${customerMobile}?text=${message}`;
 
@@ -83,16 +101,6 @@ const generateEmailHtml = (order, isForAdmin) => {
                     <span style="vertical-align: middle; margin-right: 5px;">💬</span> Chat on WhatsApp
                 </a>
                 <p style="color: #6b7280; font-size: 11px; margin-top: 10px;">Click to send order details to customer</p>
-            </div>
-        `;
-    } else {
-        // Customer View: "Visit Store"
-        actionButton = `
-            <div style="margin-top: 30px; text-align: center;">
-                <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}" 
-                   style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-                    Visit Store
-                </a>
             </div>
         `;
     }

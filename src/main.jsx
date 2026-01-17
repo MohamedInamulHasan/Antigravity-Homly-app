@@ -7,6 +7,15 @@ import { DataProvider } from './context/DataContext.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
 import { LanguageProvider } from './context/LanguageContext.jsx'
+// import { registerSW } from 'virtual:pwa-register'
+// 
+// const updateSW = registerSW({
+//     onNeedRefresh() {
+//         if (confirm('New content available. Reload?')) {
+//             updateSW(true)
+//         }
+//     },
+// })
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>

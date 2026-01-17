@@ -58,6 +58,12 @@ export const DataProvider = ({ children }) => {
     // Saved Products State
     const [savedProducts, setSavedProducts] = useState([]);
 
+    // Settings State
+    const [settings, setSettings] = useState({
+        deliveryTimes: [],
+        maintenanceMode: false // Default false
+    });
+
     // Initial Loading State - for intro animation
     const [initialLoading, setInitialLoading] = useState(true);
 
@@ -320,7 +326,8 @@ export const DataProvider = ({ children }) => {
 
             // Determine if we are ready to hide intro
             // We wait for at least products and stores as they are critical
-            if (productsLoaded && storesLoaded) {
+            // FIX: Allow loading to finish even if data is empty (after fetch completes)
+            if (!loading.products && !loading.stores) {
                 const elapsedTime = Date.now() - mountTime;
                 const minDisplayTime = 2000; // Increased to 2 seconds for better effect
                 const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
@@ -739,7 +746,63 @@ export const DataProvider = ({ children }) => {
     // Load saved products on initial load or when user changes
     useEffect(() => {
         fetchSavedProducts();
+        fetchSettings();
     }, []);
+
+    // Settings Management
+    const fetchSettings = async () => {
+        try {
+            // Fetch ALL settings
+            const response = await apiService.settings.get();
+            if (response.success && response.data) {
+                // Backend returns array: [{ key: 'delivery_times', value: ... }, { key: 'maintenance_mode', value: ... }]
+                // Convert to object
+                const settingsMap = {
+                    deliveryTimes: [],
+                    maintenanceMode: false
+                };
+
+                if (Array.isArray(response.data)) {
+                    response.data.forEach(setting => {
+                        if (setting.key === 'delivery_times') settingsMap.deliveryTimes = setting.value;
+                        if (setting.key === 'maintenance_mode') settingsMap.maintenanceMode = setting.value;
+                    });
+                }
+
+                setSettings(prev => ({ ...prev, ...settingsMap }));
+            }
+        } catch (err) {
+            console.error('Failed to fetch settings:', err);
+        }
+    };
+
+    const updateDeliverySettings = async (allowedSlots) => {
+        try {
+            const response = await apiService.settings.update('delivery_times', allowedSlots);
+            if (response.success && response.data) {
+                setSettings(prev => ({ ...prev, deliveryTimes: response.data.value }));
+                return true;
+            }
+            return false;
+        } catch (err) {
+            console.error('Failed to update delivery settings:', err);
+            throw err;
+        }
+    };
+
+    const updateMaintenanceMode = async (isActive) => {
+        try {
+            const response = await apiService.settings.update('maintenance_mode', isActive);
+            if (response.success && response.data) {
+                setSettings(prev => ({ ...prev, maintenanceMode: response.data.value }));
+                return true;
+            }
+            return false;
+        } catch (err) {
+            console.error('Failed to update maintenance mode:', err);
+            throw err;
+        }
+    };
 
     const value = {
         products,
@@ -788,7 +851,13 @@ export const DataProvider = ({ children }) => {
         refreshData, // Exposed for Pull to Refresh
         savedProducts,
         fetchSavedProducts,
-        toggleSaveProduct
+        savedProducts,
+        fetchSavedProducts,
+        toggleSaveProduct,
+        settings,           // Export settings
+        updateDeliverySettings, // Export update function
+        updateMaintenanceMode,
+        fetchSettings // Export fetch function for refresh
     };
 
     return (

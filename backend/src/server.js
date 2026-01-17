@@ -15,6 +15,7 @@ import adRoutes from './routes/ads.js';
 import categoryRoutes from './routes/categories.js';
 import serviceRoutes from './routes/services.js';
 import serviceRequestRoutes from './routes/serviceRequests.js';
+import settingsRoutes from './routes/settingsRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -95,6 +96,7 @@ app.use('/api/ads', adRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/service-requests', serviceRequestRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Error handler middleware (must be last)
 app.use(errorHandler);

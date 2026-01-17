@@ -20,6 +20,8 @@ import IntroAnimation from './components/IntroAnimation';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { useData } from './context/DataContext';
+import { useAuth } from './context/AuthContext';
+import MaintenanceScreen from './components/MaintenanceScreen';
 import useBackButton from './utils/useBackButton';
 
 import ScrollToTop from './components/ScrollToTop';
@@ -35,20 +37,47 @@ const Layout = ({ children, onRefresh }) => {
         location.pathname === '/forgot-password' ||
         location.pathname.startsWith('/reset-password');
 
-    const isAuthPage = location.pathname === '/login' ||
-        location.pathname === '/signup' ||
-        location.pathname === '/forgot-password' ||
+    location.pathname === '/forgot-password' ||
         location.pathname.startsWith('/reset-password');
+
+    const { settings } = useData();
+    const { user } = useAuth();
+
+    // Maintenance Mode Logic
+    const isMaintenanceMode = settings?.maintenanceMode === true;
+    const isAdmin = user?.role === 'admin'; // Specific check for 'admin' role
+
+    // Allow access if:
+    // 1. Maintenance mode is OFF
+    // 2. OR User is an Admin
+    // 3. OR User is on a public auth page (Login/Signup) - OPTIONAL: Decided to block even auth to prevent confusion, 
+    //    BUT Super Admins need to login! So we MUST allow Login page access.
+
+    // Refined Logic:
+    // If Mode is ON:
+    // - Show Maintenance Screen
+    // - EXCEPT if user is Admin (but we don't know if they are admin until they login)
+    // - So we must allow access to /login, /admin (which redirects to login if not auth)
+
+    // Wait, if we block everything, how does an Admin login?
+    // We should probably allow the '/login' and '/admin' routes.
+
+    const isExemptRoute = location.pathname === '/login' || location.pathname.startsWith('/admin');
+    const shouldBlock = isMaintenanceMode && !isAdmin && !isExemptRoute;
+
+    if (shouldBlock) {
+        return <MaintenanceScreen />;
+    }
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
             <ScrollToTop />
             {!isAuthPage && <Navbar />}
-            <PullToRefresh onRefresh={onRefresh} resistance={2.5} className="flex-grow flex flex-col">
-                <main className={`flex-grow ${hideMobileFooter ? '' : 'pb-32'} md:pb-0 min-h-screen`}>
-                    {children}
-                </main>
-            </PullToRefresh>
+            {/* <PullToRefresh onRefresh={onRefresh} resistance={2.5} className="flex-grow flex flex-col"> */}
+            <main className={`flex-grow ${hideMobileFooter ? '' : 'pb-32'} md:pb-0 min-h-screen`}>
+                {children}
+            </main>
+            {/* </PullToRefresh> */}
             {!isAuthPage && <MobileFooter />}
             {!isAuthPage && <InstallPrompt />}
         </div>

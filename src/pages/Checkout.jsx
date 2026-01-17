@@ -12,7 +12,7 @@ const Checkout = () => {
     const { cartItems, cartTotal, clearCart } = useCart();
     const { user, setUser } = useAuth();
     const { t } = useLanguage();
-    const { stores, updateUser } = useData();
+    const { stores, updateUser, settings } = useData();
     const [formData, setFormData] = useState({
         fullName: '',
         mobile: '',
@@ -238,11 +238,7 @@ const Checkout = () => {
                                     >
                                         <option value="">{t('Select a time slot')}</option>
                                         {(() => {
-                                            const slots = [];
                                             const now = new Date();
-
-                                            console.log('Current time:', now.toLocaleString());
-
                                             // Start from current time + 30 minutes
                                             const startTime = new Date(now.getTime() + 30 * 60000);
 
@@ -266,14 +262,12 @@ const Checkout = () => {
                                                 endOfDay.setDate(endOfDay.getDate() + 1);
                                             }
 
-                                            console.log('Start time:', startTime.toLocaleString());
-                                            console.log('End time:', endOfDay.toLocaleString());
-
-                                            // Generate all 30-minute slots
+                                            // Generate potential slots (Data only)
+                                            const potentialSlots = [];
                                             const currentSlot = new Date(startTime);
                                             let slotCount = 0;
 
-                                            while (currentSlot <= endOfDay && slotCount < 50) { // Safety limit
+                                            while (currentSlot <= endOfDay && slotCount < 50) {
                                                 const hours = currentSlot.getHours();
                                                 const mins = currentSlot.getMinutes();
                                                 const timeString = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
@@ -283,20 +277,42 @@ const Checkout = () => {
                                                     hour12: true
                                                 });
 
-                                                slots.push(
-                                                    <option key={timeString} value={timeString}>
-                                                        {displayTime}
-                                                    </option>
-                                                );
+                                                potentialSlots.push({
+                                                    value: timeString,
+                                                    label: displayTime
+                                                });
 
-                                                // Move to next 30-minute slot
                                                 currentSlot.setMinutes(currentSlot.getMinutes() + 30);
                                                 slotCount++;
                                             }
 
-                                            console.log('Generated slots:', slotCount);
+                                            // Filter slots based on Admin Settings
+                                            const allowedSlots = settings?.deliveryTimes || [];
 
-                                            return slots;
+                                            // Iterate and render
+                                            return potentialSlots.map(slot => {
+                                                // If allowedSlots is not empty, check if this slot is allowed.
+                                                // If allowedSlots IS empty, we default to SHOWING ALL (as per logic discussed).
+                                                // Wait, logic discussed: if empty, show all?
+                                                // SettingsManagement init state is empty [], which means "No restrictions" effectively? 
+                                                // Or does it mean "Nothing allowed"? 
+                                                // Using "Empty = Show All" is safer for existing users if db is empty.
+                                                // But if Admin explicitly unchecks everything -> empty array -> Show All? That's confusing.
+                                                // Let's assume if it's undefined (fetch failed) -> Show All.
+                                                // If it is Defined Array -> Filter (even if empty).
+                                                // But initial state is [] in DataContext.
+                                                // Let's stick strictly to: if (allowedSlots.length > 0) filter. Else show all.
+
+                                                if (allowedSlots.length > 0 && !allowedSlots.includes(slot.value)) {
+                                                    return null;
+                                                }
+
+                                                return (
+                                                    <option key={slot.value} value={slot.value}>
+                                                        {slot.label}
+                                                    </option>
+                                                );
+                                            });
                                         })()}
                                     </select>
                                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">

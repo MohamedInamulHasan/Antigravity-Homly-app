@@ -143,6 +143,12 @@ export const apiService = {
     getAllUsers: () => api.get('/users'),
     updateUser: (id, data) => api.put(`/users/${id}`, data),
     deleteUser: (id) => api.delete(`/users/${id}`),
+
+    // Settings
+    settings: {
+        get: (key) => api.get(`/settings${key ? `/${key}` : ''}`),
+        update: (key, value) => api.put(`/settings/${key}`, { value })
+    }
 };
 
 export default api;
