@@ -37,7 +37,9 @@ const Layout = ({ children, onRefresh }) => {
         location.pathname === '/forgot-password' ||
         location.pathname.startsWith('/reset-password');
 
-    location.pathname === '/forgot-password' ||
+    const isAuthPage = location.pathname === '/login' ||
+        location.pathname === '/signup' ||
+        location.pathname === '/forgot-password' ||
         location.pathname.startsWith('/reset-password');
 
     const { settings } = useData();
