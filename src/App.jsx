@@ -35,12 +35,15 @@ const Layout = ({ children, onRefresh }) => {
         location.pathname === '/login' ||
         location.pathname === '/signup' ||
         location.pathname === '/forgot-password' ||
-        location.pathname.startsWith('/reset-password');
+        location.pathname.startsWith('/reset-password') ||
+        location.pathname.startsWith('/admin');
 
     const isAuthPage = location.pathname === '/login' ||
         location.pathname === '/signup' ||
         location.pathname === '/forgot-password' ||
         location.pathname.startsWith('/reset-password');
+
+    const isAdminRoute = location.pathname.startsWith('/admin');
 
     const { settings } = useData();
     const { user } = useAuth();
@@ -80,7 +83,7 @@ const Layout = ({ children, onRefresh }) => {
                 {children}
             </main>
             {/* </PullToRefresh> */}
-            {!isAuthPage && <MobileFooter />}
+            {!isAuthPage && !isAdminRoute && <MobileFooter />}
             {!isAuthPage && <InstallPrompt />}
         </div>
     );
