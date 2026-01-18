@@ -970,7 +970,7 @@ const OrderManagement = () => {
                                             {formatDateTime(order.createdAt || order.date)}
                                         </td>
                                         <td className="p-4 font-medium text-gray-900 dark:text-white">₹{(
-                                            (Number(order.subtotal) || 0) +
+                                            (order.items?.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 1)), 0) || 0) +
                                             (Number(order.shipping) || 20) -
                                             (Number(order.discount) || 0)
                                         ).toFixed(0)}</td>

@@ -13,6 +13,9 @@ const OrderDetails = () => {
 
     const order = orders.find(o => (o._id || o.id) === id);
 
+    // Calculate subtotal dynamically from items to ensure accuracy
+    const calculatedSubtotal = order?.items?.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 1)), 0) || 0;
+
     if (loading.orders) {
         return <LoadingSpinner />;
     }
@@ -194,7 +197,7 @@ const OrderDetails = () => {
                     <div className="space-y-3">
                         <div className="flex justify-between text-gray-600 dark:text-gray-400">
                             <span>{t('Subtotal')}</span>
-                            <span>₹{Number(order.subtotal || 0).toFixed(0)}</span>
+                            <span>₹{calculatedSubtotal.toFixed(0)}</span>
                         </div>
                         <div className="flex justify-between text-gray-600 dark:text-gray-400">
                             <span>{t('Delivery Charge')}</span>
@@ -202,17 +205,17 @@ const OrderDetails = () => {
                             <span>₹{(Number(order.shipping) || 20).toFixed(0)}</span>
                         </div>
 
-                        {Number(order.discount || 0) !== 0 && (
+                        {order.discount > 0 && (
                             <div className="flex justify-between text-green-600 dark:text-green-400">
                                 <span>{t('Discount')}</span>
-                                <span>-₹{Math.abs(Number(order.discount)).toFixed(0)}</span>
+                                <span>-₹{Number(order.discount).toFixed(0)}</span>
                             </div>
                         )}
                         <div className="pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between font-bold text-gray-900 dark:text-white text-lg">
                             <span>{t('Total')}</span>
                             {/* FIX: Recalculate total to be safe: Subtotal + Delivery - Discount */}
                             <span>₹{(
-                                (Number(order.subtotal) || 0) +
+                                calculatedSubtotal +
                                 (Number(order.shipping) || 20) -
                                 (Number(order.discount) || 0)
                             ).toFixed(0)}</span>

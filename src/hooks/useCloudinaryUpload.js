@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../utils/api';
 
 /**
  * Hook for Direct Cloudinary Uploads using Signed Request
@@ -14,12 +14,8 @@ const useCloudinaryUpload = () => {
         setError(null);
 
         try {
-            // 1. Get Signature from Backend
-            const { data: signatureData } = await axios.get('/api/upload/signature', {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}` // Ensure we use the token
-                }
-            });
+            // 1. Get Signature from Backend (Cookie-based Auth handled by api instance)
+            const { data: signatureData } = await api.get('/upload/signature');
 
             const { signature, timestamp, cloudName, apiKey, folder } = signatureData;
 
