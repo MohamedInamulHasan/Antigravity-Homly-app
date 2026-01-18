@@ -69,9 +69,17 @@ export const getOrders = async (req, res, next) => {
     try {
         // If user is admin, return all orders
         // If user is customer, return only their orders
-        const query = req.user && req.user.role === 'admin'
-            ? {} // Admin sees all orders
-            : { user: req.user._id }; // Customer sees only their orders
+        let query = {};
+
+        if (req.user && req.user.role === 'admin') {
+            query = {}; // Admin sees all orders
+        } else if (req.user && req.user.role === 'store_admin' && req.user.storeId) {
+            // Store Admin sees orders that contain items from their store
+            query = { 'items.storeId': req.user.storeId };
+        } else {
+            // Customer sees only their orders
+            query = { user: req.user._id };
+        }
 
         const orders = await Order.find(query)
             .select('items.product items.image items.name items.storeId items.quantity items.price total status createdAt user shippingAddress paymentMethod') // Select only needed fields
