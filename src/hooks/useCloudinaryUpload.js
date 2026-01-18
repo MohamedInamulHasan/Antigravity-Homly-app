@@ -15,7 +15,7 @@ const useCloudinaryUpload = () => {
 
         try {
             // 1. Get Signature from Backend (Cookie-based Auth handled by api instance)
-            const { data: signatureData } = await api.get('/upload/signature');
+            const signatureData = await api.get('/upload/signature');
 
             const { signature, timestamp, cloudName, apiKey, folder } = signatureData;
 
