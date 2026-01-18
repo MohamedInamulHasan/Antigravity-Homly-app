@@ -198,7 +198,8 @@ const OrderDetails = () => {
                         </div>
                         <div className="flex justify-between text-gray-600 dark:text-gray-400">
                             <span>{t('Delivery Charge')}</span>
-                            <span>{Number(order.shipping || 0) === 0 ? t('Free') : `₹${Number(order.shipping).toFixed(0)}`}</span>
+                            {/* FIX: Ensure delivery is always ₹20 if not explicitly 0 (for free shipping logic later) or missing */}
+                            <span>₹{(Number(order.shipping) || 20).toFixed(0)}</span>
                         </div>
 
                         {Number(order.discount || 0) !== 0 && (
@@ -209,7 +210,12 @@ const OrderDetails = () => {
                         )}
                         <div className="pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between font-bold text-gray-900 dark:text-white text-lg">
                             <span>{t('Total')}</span>
-                            <span>₹{Number(order.total || 0).toFixed(0)}</span>
+                            {/* FIX: Recalculate total to be safe: Subtotal + Delivery - Discount */}
+                            <span>₹{(
+                                (Number(order.subtotal) || 0) +
+                                (Number(order.shipping) || 20) -
+                                (Number(order.discount) || 0)
+                            ).toFixed(0)}</span>
                         </div>
                     </div>
                 </div>

@@ -969,7 +969,11 @@ const OrderManagement = () => {
                                         <td className="p-4 text-gray-500 dark:text-gray-400 text-sm">
                                             {formatDateTime(order.createdAt || order.date)}
                                         </td>
-                                        <td className="p-4 font-medium text-gray-900 dark:text-white">â‚¹{order.total.toFixed(0)}</td>
+                                        <td className="p-4 font-medium text-gray-900 dark:text-white">₹{(
+                                            (Number(order.subtotal) || 0) +
+                                            (Number(order.shipping) || 20) -
+                                            (Number(order.discount) || 0)
+                                        ).toFixed(0)}</td>
                                         <td className="p-4">
                                             <select
                                                 value={order.status}
