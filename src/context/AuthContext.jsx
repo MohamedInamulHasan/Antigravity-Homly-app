@@ -26,6 +26,24 @@ export const AuthProvider = ({ children }) => {
             }
         };
         checkUserLoggedIn();
+
+        // Listen for global 401 unauthorized events from apiService
+        const handleUnauthorized = () => {
+            setUser(null);
+            localStorage.removeItem('userInfo');
+            localStorage.removeItem('authToken');
+            window.dispatchEvent(new Event('userChanged'));
+            // Optional: Redirect to login is handled by protected routes, or we can force it here
+            if (!window.location.pathname.startsWith('/login')) {
+                // window.location.href = '/login'; // Let the router handle it via valid state
+            }
+        };
+
+        window.addEventListener('auth:unauthorized', handleUnauthorized);
+
+        return () => {
+            window.removeEventListener('auth:unauthorized', handleUnauthorized);
+        };
     }, []);
 
     const login = async (email, password) => {

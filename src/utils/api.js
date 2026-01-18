@@ -47,6 +47,12 @@ api.interceptors.response.use(
             hasAuthToken: !!error.config?.headers?.Authorization
         });
 
+        // Global 401 (Unauthorized) Handler
+        if (error.response?.status === 401) {
+            console.warn('Session expired or unauthorized. Dispatching logout event.');
+            window.dispatchEvent(new Event('auth:unauthorized'));
+        }
+
         return Promise.reject({
             message,
             status: error.response?.status,
