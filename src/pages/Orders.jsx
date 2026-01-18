@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Package, Search, ChevronRight, Truck, CheckCircle, Clock, RotateCcw, ShoppingBag, Trash2, AlertTriangle, X, Store } from 'lucide-react';
-import { useData } from '../context/DataContext';
+import { useOrders, useDeleteOrder } from '../hooks/queries/useOrders';
+import { useStores } from '../hooks/queries/useStores';
+// import { useData } from '../context/DataContext'; // Removed dependency
 import { getStoreName } from '../utils/storeHelpers';
 import { useLanguage } from '../context/LanguageContext';
 import { formatOrderDateTime, formatDeliveryTime } from '../utils/dateUtils';
@@ -9,7 +11,11 @@ import PullToRefreshLayout from '../components/PullToRefreshLayout';
 
 const Orders = () => {
     const navigate = useNavigate();
-    const { orders, deleteOrder, stores } = useData();
+    const { data: orders = [], isLoading: loadingOrders } = useOrders();
+    const { data: stores = [] } = useStores();
+    const { mutate: deleteOrder } = useDeleteOrder();
+
+    // const { orders, deleteOrder, stores } = useData(); // Refactored
     const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
@@ -54,6 +60,15 @@ const Orders = () => {
     };
 
 
+
+
+    if (loadingOrders) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        );
+    }
 
     return (
         <PullToRefreshLayout>

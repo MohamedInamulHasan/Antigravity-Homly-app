@@ -10,6 +10,35 @@ const generateToken = (id) => {
     });
 };
 
+// Helper to send token in cookie
+const sendTokenResponse = (user, statusCode, res) => {
+    const token = generateToken(user._id);
+
+    const options = {
+        expires: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 days
+        ),
+        httpOnly: true, // Secure: not accessible via client-side JS
+        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // CSRF protection
+    };
+
+    res.status(statusCode)
+        .cookie('jwt', token, options)
+        .json({
+            success: true,
+            data: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                address: user.address,
+                mobile: user.mobile,
+                storeId: user.storeId
+            }
+        });
+};
+
 // @desc    Register new user
 // @route   POST /api/users/register
 // @access  Public
@@ -34,16 +63,7 @@ export const registerUser = async (req, res, next) => {
         });
 
         if (user) {
-            res.status(201).json({
-                success: true,
-                data: {
-                    _id: user._id,
-                    name: user.name,
-                    email: user.email,
-                    role: user.role,
-                    token: generateToken(user._id)
-                }
-            });
+            sendTokenResponse(user, 201, res);
         }
     } catch (error) {
         next(error);
@@ -61,16 +81,7 @@ export const loginUser = async (req, res, next) => {
         const user = await User.findOne({ email }).select('+password');
 
         if (user && (await user.matchPassword(password))) {
-            res.status(200).json({
-                success: true,
-                data: {
-                    _id: user._id,
-                    name: user.name,
-                    email: user.email,
-                    role: user.role,
-                    token: generateToken(user._id)
-                }
-            });
+            sendTokenResponse(user, 200, res);
         } else {
             res.status(401);
             throw new Error('Invalid email or password');
@@ -78,6 +89,21 @@ export const loginUser = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+};
+
+// @desc    Logout user / clear cookie
+// @route   POST /api/users/logout
+// @access  Public
+export const logoutUser = (req, res) => {
+    res.cookie('jwt', 'none', {
+        expires: new Date(Date.now() + 10 * 1000),
+        httpOnly: true
+    });
+
+    res.status(200).json({
+        success: true,
+        data: {}
+    });
 };
 
 // @desc    Get user profile
@@ -126,17 +152,7 @@ export const updateUserProfile = async (req, res, next) => {
             }
 
             const updatedUser = await user.save();
-
-            res.status(200).json({
-                success: true,
-                data: {
-                    _id: updatedUser._id,
-                    name: updatedUser.name,
-                    email: updatedUser.email,
-                    role: updatedUser.role,
-                    token: generateToken(updatedUser._id)
-                }
-            });
+            sendTokenResponse(updatedUser, 200, res);
         } else {
             res.status(404);
             throw new Error('User not found');
@@ -381,16 +397,7 @@ export const resetPassword = async (req, res, next) => {
 
         await user.save();
 
-        res.status(200).json({
-            success: true,
-            data: {
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                token: generateToken(user._id)
-            }
-        });
+        sendTokenResponse(user, 200, res);
     } catch (error) {
         next(error);
     }

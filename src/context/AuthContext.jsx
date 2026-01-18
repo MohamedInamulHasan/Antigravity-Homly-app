@@ -10,11 +10,20 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const checkUserLoggedIn = async () => {
-            const userInfo = localStorage.getItem('userInfo');
-            if (userInfo) {
-                setUser(JSON.parse(userInfo));
+            try {
+                // Verify session with server instead of trust localStorage
+                const data = await apiService.getProfile();
+                setUser(data.data);
+                // Keep userInfo in localStorage for non-auth UI sync if needed, or update it
+                localStorage.setItem('userInfo', JSON.stringify(data.data));
+            } catch (err) {
+                // If 401/403, we are not logged in
+                setUser(null);
+                localStorage.removeItem('userInfo');
+                localStorage.removeItem('authToken'); // Cleanup legacy token
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
         checkUserLoggedIn();
     }, []);
@@ -25,8 +34,9 @@ export const AuthProvider = ({ children }) => {
             const data = await apiService.login({ email, password });
 
             setUser(data.data);
+            setUser(data.data);
             localStorage.setItem('userInfo', JSON.stringify(data.data));
-            localStorage.setItem('authToken', data.data.token);
+            // localStorage.setItem('authToken', data.data.token); // No longer storing token
             // Dispatch custom event to notify cart of user change
             window.dispatchEvent(new Event('userChanged'));
             return true;
@@ -47,7 +57,7 @@ export const AuthProvider = ({ children }) => {
 
             setUser(data.data);
             localStorage.setItem('userInfo', JSON.stringify(data.data));
-            localStorage.setItem('authToken', data.data.token);
+            // localStorage.setItem('authToken', data.data.token); // No longer storing token
             // Dispatch custom event to notify cart of user change
             window.dispatchEvent(new Event('userChanged'));
             return true;
@@ -61,9 +71,14 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await apiService.logout();
+        } catch (err) {
+            console.error('Logout failed on server', err);
+        }
         localStorage.removeItem('userInfo');
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('authToken'); // Cleanup legacy
         setUser(null);
         // Dispatch custom event to notify cart of user change
         window.dispatchEvent(new Event('userChanged'));

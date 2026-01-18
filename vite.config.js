@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  clearScreen: false,
   plugins: [
     react(),
     // VitePWA({
@@ -128,7 +129,7 @@ export default defineConfig({
   server: {
     host: '127.0.0.1', // Force IPv4 for reliable localhost
     port: 5173,
-    strictPort: true,
+    strictPort: false,
   },
   preview: {
     port: 5173,

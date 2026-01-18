@@ -10,19 +10,17 @@ console.log('📦 Environment:', import.meta.env.MODE);
 // Create axios instance with base configuration
 const api = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 120000, // Increased to 120s to handle Render cold starts (free tier can take 50+ seconds to wake up)
+    timeout: 120000, // Increased to 120s to handle Render cold starts
     headers: {
         'Content-Type': 'application/json',
     },
+    withCredentials: true // Important: Send cookies with every request
 });
 
-// Request interceptor - add auth token if available
+// Request interceptor (Optional now, assuming cookies handle auth)
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
+        // No need to manually attach token from localStorage anymore
         return config;
     },
     (error) => {
@@ -102,6 +100,7 @@ export const apiService = {
     // Users
     register: (data) => api.post('/users/register', data),
     login: (data) => api.post('/users/login', data),
+    logout: () => api.post('/users/logout'),
     forgotPassword: (email) => api.post('/users/forgotpassword', { email }),
     resetPassword: (token, password) => api.put(`/users/resetpassword/${token}`, { password }),
     getProfile: () => api.get('/users/profile'),

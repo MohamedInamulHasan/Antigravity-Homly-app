@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import compression from 'compression';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import connectDB from './config/database.js';
 import errorHandler from './middleware/errorHandler.js';
@@ -65,9 +66,10 @@ app.use(cors({
 
 // Enable compression for all responses (reduces payload size by 60-80%)
 app.use(compression());
+app.use(cookieParser());
 
-app.use(express.json({ limit: '50mb' })); // Increased limit for Base64 images
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json()); // Removed 50mb limit - specific upload route handles large files via Cloudinary
+app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.get('/', (req, res) => {
@@ -97,6 +99,11 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/service-requests', serviceRequestRoutes);
 app.use('/api/settings', settingsRoutes);
+
+// Upload Route (Cloudinary)
+import { getUploadSignature } from './controllers/uploadController.js';
+import { protect } from './middleware/authMiddleware.js';
+app.get('/api/upload/signature', protect, getUploadSignature);
 
 // Error handler middleware (must be last)
 app.use(errorHandler);

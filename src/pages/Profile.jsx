@@ -4,14 +4,21 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import AuthContext from '../context/AuthContext';
-import { useData } from '../context/DataContext';
+import { useOrders } from '../hooks/queries/useOrders';
+import { useUserProfile } from '../hooks/queries/useUsers';
 import { formatOrderDate } from '../utils/dateUtils';
 
 const Profile = () => {
     const { theme, toggleTheme } = useTheme();
     const { language, setLanguage, t } = useLanguage();
-    const { user, logout } = useContext(AuthContext);
-    const { orders } = useData();
+    const { user: authUser, logout } = useContext(AuthContext);
+
+    // React Query Hooks
+    const { data: userProfile } = useUserProfile();
+    const { data: orders = [] } = useOrders();
+
+    // Use profile data if available, otherwise fall back to auth context user
+    const user = userProfile?.data || authUser;
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 

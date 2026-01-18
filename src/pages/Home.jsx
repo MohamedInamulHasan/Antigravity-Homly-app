@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useData } from '../context/DataContext.jsx';
+import { useData } from '../context/DataContext.jsx'; // Keep for now if other things need it, or remove if unused.
+import { useProducts } from '../hooks/queries/useProducts';
+import { useAds } from '../hooks/queries/useAds';
+import { useCategories } from '../hooks/queries/useCategories';
 import { useLanguage } from '../context/LanguageContext';
 import { isStoreOpen } from '../utils/storeHelpers';
 import SimpleProductCard from '../components/SimpleProductCard';
@@ -10,13 +13,16 @@ import PullToRefreshLayout from '../components/PullToRefreshLayout';
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
-    const { ads, products, categories, stores } = useData();
+
+    // React Query Hooks
+    const { data: products = [], isLoading: loadingProducts, error: errorProducts } = useProducts();
+    const { data: ads = [], isLoading: loadingAds } = useAds();
+    const { data: categories = [] } = useCategories();
+
     const { t } = useLanguage();
     const navigate = useNavigate();
 
-    // Categories are now loaded automatically via deferred loading in DataContext
-
-    // Use ads from backend only, no dummy fallback
+    // Use ads from backend only
     const slides = (ads && ads.length > 0) ? ads : [];
 
 
@@ -86,10 +92,9 @@ const Home = () => {
     };
 
     const allCategories = categories && categories.length > 0 ? categories : [];
-    const { error, loading } = useData();
 
     // Show error state if backend is unreachable
-    if (!loading.products && products.length === 0 && error.products) {
+    if (!loadingProducts && products.length === 0 && errorProducts) {
         return (
             <PullToRefreshLayout>
                 <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
@@ -105,7 +110,7 @@ const Home = () => {
                         {t('We surely missed the server! Please make sure the backend is running.')}
                         <br />
                         <span className="text-sm font-mono mt-2 block bg-gray-100 dark:bg-gray-800 p-2 rounded">
-                            {error.products}
+                            {errorProducts?.message || 'Unknown Error'}
                         </span>
                     </p>
                     <button
