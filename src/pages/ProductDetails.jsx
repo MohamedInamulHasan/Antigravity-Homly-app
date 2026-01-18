@@ -19,12 +19,35 @@ const ProductDetails = () => {
     const store = product && stores?.find(s => (s._id || s.id) === product.storeId);
     const storeName = store?.name || 'Unknown Store';
 
+    // Updated effect to handle individual product fetching
     useEffect(() => {
-        if (products.length > 0) {
-            const foundProduct = products.find(p => (p._id || p.id) === id || (p._id || p.id) === parseInt(id));
-            setProduct(foundProduct);
-            setCurrentImageIndex(0);
-        }
+        const loadProduct = async () => {
+            // 1. Try to find in context first (fastest)
+            if (products.length > 0) {
+                const foundProduct = products.find(p => (p._id || p.id) === id || (p._id || p.id) === parseInt(id));
+                if (foundProduct) {
+                    setProduct(foundProduct);
+                    setCurrentImageIndex(0);
+                    return;
+                }
+            }
+
+            // 2. If not in context (e.g. direct link or paginated out), fetch from API
+            try {
+                // Determine if we need to show loading? We render "Product not found" only if product is null AND we are done trying.
+                // For now, let's just fetch.
+                const response = await import('../utils/api').then(m => m.apiService.getProduct(id));
+                if (response.success && response.data) {
+                    setProduct(response.data);
+                    setCurrentImageIndex(0);
+                }
+            } catch (err) {
+                console.error('Failed to fetch individual product:', err);
+                // Remains null, so "Product not found" will eventually show
+            }
+        };
+
+        loadProduct();
     }, [id, products]);
 
     const productId = product ? (product._id || product.id) : null;
