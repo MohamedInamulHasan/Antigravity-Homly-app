@@ -2,8 +2,8 @@ import nodemailer from 'nodemailer';
 
 // Create email transporter
 const createTransporter = async () => {
-    // If Gmail credentials are provided, use Gmail
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    // If Gmail credentials or SMTP credentials are provided, use real transporter
+    if ((process.env.EMAIL_USER && process.env.EMAIL_PASS) || (process.env.SMTP_USER && process.env.SMTP_PASS)) {
         console.log('📧 API: Creating SMTP transporter...');
         return nodemailer.createTransport({
             host: process.env.SMTP_HOST || 'smtp.gmail.com',

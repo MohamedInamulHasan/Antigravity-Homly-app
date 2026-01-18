@@ -33,7 +33,7 @@ const ForgotPassword = () => {
                     </h2>
                     <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                         {isSent
-                            ? "Check your email for reset instructions"
+                            ? "If an account exists, a reset link has been sent."
                             : "Enter your email address to reset your password"
                         }
                     </p>
@@ -51,7 +51,7 @@ const ForgotPassword = () => {
                             <CheckCircle className="h-16 w-16 text-green-500" />
                         </div>
                         <p className="text-gray-700 dark:text-gray-300">
-                            We have sent a password reset link to <strong>{email}</strong>.
+                            If an account with <strong>{email}</strong> exists, we have sent a password reset link.
                             Please check your inbox (and spam folder).
                         </p>
                         <div className="pt-4">

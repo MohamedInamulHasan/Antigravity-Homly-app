@@ -43,7 +43,9 @@ const OrderConfirmation = () => {
                 name: item.title || item.name || 'Product', // Fallback for safety
                 quantity: item.quantity,
                 price: item.price,
-                image: item.image,
+                // SECURITY/PERFORMANCE: Strip base64 images to prevent "Request Entity Too Large" (413) errors on Vercel
+                // Only send the image if it is a URL (Cloudinary/HTTP). 
+                image: (item.image && item.image.length < 1000) ? item.image : null,
                 storeId: item.storeId?._id || item.storeId || null
             })),
             total: finalTotal || ((cartTotal || 0) + finalDeliveryCharge),

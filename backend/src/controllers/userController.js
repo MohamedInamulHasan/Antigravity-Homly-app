@@ -320,51 +320,54 @@ export const toggleSavedProduct = async (req, res, next) => {
 // @desc    Forgot Password - Send reset email
 // @route   POST /api/users/forgotpassword
 // @access  Public
+// @desc    Forgot Password - Send reset email
+// @route   POST /api/users/forgotpassword
+// @access  Public
 export const forgotPassword = async (req, res, next) => {
-    console.log('🔹 forgotPassword Request Received:', req.body.email);
+    // console.log('🔹 forgotPassword Request Received:', req.body.email); // Keep logs for debug but maybe reduce verbosity in prod
     try {
         const user = await User.findOne({ email: req.body.email });
 
         if (!user) {
-            console.log('❌ User not found');
-            res.status(404);
-            throw new Error('There is no user with that email');
+            console.log('ℹ️ Forgot Password: User not found for email:', req.body.email);
+            // SECURITY: Return success to prevent email enumeration
+            return res.status(200).json({
+                success: true,
+                data: 'If an account with that email exists, we have sent a password reset link.'
+            });
         }
 
         // Get reset token
         const resetToken = user.getResetPasswordToken();
-        console.log('🔹 Token Generated');
-
         await user.save({ validateBeforeSave: false });
-        console.log('🔹 User Saved with Token');
 
         // Create reset url
         const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
 
-        // DEBUG: Log URL to console for manual testing
-        console.log('🔗 MANUAL RESET LINK:', resetUrl);
+        // DEBUG: Log URL to console (REMOVE IN PRODUCTION)
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('🔗 MANUAL RESET LINK:', resetUrl);
+        }
 
         try {
-            console.log('🔹 Attempting to send email to:', user.email);
-            const result = await sendPasswordResetEmail(user.email, resetUrl);
-            console.log('✅ Email Service Result:', result);
+            await sendPasswordResetEmail(user.email, resetUrl);
 
             res.status(200).json({
                 success: true,
-                data: 'Email sent'
+                data: 'If an account with that email exists, we have sent a password reset link.'
             });
         } catch (error) {
             console.error('❌ Email Sending Failed:', error);
             user.resetPasswordToken = undefined;
             user.resetPasswordExpire = undefined;
-
             await user.save({ validateBeforeSave: false });
 
+            // In case of email error, we *could* still return success to mask it, 
+            // but for now, 500 is okay as it indicates a server fault, not user existence.
             res.status(500);
-            throw new Error('Email could not be sent');
+            throw new Error('Email server error. Please try again later.');
         }
     } catch (error) {
-        console.error('❌ forgotPassword Controller Error:', error);
         next(error);
     }
 };
