@@ -105,7 +105,7 @@ const OrderDetails = () => {
                             <div key={index} className="p-6 flex items-start gap-4">
                                 <div className="h-20 w-20 flex-shrink-0 rounded-xl bg-gray-100 dark:bg-gray-700 overflow-hidden border border-gray-100 dark:border-gray-600">
                                     <img
-                                        src={item.image || "https://via.placeholder.com/150?text=No+Image"}
+                                        src={item.image || item.product?.image || "https://via.placeholder.com/150?text=No+Image"}
                                         alt={item.name}
                                         className="h-full w-full object-cover"
                                         onError={(e) => { e.target.src = "https://via.placeholder.com/150?text=Product"; }}

@@ -128,7 +128,19 @@ export const getOrder = async (req, res, next) => {
 
         // Check if the order belongs to the requesting user
         // Note: With lean(), order.user is an ObjectId, so we use string comparison
-        if (req.user.role !== 'admin' && order.user.toString() !== req.user._id.toString()) {
+        const isOwner = order.user.toString() === req.user._id.toString();
+        const isAdmin = req.user.role === 'admin';
+
+        let isStoreAdmin = false;
+        if (req.user.role === 'store_admin' && req.user.storeId) {
+            // Check if any item in the order belongs to this store
+            // Note: items.storeId is populated in the query above as an object { _id, name }
+            isStoreAdmin = order.items.some(item =>
+                item.storeId && (item.storeId._id || item.storeId).toString() === req.user.storeId.toString()
+            );
+        }
+
+        if (!isAdmin && !isOwner && !isStoreAdmin) {
             res.status(403);
             throw new Error('Not authorized to view this order');
         }
