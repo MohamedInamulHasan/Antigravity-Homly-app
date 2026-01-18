@@ -74,8 +74,15 @@ export const getOrders = async (req, res, next) => {
         if (req.user && req.user.role === 'admin') {
             query = {}; // Admin sees all orders
         } else if (req.user && req.user.role === 'store_admin' && req.user.storeId) {
-            // Store Admin sees orders that contain items from their store
-            query = { 'items.storeId': req.user.storeId };
+            // Store Admin sees:
+            // 1. Orders containing items from their store (Sales)
+            // 2. Orders they placed themselves (Purchases)
+            query = {
+                $or: [
+                    { 'items.storeId': req.user.storeId },
+                    { user: req.user._id }
+                ]
+            };
         } else {
             // Customer sees only their orders
             query = { user: req.user._id };
