@@ -19,7 +19,8 @@ export const DataProvider = ({ children }) => {
         products: false,
         stores: false,
         news: false,
-        orders: false,
+        // Start loading true if we have a token, to prevent empty state flash while effect kicks in
+        orders: !!localStorage.getItem('authToken'),
         services: false,
         ads: false,
         categories: false,
@@ -319,18 +320,25 @@ export const DataProvider = ({ children }) => {
     useEffect(() => {
         // Only run this check if we are currently loading initially
         if (initialLoading) {
-            // Check if essential data is loaded
-            const productsLoaded = !loading.products && products.length > 0;
-            const storesLoaded = !loading.stores && stores.length > 0;
-            const categoriesLoaded = categories.length > 0; // Categories fetch doesn't have a loading state but we can check length
+            // Check if ALL data is loaded (finished fetching, success or fail)
+            // We verify loading flags are false.
+            const allDataLoaded =
+                !loading.products &&
+                !loading.stores &&
+                !loading.news &&
+                !loading.ads &&
+                !loading.services &&
+                !loading.categories &&
+                // If we have an auth token, also wait for orders to prevent "Not Found" flash
+                (!localStorage.getItem('authToken') || !loading.orders);
 
             // Determine if we are ready to hide intro
-            // We wait for at least products and stores as they are critical
-            // FIX: Allow loading to finish even if data is empty (after fetch completes)
-            if (!loading.products && !loading.stores) {
+            if (allDataLoaded) {
                 const elapsedTime = Date.now() - mountTime;
-                const minDisplayTime = 2000; // Increased to 2 seconds for better effect
+                const minDisplayTime = 2500; // Increased to 2.5 seconds for premium feel
                 const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+
+                console.log('✨ All data loaded. Hiding intro in', remainingTime, 'ms');
 
                 setTimeout(() => {
                     setInitialLoading(false);
@@ -339,12 +347,14 @@ export const DataProvider = ({ children }) => {
         }
 
         if (!loading.products && products.length > 0) {
-            // Load ads after a short delay
-            setTimeout(() => {
-                fetchAds();
-            }, 500);
+            // Load ads after a short delay (if not already loaded by initial batch)
+            if (ads.length === 0 && !loading.ads) {
+                setTimeout(() => {
+                    fetchAds();
+                }, 500);
+            }
         }
-    }, [loading.products, products.length, loading.stores, stores.length, initialLoading, mountTime]);
+    }, [loading, initialLoading, mountTime, ads.length, products.length]);
 
     // Independent fetch for categories
     useEffect(() => {

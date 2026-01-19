@@ -38,13 +38,18 @@ const Checkout = () => {
     // Priority: fullName > name (to use updated profile name instead of signup username)
     useEffect(() => {
         if (user) {
+            // Handle both flat structure (legacy) and nested schema structure
+            const addressObj = user.address || {};
+            const isAddressObject = typeof user.address === 'object' && user.address !== null;
+
             setFormData(prev => ({
                 ...prev,
                 fullName: user.fullName || user.name || prev.fullName,
                 mobile: user.mobile || user.phone || prev.mobile,
-                address: user.address || prev.address,
-                city: user.city || prev.city,
-                zip: user.zip || user.pincode || prev.zip
+                // If user.address is an object, use .street, otherwise use it directly if string
+                address: (isAddressObject ? addressObj.street : user.address) || prev.address,
+                city: (isAddressObject ? addressObj.city : user.city) || prev.city,
+                zip: (isAddressObject ? addressObj.zip : (user.zip || user.pincode)) || prev.zip
             }));
         }
     }, [user]);
@@ -96,7 +101,15 @@ const Checkout = () => {
             fullName: formData.fullName,
             mobile: formData.mobile,
             phone: formData.mobile,
-            address: formData.address,
+            // Construct proper address object for backend schema
+            address: {
+                street: formData.address,
+                city: formData.city,
+                zip: formData.zip,
+                state: '', // We don't have state input yet
+                country: 'India'
+            },
+            // Keep flat fields if legacy/other parts use them, but backend prefers nested
             city: formData.city,
             zip: formData.zip,
             pincode: formData.zip

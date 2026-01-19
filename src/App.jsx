@@ -67,7 +67,14 @@ const Layout = ({ children, onRefresh }) => {
     // Wait, if we block everything, how does an Admin login?
     // We should probably allow the '/login' and '/admin' routes.
 
-    const isExemptRoute = location.pathname === '/login' || location.pathname.startsWith('/admin');
+    // We should probably allow the '/login' and '/admin' routes.
+    // Also allow signup and password reset flows so admins/users can recover accounts even during maintenance.
+    const isExemptRoute =
+        location.pathname === '/login' ||
+        location.pathname === '/signup' ||
+        location.pathname === '/forgot-password' ||
+        location.pathname.startsWith('/reset-password') ||
+        location.pathname.startsWith('/admin');
     const shouldBlock = isMaintenanceMode && !isAdmin && !isExemptRoute;
 
     if (shouldBlock) {

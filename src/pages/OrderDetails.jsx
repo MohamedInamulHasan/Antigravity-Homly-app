@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, CreditCard, RotateCcw, Store } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
+import { apiService } from '../utils/api';
 import { getStoreName } from '../utils/storeHelpers';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -11,14 +13,49 @@ const OrderDetails = () => {
     const { t } = useLanguage();
     const { orders, loading, stores } = useData();
 
-    const order = orders.find(o => (o._id || o.id) === id);
+    const [singleOrder, setSingleOrder] = useState(null);
+    const [loadingSingle, setLoadingSingle] = useState(true);
+
+    // Try to find in context first, fallback to fetched single order
+    const order = orders.find(o => (o._id || o.id) === id) || singleOrder;
+
+    useEffect(() => {
+        const foundInContext = orders.find(o => (o._id || o.id) === id);
+
+        if (foundInContext) {
+            setLoadingSingle(false);
+            return;
+        }
+
+        // If context is still loading, wait
+        if (loading.orders) {
+            return;
+        }
+
+        // Not in context, fetch explicitly
+        setLoadingSingle(true);
+        apiService.getOrder(id)
+            .then(res => {
+                if (res.success && res.data) {
+                    setSingleOrder(res.data);
+                }
+            })
+            .catch(err => {
+                console.error('Failed to fetch single order:', err);
+            })
+            .finally(() => {
+                setLoadingSingle(false);
+            });
+    }, [id, orders, loading.orders]);
+
+    // Show spinner ONLY if we don't have the order AND we are loading.
+    // If we have the order, show it immediately even if background refresh is happening.
+    if (!order && (loading.orders || loadingSingle)) {
+        return <LoadingSpinner />;
+    }
 
     // Calculate subtotal dynamically from items to ensure accuracy
     const calculatedSubtotal = order?.items?.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 1)), 0) || 0;
-
-    if (loading.orders) {
-        return <LoadingSpinner />;
-    }
 
     if (!order) {
         return (

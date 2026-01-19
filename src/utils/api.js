@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // Get API base URL - Dynamic based on environment
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+// Hardcoded for stability - fix dynamic logic if needed later
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5000/api';
 
 // Log the API URL being used (helpful for debugging)
 console.log('🔗 API Base URL:', API_BASE_URL);

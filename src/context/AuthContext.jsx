@@ -34,9 +34,9 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('authToken');
             window.dispatchEvent(new Event('userChanged'));
             // Optional: Redirect to login is handled by protected routes, or we can force it here
-            if (!window.location.pathname.startsWith('/login')) {
-                // window.location.href = '/login'; // Let the router handle it via valid state
-            }
+            // if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/signup')) {
+            //     window.location.href = '/login';
+            // }
         };
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);
