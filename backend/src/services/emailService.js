@@ -84,7 +84,7 @@ Mobile: ${order.shippingAddress.mobile}`;
 
         // Construct the full message
         const message = encodeURIComponent(
-            `Hi ${order.shippingAddress.name}, thank you for your order *#${String(order._id).slice(-6).toUpperCase()}* on ShopEase! 🛍️\n\n` +
+            `Hi ${order.shippingAddress.name}, thank you for your order *#${String(order._id).slice(-6).toUpperCase()}* on Homly! 🛍️\n\n` +
             `*Items:*\n${itemsListForWhatsapp}\n\n` +
             `*Total Amount:* ₹${order.total.toFixed(0)}\n\n` +
             `${addressDetails}\n\n` +
@@ -155,7 +155,7 @@ Mobile: ${order.shippingAddress.mobile}`;
             </div>
             
             <p style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 20px;">
-                This is an automated notification from your ShopEase store.
+                This is an automated notification from your Homly store.
             </p>
         </div>
     `;
@@ -165,12 +165,12 @@ Mobile: ${order.shippingAddress.mobile}`;
 export const sendPasswordResetEmail = async (email, resetUrl) => {
     try {
         const transporter = await createTransporter();
-        const fromEmail = process.env.EMAIL_USER || 'noreply@shopease.com';
+        const fromEmail = process.env.EMAIL_USER || 'noreply@homly.com';
 
         const mailOptions = {
             from: fromEmail,
             to: email,
-            subject: '🔑 Password Reset Request - ShopEase',
+            subject: '🔑 Password Reset Request - Homly',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
                     <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -221,7 +221,7 @@ export const sendOrderNotificationEmail = async (order) => {
     console.log('🔹 sendOrderNotificationEmail called for Order #', order._id);
     try {
         const transporter = await createTransporter();
-        const fromEmail = process.env.EMAIL_USER || 'noreply@shopease.com';
+        const fromEmail = process.env.EMAIL_USER || 'noreply@homly.com';
         const adminEmail = process.env.ADMIN_EMAIL || 'mohamedinamulhasan0@gmail.com';
         const customerEmail = order.user?.email || order.shippingAddress?.email; // Fallback to shipping email if available
 
