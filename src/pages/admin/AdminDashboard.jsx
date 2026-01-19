@@ -1072,9 +1072,7 @@ const CategoryManagement = () => {
         image: ''
     });
 
-    useEffect(() => {
-        fetchCategories();
-    }, []);
+    // Categories are automatically fetched by useCategories hook
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
@@ -1133,7 +1131,7 @@ const CategoryManagement = () => {
             setFormData({ name: '', image: '' });
             setEditingCategory(null);
             setView('list');
-            fetchCategories();
+            // Categories will auto-refresh via React Query
         } catch (error) {
             console.error('Error saving category - Full details:', error);
 
