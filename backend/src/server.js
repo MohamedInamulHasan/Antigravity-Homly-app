@@ -3,8 +3,8 @@ import cors from 'cors';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-import connectDB from './config/database.js';
 import errorHandler from './middleware/errorHandler.js';
+import connectDB from './config/database.js';
 
 // Import routes
 import productRoutes from './routes/products.js';
@@ -22,10 +22,18 @@ import settingsRoutes from './routes/settingsRoutes.js';
 dotenv.config();
 
 // Connect to database
-connectDB();
+console.log('🚀 Initializing server...');
+connectDB().then(() => console.log('✅ ConnectDB promise resolved')).catch(e => console.error('❌ ConnectDB promise rejected', e));
+
 
 // Initialize Express app
 const app = express();
+
+// DEBUG: Request Logger
+app.use((req, res, next) => {
+    console.log(`📥 [${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+    next();
+});
 
 // Middleware (Force Restart)
 app.use(cors({
@@ -38,7 +46,9 @@ app.use(cors({
             'http://127.0.0.1:5173',
             'http://127.0.0.1:5174',
             'https://localhost',  // Capacitor Android WebView
-            'http://localhost'    // Capacitor Android WebView
+            'http://localhost',    // Capacitor Android WebView
+            'http://10.93.16.66:5173', // LAN IP Frontend
+            'http://10.93.16.66:5000' // LAN IP Backend
         ];
 
         // Allow requests with no origin (like mobile apps, Capacitor, or curl requests)
@@ -170,6 +180,7 @@ app.get('/api/debug-email', async (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
+console.log(`⏳ Attempting to start server on port ${PORT}...`);
 
 app.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);

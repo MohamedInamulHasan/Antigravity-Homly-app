@@ -4,8 +4,12 @@ import {
     getStore,
     createStore,
     updateStore,
-    deleteStore
+    deleteStore,
+    verifyStorePassword,
+    getStoreImage
 } from '../controllers/storeController.js';
+
+import { protect, adminOnly } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -18,5 +22,7 @@ router.route('/:id')
     .put(updateStore)
     .delete(deleteStore);
 
+router.post('/:id/verify-password', protect, adminOnly, verifyStorePassword);
+router.get('/:id/image', getStoreImage);
 
 export default router;

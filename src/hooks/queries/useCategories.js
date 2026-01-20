@@ -13,7 +13,7 @@ export const useCategories = () => {
             const response = await apiService.categories.getAll();
             return response.data;
         },
-        staleTime: 60 * 60 * 1000, // 1 hour (categories rarely change)
+        staleTime: 30 * 1000, // 30 seconds (reduced from 1 hour to ensure fresh data)
     });
 };
 

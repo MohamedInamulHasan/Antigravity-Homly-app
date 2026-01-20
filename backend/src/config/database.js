@@ -4,18 +4,18 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const connectDB = async () => {
+    console.log('⏳ Connecting to MongoDB...');
     try {
         const conn = await mongoose.connect(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
-            socketTimeoutMS: 45000, // Socket timeout
+            serverSelectionTimeoutMS: 60000, // 60s timeout
+            socketTimeoutMS: 120000, // 2 mins timeout
         });
 
-        console.log(`MongoDB Connected: ${conn.connection.host}`);
+        console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
-        console.error(`Error: ${error.message}`);
-        process.exit(1);
+        console.error(`❌ MongoDB Connection Error: ${error.message}`);
+        console.log('⚠️ Server will remain running, but DB requests will fail.');
+        // Don't exit process, allow server to stay up for debugging
     }
 };
 

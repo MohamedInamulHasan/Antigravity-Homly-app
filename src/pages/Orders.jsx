@@ -8,6 +8,7 @@ import { getStoreName } from '../utils/storeHelpers';
 import { useLanguage } from '../context/LanguageContext';
 import { formatOrderDateTime, formatDeliveryTime } from '../utils/dateUtils';
 import PullToRefreshLayout from '../components/PullToRefreshLayout';
+import { API_BASE_URL } from '../utils/api';
 
 const Orders = () => {
     const navigate = useNavigate();
@@ -159,7 +160,20 @@ const Orders = () => {
                                             {order.items.slice(0, 2).map((item, idx) => (
                                                 <div key={idx} className="py-3 flex items-center gap-3">
                                                     <div className="h-12 w-12 rounded-lg bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
-                                                        <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                                                        <img
+                                                            src={(item.product?._id || item.product) ? `${API_BASE_URL}/products/${item.product._id || item.product}/image` : (item.image || "https://via.placeholder.com/150?text=No+Image")}
+                                                            alt={item.name}
+                                                            className="h-full w-full object-cover"
+                                                            loading="lazy"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                if (item.image && item.image !== e.target.src) {
+                                                                    e.target.src = item.image;
+                                                                } else {
+                                                                    e.target.src = "https://via.placeholder.com/150?text=No+Image";
+                                                                }
+                                                            }}
+                                                        />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{item.name}</p>

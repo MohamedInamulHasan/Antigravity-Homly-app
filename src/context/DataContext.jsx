@@ -90,7 +90,7 @@ export const DataProvider = ({ children }) => {
         setError(prev => ({ ...prev, products: null }));
         try {
             console.log('📡 Calling API: getProducts({ limit: 50, page: 1 })');
-            const response = await apiService.getProducts({ limit: 50, page: 1 });
+            const response = await apiService.getProducts({ limit: 1000, page: 1 });
             console.log('📦 API Response:', response);
             if (response.success && response.data) {
                 setProducts(response.data);
@@ -177,8 +177,17 @@ export const DataProvider = ({ children }) => {
     useEffect(() => {
         const handleUserChange = () => {
             console.log('👤 User changed detected in DataContext. Refreshing user-specific data...');
-            fetchOrders();
-            fetchSavedProducts();
+            // If (and only if) we have a token, fetch the sensitive data. 
+            // Otherwise, we skip this to avoid 401 loops.
+            if (localStorage.getItem('authToken') || localStorage.getItem('userInfo')) {
+                console.log('🔑 User token found. Fetching orders and saved products...');
+                fetchOrders();
+                fetchSavedProducts();
+            } else {
+                console.log('🔒 No user token found. Skipping sensitive data fetch.');
+                setOrders([]);
+                setSavedProducts([]);
+            }
 
             // If user logged out (authToken gone), clear sensitive state
             if (!localStorage.getItem('authToken')) {
@@ -826,6 +835,7 @@ export const DataProvider = ({ children }) => {
         loading,
         error,
         initialLoading,
+        setInitialLoading, // Exposed for safety timeout in IntroAnimation
         addProduct,
         updateProduct,
         deleteProduct,

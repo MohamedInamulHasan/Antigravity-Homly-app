@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
+import { API_BASE_URL } from '../utils/api';
 
 const SimpleProductCard = ({ product }) => {
     const { t } = useLanguage();
@@ -72,10 +73,11 @@ const SimpleProductCard = ({ product }) => {
         >
             <div className="relative pb-[100%] overflow-hidden">
                 <img
-                    src={product.image}
+                    src={product.image || `${API_BASE_URL}/products/${productId}/image`}
                     alt={t(product, 'title')}
                     loading="lazy"
                     className={`absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 ${isStoreOpen ? 'hover:scale-105' : ''}`}
+                    onError={(e) => { e.target.src = 'https://via.placeholder.com/300x300?text=No+Image'; }}
                 />
                 {!isStoreOpen && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">

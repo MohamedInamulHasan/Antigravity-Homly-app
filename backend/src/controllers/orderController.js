@@ -89,10 +89,10 @@ export const getOrders = async (req, res, next) => {
         }
 
         const orders = await Order.find(query)
-            .select('items.product items.image items.name items.storeId items.quantity items.price total status createdAt user shippingAddress paymentMethod') // Select only needed fields
+            .select('items.product items.name items.storeId items.quantity items.price total status createdAt user shippingAddress paymentMethod') // Removed items.image
             .populate({
                 path: 'items.product',
-                select: 'title image',
+                select: 'title', // Removed image from populate
                 options: { lean: true } // Populate efficiently
             })
             .populate({
@@ -124,7 +124,7 @@ export const getOrders = async (req, res, next) => {
 export const getOrder = async (req, res, next) => {
     try {
         const order = await Order.findById(req.params.id)
-            .populate('items.product', 'title image price')
+            .populate('items.product', 'title price') // Removed image
             .populate('items.storeId', 'name')
             .lean();
 

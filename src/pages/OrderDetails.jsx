@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, CreditCard, RotateCcw, Store } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
-import { apiService } from '../utils/api';
+import { apiService, API_BASE_URL } from '../utils/api';
 import { getStoreName } from '../utils/storeHelpers';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -145,10 +145,11 @@ const OrderDetails = () => {
                             <div key={index} className="p-6 flex items-start gap-4">
                                 <div className="h-20 w-20 flex-shrink-0 rounded-xl bg-gray-100 dark:bg-gray-700 overflow-hidden border border-gray-100 dark:border-gray-600">
                                     <img
-                                        src={item.image || item.product?.image || "https://via.placeholder.com/150?text=No+Image"}
+                                        src={(item.product?._id || item.product) ? `${API_BASE_URL}/products/${item.product?._id || item.product}/image` : (item.image || "https://via.placeholder.com/150?text=No+Image")}
                                         alt={item.name}
                                         className="h-full w-full object-cover"
                                         onError={(e) => { e.target.src = "https://via.placeholder.com/150?text=Product"; }}
+                                        loading="lazy"
                                     />
                                 </div>
                                 <div className="flex-1 min-w-0">

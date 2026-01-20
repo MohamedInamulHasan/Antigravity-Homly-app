@@ -137,9 +137,10 @@ const ProductDetails = () => {
                                 {images.map((img, idx) => (
                                     <div key={idx} className="min-w-full h-full snap-center flex items-center justify-center">
                                         <img
-                                            src={img}
+                                            src={img || 'https://via.placeholder.com/400x400?text=No+Image'}
                                             alt={`${product.title} - ${t('View')} ${idx + 1}`}
                                             className="w-full h-full object-cover"
+                                            onError={(e) => { e.target.src = 'https://via.placeholder.com/400x400?text=No+Image'; }}
                                         />
                                     </div>
                                 ))}

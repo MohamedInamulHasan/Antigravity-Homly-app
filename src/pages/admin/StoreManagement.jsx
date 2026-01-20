@@ -12,14 +12,31 @@ import {
     Save,
     X,
 } from 'lucide-react';
-import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useStores, useCreateStore, useUpdateStore, useDeleteStore } from '../../hooks/queries/useStores';
+import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '../../hooks/queries/useProducts';
+import { useCategories } from '../../hooks/queries/useCategories';
+import useCloudinaryUpload from '../../hooks/useCloudinaryUpload';
 
 const StoreManagement = () => {
     const { user } = useAuth();
-    const { stores, products, categories, addStore, updateStore, addProduct, updateProduct, deleteProduct, deleteStore } = useData();
     const { t } = useLanguage();
+
+    // NEW HOOKS
+    const { data: stores = [] } = useStores();
+    const { data: products = [] } = useProducts();
+    const { data: categories = [] } = useCategories();
+
+    const { mutateAsync: addStore } = useCreateStore();
+    const { mutateAsync: updateStore } = useUpdateStore();
+    const { mutateAsync: deleteStore } = useDeleteStore();
+
+    const { mutateAsync: addProduct } = useCreateProduct();
+    const { mutateAsync: updateProduct } = useUpdateProduct();
+    const { mutateAsync: deleteProduct } = useDeleteProduct();
+
+    const { uploadImage, uploading: uploadingImage } = useCloudinaryUpload();
 
     const isStoreAdmin = user?.role === 'store_admin';
     const myStore = isStoreAdmin ? stores.find(s => s._id === user.storeId || s.id === user.storeId) : null;
@@ -75,31 +92,37 @@ const StoreManagement = () => {
         unit: 'kg'
     });
 
-    const handleStoreImageUpload = (e) => {
+    const handleStoreImageUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setStoreForm({ ...storeForm, image: reader.result });
-            };
-            reader.readAsDataURL(file);
+            try {
+                const imageUrl = await uploadImage(file);
+                setStoreForm({ ...storeForm, image: imageUrl });
+            } catch (error) {
+                console.error('Store image upload failed:', error);
+                alert(t('Failed to upload image. Please try again.'));
+            }
         }
     };
 
-    const handleProductImageUpload = (e, isSlider = false) => {
+    const handleProductImageUpload = async (e, isSlider = false) => {
         const files = Array.from(e.target.files);
         if (files.length > 0) {
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    if (isSlider) {
-                        setProductForm(prev => ({ ...prev, sliderImages: [...prev.sliderImages, reader.result] }));
-                    } else {
-                        setProductForm(prev => ({ ...prev, image: reader.result }));
-                    }
-                };
-                reader.readAsDataURL(file);
-            });
+            try {
+                if (isSlider) {
+                    // Upload all slider images
+                    const promises = files.map(file => uploadImage(file));
+                    const urls = await Promise.all(promises);
+                    setProductForm(prev => ({ ...prev, sliderImages: [...prev.sliderImages, ...urls] }));
+                } else {
+                    // Single image upload
+                    const imageUrl = await uploadImage(files[0]);
+                    setProductForm(prev => ({ ...prev, image: imageUrl }));
+                }
+            } catch (error) {
+                console.error('Product image upload failed:', error);
+                alert(t('Failed to upload image. Please try again.'));
+            }
         }
     };
 
@@ -166,7 +189,7 @@ const StoreManagement = () => {
 
         try {
             if (editingStore) {
-                await updateStore({ ...editingStore, ...storeData });
+                await updateStore({ id: editingStore._id || editingStore.id, data: storeData });
                 alert(t('Store updated successfully!'));
             } else {
                 await addStore(storeData);
@@ -192,7 +215,7 @@ const StoreManagement = () => {
     };
 
     const handleAddProductToStore = () => {
-        setProductForm({ title: '', price: '', category: '', description: '', image: '', sliderImages: [] });
+        setProductForm({ title: '', price: '', category: '', description: '', image: '', sliderImages: [], stock: 0, unit: 'kg' });
         setEditingProduct(null);
         setView('addProductToStore');
     };
@@ -205,7 +228,9 @@ const StoreManagement = () => {
             category: product.category,
             description: product.description,
             image: product.image,
-            sliderImages: product.images || []
+            sliderImages: product.images || [],
+            stock: product.stock || 0,
+            unit: product.unit || 'kg'
         });
         setView('addProductToStore'); // Reusing the add form for editing
     };
@@ -239,7 +264,7 @@ const StoreManagement = () => {
 
         try {
             if (editingProduct) {
-                await updateProduct({ ...editingProduct, ...productData });
+                await updateProduct({ id: editingProduct._id || editingProduct.id, data: productData });
                 alert(t('Product updated successfully!'));
             } else {
                 await addProduct(productData);
@@ -303,7 +328,11 @@ const StoreManagement = () => {
                         {displayedStores.map(store => (
                             <div key={store.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden group">
                                 <div className="h-48 overflow-hidden relative">
-                                    <img src={store.image} alt={store.name} className="w-full h-full object-cover" />
+                                    {store.image ? (
+                                        <img src={store.image} alt={store.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full bg-gray-200 dark:bg-gray-700"></div>
+                                    )}
                                     <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                                         {/* Allow edit for store admin too */}
                                         <button
@@ -453,7 +482,7 @@ const StoreManagement = () => {
                                     <label className="flex-1 cursor-pointer">
                                         <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
                                             <Upload size={20} />
-                                            <span>{t('Upload Image')}</span>
+                                            <span>{uploadingImage ? t('Uploading...') : t('Upload Image')}</span>
                                         </div>
                                         <input type="file" accept="image/*" onChange={handleStoreImageUpload} className="hidden" required={!storeForm.image} />
                                     </label>
@@ -461,9 +490,25 @@ const StoreManagement = () => {
                             </div>
                         </div>
                         <div className="flex justify-end">
-                            <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
-                                <Save size={20} />
-                                {editingStore ? t('Update Store') : t('Add Store')}
+                            <button
+                                type="submit"
+                                disabled={uploadingImage}
+                                className={`px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2 ${uploadingImage
+                                    ? 'bg-gray-400 cursor-not-allowed text-white'
+                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                    }`}
+                            >
+                                {uploadingImage ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                        <span>{t('Uploading...')}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save size={20} />
+                                        {editingStore ? t('Update Store') : t('Add Store')}
+                                    </>
+                                )}
                             </button>
                         </div>
                     </form>
@@ -626,7 +671,7 @@ const StoreManagement = () => {
                                     <label className="flex-1 cursor-pointer">
                                         <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
                                             <Upload size={20} />
-                                            <span>{t('Upload Image')}</span>
+                                            <span>{uploadingImage ? t('Uploading...') : t('Upload Image')}</span>
                                         </div>
                                         <input type="file" accept="image/*" onChange={(e) => handleProductImageUpload(e, false)} className="hidden" required={!productForm.image} />
                                     </label>
@@ -670,9 +715,25 @@ const StoreManagement = () => {
                         </div>
 
                         <div className="flex justify-end">
-                            <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
-                                <Plus size={20} />
-                                {editingProduct ? t('Update Product') : t('Add Product to Store')}
+                            <button
+                                type="submit"
+                                disabled={uploadingImage}
+                                className={`px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2 ${uploadingImage
+                                    ? 'bg-gray-400 cursor-not-allowed text-white'
+                                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                                    }`}
+                            >
+                                {uploadingImage ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                        <span>{t('Uploading...')}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Plus size={20} />
+                                        {editingProduct ? t('Update Product') : t('Add Product to Store')}
+                                    </>
+                                )}
                             </button>
                         </div>
                     </form>

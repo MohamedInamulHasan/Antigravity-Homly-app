@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import { Mail, Lock, ArrowRight, Loader } from 'lucide-react';
 
@@ -8,10 +8,13 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const { login, error, user } = useContext(AuthContext);
     const navigate = useNavigate();
-    const location = useLocation();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const redirect = location.search ? location.search.split('=')[1] : '/';
+
+    // Get redirect param from URL
+    const location = window.location;
+    const queryParams = new URLSearchParams(location.search);
+    const redirect = queryParams.get('redirect');
 
     useEffect(() => {
         if (user) {
@@ -21,10 +24,11 @@ const Login = () => {
                 sessionStorage.removeItem('redirectAfterLogin');
                 navigate(savedRedirect);
             } else {
-                navigate(redirect);
+                // Always go to home page after login
+                navigate('/');
             }
         }
-    }, [navigate, user, redirect]);
+    }, [navigate, user]);
 
     const submitHandler = async (e) => {
         e.preventDefault();

@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { MapPin, Search, Star, Clock, Phone } from 'lucide-react';
+import { MapPin, Search, Star, Clock, Phone, Store } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
 import { isStoreOpen } from '../utils/storeHelpers';
 import PullToRefreshLayout from '../components/PullToRefreshLayout';
+import { API_BASE_URL } from '../utils/api';
 
 const Shop = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -96,11 +97,16 @@ const Shop = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredStores.map((store) => (
                                 <div key={store._id || store.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 group">
-                                    <div className="relative h-48 overflow-hidden">
+                                    <div className="relative h-48 overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                                         <img
-                                            src={store.image}
+                                            src={store.image || `${API_BASE_URL}/stores/${store._id || store.id}/image`}
                                             alt={store.name}
                                             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                            loading="lazy"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = "https://via.placeholder.com/400x300?text=No+Store+Image";
+                                            }}
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                         {/* Store Status Overlay */}

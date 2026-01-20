@@ -1,9 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Home } from 'lucide-react';
+import { useData } from '../context/DataContext';
 
 const IntroAnimation = () => {
     // Component is now controlled purely by parent's conditional rendering
     // No internal state or timeout needed
+
+    // SAFETY: Use DataContext to force close specific to this component if it hangs
+    const { setInitialLoading } = useData();
+
+    useEffect(() => {
+        // Safety timeout: If for ANY reason data loading hangs or error boundaries
+        // fail to catch something, force close the intro after 6 seconds.
+        const timer = setTimeout(() => {
+            console.warn("⚠️ IntroAnimation safety timeout triggered. Force closing.");
+            if (setInitialLoading) setInitialLoading(false);
+        }, 6000);
+        return () => clearTimeout(timer);
+    }, [setInitialLoading]);
 
 
     return (

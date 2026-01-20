@@ -5,7 +5,9 @@ import Category from '../models/Category.js';
 // @access  Public
 export const getCategories = async (req, res, next) => {
     try {
-        const categories = await Category.find({ isActive: true }).sort({ name: 1 });
+        const categories = await Category.find({ isActive: true })
+            .select('-image') // Exclude heavy image data
+            .sort({ name: 1 });
 
         res.status(200).json({
             success: true,
@@ -118,6 +120,37 @@ export const deleteCategory = async (req, res, next) => {
             success: true,
             data: {}
         });
+    } catch (error) {
+        next(error);
+    }
+};
+// @desc    Get category image
+// @route   GET /api/categories/:id/image
+// @access  Public
+export const getCategoryImage = async (req, res, next) => {
+    try {
+        const category = await Category.findById(req.params.id).select('image');
+
+        if (!category || !category.image) {
+            return res.status(404).send('Image not found');
+        }
+
+        if (category.image.startsWith('data:image')) {
+            const matches = category.image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+            if (matches.length !== 3) {
+                return res.status(404).send('Invalid image data');
+            }
+            const type = matches[1];
+            const buffer = Buffer.from(matches[2], 'base64');
+
+            res.writeHead(200, {
+                'Content-Type': type,
+                'Content-Length': buffer.length
+            });
+            res.end(buffer);
+        } else {
+            res.redirect(category.image);
+        }
     } catch (error) {
         next(error);
     }

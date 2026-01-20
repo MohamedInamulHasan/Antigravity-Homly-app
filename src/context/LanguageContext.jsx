@@ -246,6 +246,9 @@ export const LanguageProvider = ({ children }) => {
         'Manage products, stores, and users': { en: 'Manage products, stores, and users', ta: 'தயாரிப்புகள், கடைகள் மற்றும் பயனர்களை நிர்வகிக்கவும்' },
         'Check out latest deals and updates': { en: 'Check out latest deals and updates', ta: 'சமீபத்திய டீல்கள் மற்றும் புதுப்பிப்புகளைப் பார்க்கவும்' },
         'No orders found': { en: 'No orders found', ta: 'ஆர்டர்கள் எதுவும் கிடைக்கவில்லை' },
+        'Medicals': { en: 'Medicals', ta: 'மருத்துவம்' },
+        'Stationary': { en: 'Stationary', ta: 'நிலையானது' },
+        'Loading products...': { en: 'Loading products...', ta: 'தயாரிப்புகளை ஏற்றுகிறது...' },
     };
 
     const t = (key, field = null) => {

@@ -51,9 +51,10 @@ const Cart = () => {
                             <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 sm:p-6 flex gap-6 transition-all duration-200">
                                 <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600">
                                     <img
-                                        src={item.image}
+                                        src={item.image || 'https://via.placeholder.com/100x100?text=No+Image'}
                                         alt={item.title}
                                         className="h-full w-full object-cover object-center"
+                                        onError={(e) => { e.target.src = 'https://via.placeholder.com/100x100?text=No+Image'; }}
                                     />
                                 </div>
 
@@ -114,21 +115,21 @@ const Cart = () => {
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sticky top-24 transition-all duration-200">
                             <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-6">{t('Order Summary')}</h2>
 
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">{t('Subtotal')}</p>
-                                        <p className="text-sm font-medium text-gray-900 dark:text-white">₹{cartTotal.toFixed(0)}</p>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">{t('Delivery Charge')}</p>
-                                        <p className="text-sm font-medium text-gray-900 dark:text-white">₹{deliveryCharge}</p>
-                                    </div>
-
-                                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4 flex items-center justify-between">
-                                        <p className="text-base font-medium text-gray-900 dark:text-white">{t('Total')}</p>
-                                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">₹{finalTotal.toFixed(0)}</p>
-                                    </div>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('Subtotal')}</p>
+                                    <p className="text-sm font-medium text-gray-900 dark:text-white">₹{cartTotal.toFixed(0)}</p>
                                 </div>
+                                <div className="flex items-center justify-between">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('Delivery Charge')}</p>
+                                    <p className="text-sm font-medium text-gray-900 dark:text-white">₹{deliveryCharge}</p>
+                                </div>
+
+                                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 flex items-center justify-between">
+                                    <p className="text-base font-medium text-gray-900 dark:text-white">{t('Total')}</p>
+                                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">₹{finalTotal.toFixed(0)}</p>
+                                </div>
+                            </div>
 
                             <Link
                                 to="/checkout"

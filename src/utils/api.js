@@ -2,16 +2,27 @@ import axios from 'axios';
 
 // Get API base URL - Dynamic based on environment
 // Hardcoded for stability - fix dynamic logic if needed later
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5000/api';
+// Hardcoded for debugging localhost/mobile issue
+// Dynamic API base URL that adapts to the current hostname
+// This works for:
+// 1. Localhost (desktop): http://127.0.0.1:5173 -> http://127.0.0.1:5000/api
+// 2. Mobile (LAN): http://10.93.16.66:5173 -> http://10.93.16.66:5000/api
+const hostname = window.location.hostname;
+export const API_BASE_URL = hostname === 'localhost' || hostname === '127.0.0.1'
+    ? 'http://127.0.0.1:5000/api'
+    : `http://${hostname}:5000/api`;
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5000/api';
 
 // Log the API URL being used (helpful for debugging)
-console.log('🔗 API Base URL:', API_BASE_URL);
-console.log('📦 Environment:', import.meta.env.MODE);
+console.log('%c🔗 API Configuration', 'color: #3b82f6; font-weight: bold; font-size: 14px;');
+console.log('📡 Base URL:', API_BASE_URL);
+console.log('🌍 Environment:', import.meta.env.MODE);
+console.log('---');
 
 // Create axios instance with base configuration
 const api = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 120000, // Increased to 120s to handle Render cold starts
+    timeout: 120000, // 2 mins timeout for both dev and prod
     headers: {
         'Content-Type': 'application/json',
     },
@@ -126,6 +137,7 @@ export const apiService = {
     categories: {
         getAll: () => api.get('/categories'),
         create: (data) => api.post('/categories', data),
+        update: (id, data) => api.put(`/categories/${id}`, data),
         delete: (id) => api.delete(`/categories/${id}`),
     },
 

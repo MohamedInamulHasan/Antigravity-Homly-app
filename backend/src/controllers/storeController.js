@@ -17,7 +17,9 @@ export const getStores = async (req, res, next) => {
             query.city = { $regex: city, $options: 'i' };
         }
 
-        const stores = await Store.find(query).sort({ rating: -1 });
+        const stores = await Store.find({})
+            .select('-image') // Exclude heavy image data
+            .sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
@@ -145,6 +147,39 @@ export const verifyStorePassword = async (req, res, next) => {
             success: true,
             message: 'Password verified'
         });
+    } catch (error) {
+        next(error);
+    }
+};
+// @desc    Get store image
+// @route   GET /api/stores/:id/image
+// @access  Public
+export const getStoreImage = async (req, res, next) => {
+    try {
+        console.log(`🏪 Fetching image for store: ${req.params.id}`);
+        const store = await Store.findById(req.params.id).select('image');
+
+        if (!store || !store.image) {
+            console.warn(`⚠️ Image not found for store: ${req.params.id}`);
+            return res.status(404).send('Image not found');
+        }
+
+        if (store.image.startsWith('data:image')) {
+            const matches = store.image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+            if (matches.length !== 3) {
+                return res.status(404).send('Invalid image data');
+            }
+            const type = matches[1];
+            const buffer = Buffer.from(matches[2], 'base64');
+
+            res.writeHead(200, {
+                'Content-Type': type,
+                'Content-Length': buffer.length
+            });
+            res.end(buffer);
+        } else {
+            res.redirect(store.image);
+        }
     } catch (error) {
         next(error);
     }

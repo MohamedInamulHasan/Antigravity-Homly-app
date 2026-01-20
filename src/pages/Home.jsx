@@ -5,19 +5,31 @@ import { useData } from '../context/DataContext.jsx'; // Keep for now if other t
 import { useProducts } from '../hooks/queries/useProducts';
 import { useAds } from '../hooks/queries/useAds';
 import { useCategories } from '../hooks/queries/useCategories';
+import { useStores } from '../hooks/queries/useStores';
 import { useLanguage } from '../context/LanguageContext';
 import { isStoreOpen } from '../utils/storeHelpers';
 import SimpleProductCard from '../components/SimpleProductCard';
 import PullToRefreshLayout from '../components/PullToRefreshLayout';
+import { API_BASE_URL } from '../utils/api';
 
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
 
     // React Query Hooks
-    const { data: products = [], isLoading: loadingProducts, error: errorProducts } = useProducts();
+    const { data: rawProducts = [], isLoading: loadingProducts, error: errorProducts } = useProducts();
     const { data: ads = [], isLoading: loadingAds } = useAds();
-    const { data: categories = [] } = useCategories();
+    const { data: rawCategories = [] } = useCategories();
+    const { data: rawStores = [] } = useStores();
+
+    const categories = Array.isArray(rawCategories) ? rawCategories : (rawCategories?.data || []);
+    const stores = Array.isArray(rawStores) ? rawStores : (rawStores?.data || []);
+
+    // Map products from raw data (handling potential nesting)
+    const products = Array.isArray(rawProducts) ? rawProducts : (rawProducts?.data || []);
+
+    console.log('🏠 Home: Products Count:', products.length);
+    console.log('🏠 Home: Loading:', loadingProducts);
 
     const { t } = useLanguage();
     const navigate = useNavigate();
@@ -93,6 +105,25 @@ const Home = () => {
 
     const allCategories = categories && categories.length > 0 ? categories : [];
 
+    // LOADING STATE: Removed blocking spinner. Now we show the layout immediately.
+    // The spinner will appear inside the product lists instead.
+
+    /* 
+    if (loadingProducts && products.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                <p className="text-gray-500 animate-pulse">{t('Loading products...')}</p>
+                <p className="text-xs text-red-500 mt-2">
+                    Debug: {loadingProducts ? 'Loading' : 'Loaded'} |
+                    Items: {products?.length || 0} |
+                    Error: {errorProducts ? errorProducts.message : 'None'}
+                </p>
+            </div>
+        );
+    } 
+    */
+
     // Show error state if backend is unreachable
     if (!loadingProducts && products.length === 0 && errorProducts) {
         return (
@@ -142,9 +173,10 @@ const Home = () => {
                                     className="min-w-full h-full relative snap-center"
                                 >
                                     <img
-                                        src={slide.image}
+                                        src={slide.image || `${API_BASE_URL}/ads/${slide._id || slide.id}/image`}
                                         alt={slide.title}
                                         className="w-full h-full object-cover"
+                                        loading="lazy"
                                     />
                                 </div>
                             ))}
@@ -195,9 +227,10 @@ const Home = () => {
                                     >
                                         <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 ring-4 ring-white dark:ring-gray-800 group-hover:ring-blue-500">
                                             <img
-                                                src={category.image || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000&auto=format&fit=crop'}
+                                                src={category.image || `${API_BASE_URL}/categories/${category._id || category.id}/image`}
                                                 alt={category.name}
                                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                                loading="lazy"
                                             />
                                         </div>
                                         <span className="text-xs sm:text-sm md:text-base font-semibold text-gray-900 dark:text-white text-center max-w-full group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
@@ -294,7 +327,22 @@ const Home = () => {
                 {/* Main Content Container */}
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
+
+                    {/* Loading State for Products - Inline */}
+                    {loadingProducts && (
+                        <div className="flex flex-col items-center justify-center py-12">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                            <p className="text-gray-500 animate-pulse">{t('Loading products...')}</p>
+                        </div>
+                    )}
+
                     {/* Product Sections by Category */}
+                    {!loadingProducts && Object.entries(groupedProducts).length === 0 && (
+                        <div className="text-center py-12 text-gray-500">
+                            {t('No products found')}
+                        </div>
+                    )}
+
                     {Object.entries(groupedProducts).map(([category, categoryProducts]) => (
                         <CategorySection
                             key={category}
@@ -324,10 +372,25 @@ const CategorySection = ({ category, products, t }) => {
         }
     };
 
-    if (!products || products.length === 0) return null;
+    console.log(`🏠 Home: CategorySection [${category}] - Products:`, products?.length);
+
+    // If no products, we check if it is still initial loading?
+    // Since we removed the global blocker, we need to handle empty states gracefully here.
+    if (!products || products.length === 0) {
+        return (
+            <section className="relative space-y-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{t(category)}</h2>
+                </div>
+                <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+            </section>
+        );
+    }
 
     // Get category image from first product or use default
-    const categoryImage = products[0]?.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop';
+    const categoryImage = products[0]?.image;
 
     return (
         <section className="relative space-y-4">

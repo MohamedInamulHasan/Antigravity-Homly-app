@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
 import { useLanguage } from '../context/LanguageContext';
+import { API_BASE_URL } from '../utils/api';
 
 const ProductCard = ({ product }) => {
     const { addToCart, cartItems, updateQuantity } = useCart();
@@ -24,10 +25,11 @@ const ProductCard = ({ product }) => {
             <Link to={`/product/${productId}`} className="flex-1 block">
                 <div className="relative pb-[100%] overflow-hidden">
                     <img
-                        src={product.image}
+                        src={product.image || `${API_BASE_URL}/products/${productId}/image`}
                         alt={t(product, 'title')}
                         loading="lazy"
                         className="absolute top-0 left-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => { e.target.src = 'https://via.placeholder.com/300x300?text=No+Image'; }}
                     />
                     {/* Heart Button */}
                     <button

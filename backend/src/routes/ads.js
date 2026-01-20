@@ -4,7 +4,8 @@ import {
     getAd,
     createAd,
     updateAd,
-    deleteAd
+    deleteAd,
+    getAdImage
 } from '../controllers/adController.js';
 
 const router = express.Router();
@@ -17,5 +18,8 @@ router.route('/:id')
     .get(getAd)
     .put(updateAd)
     .delete(deleteAd);
+
+
+router.get('/:id/image', getAdImage);
 
 export default router;

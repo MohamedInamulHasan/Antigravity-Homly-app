@@ -4,7 +4,8 @@ import {
     getProduct,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    getProductImage
 } from '../controllers/productController.js';
 
 const router = express.Router();
@@ -17,5 +18,8 @@ router.route('/:id')
     .get(getProduct)
     .put(updateProduct)
     .delete(deleteProduct);
+
+
+router.get('/:id/image', getProductImage);
 
 export default router;

@@ -5,7 +5,9 @@ import Ad from '../models/Ad.js';
 // @access  Public
 export const getAds = async (req, res, next) => {
     try {
-        const ads = await Ad.find({ isActive: true }).sort({ order: 1, createdAt: -1 });
+        const ads = await Ad.find({ isActive: true })
+            .select('-image') // Exclude heavy image data
+            .sort({ order: 1, createdAt: -1 });
 
         res.status(200).json({
             success: true,
@@ -98,6 +100,37 @@ export const deleteAd = async (req, res, next) => {
             success: true,
             data: {}
         });
+    } catch (error) {
+        next(error);
+    }
+};
+// @desc    Get ad image
+// @route   GET /api/ads/:id/image
+// @access  Public
+export const getAdImage = async (req, res, next) => {
+    try {
+        const ad = await Ad.findById(req.params.id).select('image');
+
+        if (!ad || !ad.image) {
+            return res.status(404).send('Image not found');
+        }
+
+        if (ad.image.startsWith('data:image')) {
+            const matches = ad.image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+            if (matches.length !== 3) {
+                return res.status(404).send('Invalid image data');
+            }
+            const type = matches[1];
+            const buffer = Buffer.from(matches[2], 'base64');
+
+            res.writeHead(200, {
+                'Content-Type': type,
+                'Content-Length': buffer.length
+            });
+            res.end(buffer);
+        } else {
+            res.redirect(ad.image);
+        }
     } catch (error) {
         next(error);
     }

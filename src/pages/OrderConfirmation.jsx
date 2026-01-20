@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
 import { getStoreName } from '../utils/storeHelpers';
 import { useLanguage } from '../context/LanguageContext';
+import { API_BASE_URL } from '../utils/api';
 import { CheckCircle, ArrowLeft, ClipboardList, ShoppingBag, MapPin, Store } from 'lucide-react';
 
 const OrderConfirmation = () => {
@@ -191,7 +192,12 @@ const OrderConfirmation = () => {
                                     <div key={item.id} className="flex justify-between items-center">
                                         <div className="flex items-center gap-4">
                                             <div className="h-16 w-16 rounded-xl bg-gray-100 dark:bg-gray-700 overflow-hidden">
-                                                <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
+                                                <img
+                                                    src={(item._id || item.id || item.product) ? `${API_BASE_URL}/products/${item._id || item.id || item.product}/image` : "https://via.placeholder.com/150?text=No+Image"}
+                                                    alt={item.title}
+                                                    className="h-full w-full object-cover"
+                                                    loading="lazy"
+                                                />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-medium text-gray-900 dark:text-white">{t(item, 'title') || item.title || item.name || t('Product')}</p>

@@ -4,6 +4,7 @@ import Product from '../models/Product.js';
 // @route   GET /api/products
 // @access  Public
 export const getProducts = async (req, res, next) => {
+    console.log('🔍 GET /api/products - Request received');
     try {
         const { category, search, featured, page, limit, fields } = req.query;
         let query = {};
@@ -29,7 +30,7 @@ export const getProducts = async (req, res, next) => {
 
         // Pagination
         const pageNum = parseInt(page, 10) || 1;
-        const limitNum = parseInt(limit, 10) || 50; // Default 50 items per page
+        const limitNum = parseInt(limit, 10) || 12; // Default 12 items per page (reduced from 50 for performance)
         const skip = (pageNum - 1) * limitNum;
 
         // Field selection (if specified)
@@ -40,8 +41,9 @@ export const getProducts = async (req, res, next) => {
 
         // Execute query with pagination
         // Removed .populate() to avoid N+1 query issue - frontend already has stores
+        // TEMPORARY DEBUG: Exclude image to test if it's too big (Base64)
         const productsQuery = Product.find(query)
-            .select(selectFields)
+            .select('-image') // Exclude heavy image data for list view - use /:id/image endpoint
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limitNum);
@@ -129,9 +131,44 @@ export const updateProduct = async (req, res, next) => {
     }
 };
 
-// @desc    Delete product
-// @route   DELETE /api/products/:id
-// @access  Private/Admin
+// @desc    Get product image
+// @route   GET /api/products/:id/image
+// @access  Public
+export const getProductImage = async (req, res, next) => {
+    try {
+        console.log(`🖼️ Fetching image for product: ${req.params.id}`);
+        const product = await Product.findById(req.params.id).select('image');
+
+        if (!product || !product.image) {
+            console.warn(`⚠️ Image not found for product: ${req.params.id}`);
+            return res.status(404).send('Image not found');
+        }
+
+        console.log(`✅ Image found for product: ${req.params.id}, length: ${product.image.length}`);
+
+        // Check if it's a Base64 string
+        if (product.image.startsWith('data:image')) {
+            const matches = product.image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+            if (matches.length !== 3) {
+                return res.status(404).send('Invalid image data');
+            }
+            const type = matches[1];
+            const buffer = Buffer.from(matches[2], 'base64');
+
+            res.writeHead(200, {
+                'Content-Type': type,
+                'Content-Length': buffer.length
+            });
+            res.end(buffer);
+        } else {
+            // It's a URL (Cloudinary or placeholder) - redirect to it
+            res.redirect(product.image);
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const deleteProduct = async (req, res, next) => {
     try {
         const product = await Product.findByIdAndDelete(req.params.id);

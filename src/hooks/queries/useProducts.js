@@ -11,15 +11,21 @@ export const productKeys = {
 };
 
 // 1. Fetch Request hooks
-export const useProducts = (params = { limit: 50, page: 1 }) => {
+// Stable default params to prevent infinite query loops
+const DEFAULT_PARAMS = { limit: 1000, page: 1 };
+
+export const useProducts = (params = DEFAULT_PARAMS) => {
     return useQuery({
         queryKey: productKeys.list(params),
         queryFn: async () => {
             const response = await apiService.getProducts(params);
-            return response.data; // Assumption: apiService returns { success: true, data: [...] }
+            // Handle both { data: [...] } and direct [...] responses
+            return response?.data || (Array.isArray(response) ? response : []);
         },
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        keepPreviousData: true
+        staleTime: 30 * 1000, // 30 seconds (reduced from 5 mins to ensure fresh data)
+        keepPreviousData: true,
+        retry: false, // Stop infinite retries on error
+        onError: (err) => console.error("❌ useProducts Fetch Error:", err)
     });
 };
 
