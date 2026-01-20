@@ -13,7 +13,7 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (
     isProduction
         ? 'https://homly-backend-8616.onrender.com/api' // Fallback for Vercel
         : (hostname === 'localhost' || hostname === '127.0.0.1'
-            ? 'http://127.0.0.1:5000/api'
+            ? 'http://localhost:5000/api'
             : `http://${hostname}:5000/api`)
 );
 

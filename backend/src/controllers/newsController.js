@@ -74,9 +74,15 @@ export const createNews = async (req, res, next) => {
 // @access  Private/Admin
 export const updateNews = async (req, res, next) => {
     try {
+        // Prevent overwriting existing image with empty string
+        const updateData = { ...req.body };
+        if (!updateData.image) {
+            delete updateData.image;
+        }
+
         const news = await News.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updateData,
             {
                 new: true,
                 runValidators: true

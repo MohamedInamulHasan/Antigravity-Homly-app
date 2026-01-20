@@ -73,9 +73,15 @@ export const createStore = async (req, res, next) => {
 // @access  Private/Admin
 export const updateStore = async (req, res, next) => {
     try {
+        // Prevent overwriting existing image with empty string
+        const updateData = { ...req.body };
+        if (!updateData.image) {
+            delete updateData.image;
+        }
+
         const store = await Store.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updateData,
             {
                 new: true,
                 runValidators: true

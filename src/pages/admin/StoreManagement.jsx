@@ -290,22 +290,59 @@ const StoreManagement = () => {
     return (
         <div className="max-w-6xl">
             {/* Header */}
-            {!isStoreAdmin && view === 'list' && (
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('Manage Stores')}</h2>
-                    <button
-                        onClick={() => {
-                            setEditingStore(null);
-                            setStoreForm({ name: '', address: '', image: '', rating: 4.5, openingTime: '09:00', closingTime: '21:00', mobile: '', category: '' });
-                            setView('form');
-                        }}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
-                    >
-                        <Plus size={20} />
-                        {t('Add New Store')}
-                    </button>
+            {/* Dynamic Header for all views */}
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {view === 'list' ? (!isStoreAdmin ? t('Manage Stores') : t('My Store')) :
+                        view === 'form' ? (editingStore ? t('Edit Store') : t('Add New Store')) :
+                            view === 'storeProducts' ? `${selectedStore?.name || ''} - ${t('Products')}` :
+                                view === 'addProductToStore' ? (editingProduct ? t('Edit Product') : `${t('Add Product to')} ${selectedStore?.name || ''}`) :
+                                    t('Manage Stores')}
+                </h2>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                    {view === 'list' && !isStoreAdmin && (
+                        <button
+                            onClick={() => {
+                                setEditingStore(null);
+                                setStoreForm({ name: '', address: '', image: '', rating: 4.5, openingTime: '09:00', closingTime: '21:00', mobile: '', category: '' });
+                                setView('form');
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                        >
+                            <Plus size={20} />
+                            {t('Add New Store')}
+                        </button>
+                    )}
+
+                    {view === 'storeProducts' && (
+                        <button
+                            onClick={handleAddProductToStore}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                        >
+                            <Plus size={20} />
+                            {t('Add Product')}
+                        </button>
+                    )}
+
+                    {view !== 'list' && !(isStoreAdmin && view === 'storeProducts') && (
+                        <button
+                            onClick={() => {
+                                if (view === 'addProductToStore') {
+                                    setView('storeProducts');
+                                } else {
+                                    setView('list');
+                                }
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                        >
+                            <ArrowLeft size={20} />
+                            {t('Back')}
+                        </button>
+                    )}
                 </div>
-            )}
+            </div>
 
             {view === 'list' && (
                 <>
@@ -478,15 +515,20 @@ const StoreManagement = () => {
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Store Image')}</label>
                                 <div className="flex items-center gap-4">
-                                    {storeForm.image && (
-                                        <img src={storeForm.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
+                                    {(storeForm.image || editingStore) && (
+                                        <img
+                                            src={storeForm.image || `${API_BASE_URL}/stores/${editingStore?._id || editingStore?.id}/image`}
+                                            onError={(e) => { e.target.style.display = 'none'; }}
+                                            alt="Preview"
+                                            className="w-16 h-16 rounded-lg object-cover"
+                                        />
                                     )}
                                     <label className="flex-1 cursor-pointer">
                                         <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
                                             <Upload size={20} />
                                             <span>{uploadingImage ? t('Uploading...') : t('Upload Image')}</span>
                                         </div>
-                                        <input type="file" accept="image/*" onChange={handleStoreImageUpload} className="hidden" required={!storeForm.image} />
+                                        <input type="file" accept="image/*" onChange={handleStoreImageUpload} className="hidden" required={!storeForm.image && !editingStore} />
                                     </label>
                                 </div>
                             </div>
@@ -519,29 +561,6 @@ const StoreManagement = () => {
 
             {view === 'storeProducts' && selectedStore && (
                 <div className="space-y-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={() => {
-                                    setView('list');
-                                }}
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                            >
-                                <ArrowLeft size={20} className="text-gray-500 dark:text-gray-400" />
-                            </button>
-                            <div>
-                                <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{selectedStore.name}</h2>
-                                <p className="text-gray-500 dark:text-gray-400 text-sm">{t('Manage Products')}</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={handleAddProductToStore}
-                            className="ml-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm md:text-base"
-                        >
-                            <Plus size={20} />
-                            {t('Add Product')}
-                        </button>
-                    </div>
 
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                         <div className="overflow-x-auto">
@@ -609,14 +628,6 @@ const StoreManagement = () => {
 
             {view === 'addProductToStore' && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-                    <div className="flex items-center gap-4 mb-6">
-                        <button onClick={() => setView('storeProducts')} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                            <ArrowLeft size={24} className="text-gray-600 dark:text-gray-400" />
-                        </button>
-                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
-                            {editingProduct ? t('Edit Product') : `${t('Add Product to')} ${selectedStore?.name}`}
-                        </h2>
-                    </div>
                     <form onSubmit={handleProductSubmit} className="space-y-6">
                         {/* Product Form Fields - Similar to ProductManagement but with slider images */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -672,15 +683,20 @@ const StoreManagement = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Main Image')}</label>
                                 <div className="flex items-center gap-4">
-                                    {productForm.image && (
-                                        <img src={productForm.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
+                                    {(productForm.image || editingProduct) && (
+                                        <img
+                                            src={productForm.image || `${API_BASE_URL}/products/${editingProduct?._id || editingProduct?.id}/image`}
+                                            onError={(e) => { e.target.style.display = 'none'; }}
+                                            alt="Preview"
+                                            className="w-16 h-16 rounded-lg object-cover"
+                                        />
                                     )}
                                     <label className="flex-1 cursor-pointer">
                                         <div className="w-full px-4 py-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
                                             <Upload size={20} />
                                             <span>{uploadingImage ? t('Uploading...') : t('Upload Image')}</span>
                                         </div>
-                                        <input type="file" accept="image/*" onChange={(e) => handleProductImageUpload(e, false)} className="hidden" required={!productForm.image} />
+                                        <input type="file" accept="image/*" onChange={(e) => handleProductImageUpload(e, false)} className="hidden" required={!productForm.image && !editingProduct} />
                                     </label>
                                 </div>
                             </div>

@@ -108,9 +108,23 @@ export const createProduct = async (req, res, next) => {
 // @access  Private/Admin
 export const updateProduct = async (req, res, next) => {
     try {
+        // Prevent overwriting existing image with empty string
+        const updateData = { ...req.body };
+        if (!updateData.image) {
+            delete updateData.image;
+        }
+
+        // Also cleanup images array if it contains empty strings
+        if (updateData.images && Array.isArray(updateData.images)) {
+            updateData.images = updateData.images.filter(img => img && img.trim() !== '');
+            if (updateData.images.length === 0) {
+                delete updateData.images;
+            }
+        }
+
         const product = await Product.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updateData,
             {
                 new: true,
                 runValidators: true

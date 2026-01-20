@@ -770,8 +770,8 @@ const NewsManagement = () => {
                     }}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
-                    {view === 'list' ? <Plus size={20} /> : <List size={20} />}
-                    {view === 'list' ? t('Add Post') : t('View List')}
+                    {view === 'list' ? <Plus size={20} /> : <ArrowLeft size={20} />}
+                    {view === 'list' ? t('Add Post') : t('Back')}
                 </button>
             </div>
 
@@ -1845,8 +1845,8 @@ const ServiceManagement = () => {
                     }}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
-                    {view === 'list' ? <Plus size={20} /> : <List size={20} />}
-                    {view === 'list' ? t('Add Service') : t('View List')}
+                    {view === 'list' ? <Plus size={20} /> : <ArrowLeft size={20} />}
+                    {view === 'list' ? t('Add Service') : t('Back')}
                 </button>
             </div>
 
