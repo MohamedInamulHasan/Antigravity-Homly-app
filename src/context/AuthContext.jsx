@@ -19,6 +19,15 @@ export const AuthProvider = ({ children }) => {
                 setLoading(false);
             }
 
+            // Fallback: If no token is found locally, do NOT attempt to verify with server.
+            // This prevents "Zombie Cookies" (which failed to clear on logout) from resurrecting the session.
+            // Exception: If we are on Desktop and rely on Cookies only, this might be strict, 
+            // but since we moved to Hybrid Auth, we expect a token.
+            if (!storedToken && !storedUser) {
+                setLoading(false);
+                return;
+            }
+
             try {
                 // Verify session with server (works for both Cookie and Bearer Token)
                 const data = await apiService.getProfile();
