@@ -129,8 +129,22 @@ const AdminDashboard = () => {
                             icon={<Store size={20} />}
                             label={t('Store Details')}
                             id="stores"
-                            active={true}
-                            onClick={() => setIsMobileMenuOpen(false)}
+                            active={activeTab === 'stores'}
+                            onClick={setActiveTab}
+                        />
+                        <SidebarItem
+                            icon={<Package size={20} />}
+                            label={t('Products')}
+                            id="products"
+                            active={activeTab === 'products'}
+                            onClick={setActiveTab}
+                        />
+                        <SidebarItem
+                            icon={<ShoppingBag size={20} />}
+                            label={t('Orders')}
+                            id="orders"
+                            active={activeTab === 'orders'}
+                            onClick={setActiveTab}
                         />
                     </nav>
                 </div>
@@ -144,14 +158,18 @@ const AdminDashboard = () => {
                                     <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                                         <Store className="text-blue-600 dark:text-blue-400" size={24} />
                                     </div>
-                                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('My Store')}</h1>
+                                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                        {activeTab === 'stores' ? t('My Store') :
+                                            activeTab === 'products' ? t('Product Inventory') :
+                                                activeTab === 'orders' ? t('Orders') : t('My Store')}
+                                    </h1>
                                 </div>
                                 {/* Hide user name on mobile */}
                                 <div className="text-sm text-gray-500 dark:text-gray-400 hidden md:block">
                                     {user?.name}
                                 </div>
                             </div>
-                            <StoreManagement />
+                            {renderContent()}
                         </div>
                     </div>
                 </div>

@@ -5,7 +5,7 @@ git config --global --add safe.directory "d:/Antigravity-Homly app"
 git config --global --add safe.directory "D:/Antigravity-Homly app"
 git status
 git add .
-git commit -m "Fix: Implemented Hybrid Auth (Cookies + Token) and fixed Production API URL for Android"
+git commit -m "Fix: Enabled Products/Orders view for Store Admins and enforced backend privacy rules"
 git push
 echo ✅ Done!
 pause
