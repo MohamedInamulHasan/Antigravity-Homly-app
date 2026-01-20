@@ -23,6 +23,9 @@ import { useData } from './context/DataContext';
 import { useAuth } from './context/AuthContext';
 import MaintenanceScreen from './components/MaintenanceScreen';
 import useBackButton from './utils/useBackButton';
+import PrivateRoute from './components/PrivateRoute';
+import CategoryProducts from './pages/CategoryProducts';
+import ProductGroupProducts from './pages/ProductGroupProducts';
 
 import ScrollToTop from './components/ScrollToTop';
 
@@ -130,22 +133,89 @@ function App() {
                             <Route path="/" element={<Home />} />
                             <Route path="/store" element={<Shop />} />
                             <Route path="/store/:id" element={<StoreProducts />} />
-                            <Route path="/profile" element={<Profile />} />
                             <Route path="/product/:id" element={<ProductDetails />} />
-                            <Route path="/cart" element={<Cart />} />
-                            <Route path="/checkout" element={<Checkout />} />
-                            <Route path="/orders" element={<Orders />} />
-                            <Route path="/orders/:id" element={<OrderDetails />} />
-                            <Route path="/order-confirmation" element={<OrderConfirmation />} />
                             <Route path="/news" element={<News />} />
-                            <Route path="/saved-products" element={<SavedProducts />} />
                             <Route path="/services" element={<Services />} />
-                            <Route path="/my-store" element={<MyStore />} />
-                            <Route path="/admin" element={<AdminDashboard />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/signup" element={<Signup />} />
                             <Route path="/forgot-password" element={<ForgotPassword />} />
                             <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+                            {/* Protected Routes */}
+                            <Route
+                                path="/profile"
+                                element={
+                                    <PrivateRoute>
+                                        <Profile />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/cart"
+                                element={
+                                    <PrivateRoute>
+                                        <Cart />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/checkout"
+                                element={
+                                    <PrivateRoute>
+                                        <Checkout />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/orders"
+                                element={
+                                    <PrivateRoute>
+                                        <Orders />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/orders/:id"
+                                element={
+                                    <PrivateRoute>
+                                        <OrderDetails />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/order-confirmation"
+                                element={
+                                    <PrivateRoute>
+                                        <OrderConfirmation />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/saved-products"
+                                element={
+                                    <PrivateRoute>
+                                        <SavedProducts />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/my-store"
+                                element={
+                                    <PrivateRoute>
+                                        <MyStore />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route path="/category/:categoryName" element={<CategoryProducts />} />
+                            <Route path="/product-group/:productName" element={<ProductGroupProducts />} />
+                            <Route
+                                path="/admin"
+                                element={
+                                    <PrivateRoute adminOnly={true}>
+                                        <AdminDashboard />
+                                    </PrivateRoute>
+                                }
+                            />
                         </Routes>
                     </Layout>
                 </div>

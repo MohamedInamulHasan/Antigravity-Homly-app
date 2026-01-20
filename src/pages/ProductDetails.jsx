@@ -118,9 +118,7 @@ const ProductDetails = () => {
                         >
                             <Bookmark size={24} fill={isSaved ? "currentColor" : "none"} />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-blue-500 transition-colors">
-                            <Share2 size={24} />
-                        </button>
+
                     </div>
                 </div>
 

@@ -2,21 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-    body {
-        @apply dark:bg-gray-900 dark:text-white transition-colors duration-200;
-        /* Disable pull-to-refresh behavior - (we will handle it manually) */
-        overscroll-behavior-y: contain;
-    }
-}
-
-@layer utilities {
-    .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-    }
+/* Hide native password reveal icon in Edge/IE */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
 }

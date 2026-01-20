@@ -514,7 +514,7 @@ const ProductManagement = () => {
                                                 </td>
                                                 <td className="p-4 font-medium text-gray-900 dark:text-white">{product.title}</td>
                                                 <td className="p-4 text-gray-500 dark:text-gray-400">{product.category}</td>
-                                                <td className="p-4 font-medium text-gray-900 dark:text-white">${product.price}</td>
+                                                <td className="p-4 font-medium text-gray-900 dark:text-white">₹{product.price}</td>
                                                 <td className="p-4">
                                                     <div className="flex gap-2">
                                                         <button
@@ -731,21 +731,20 @@ const NewsManagement = () => {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const newsItem = {
             title: newsForm.headline,
             category: newsForm.type,
             image: newsForm.image,
-            content: newsForm.content,
-            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            content: newsForm.content
         };
 
         if (editingNews) {
-            updateNews({ id: editingNews._id || editingNews.id, data: newsItem });
+            await updateNews({ id: editingNews._id || editingNews.id, data: newsItem });
             alert(t('News updated successfully!'));
         } else {
-            addNews(newsItem);
+            await addNews(newsItem);
             alert(t('News published successfully!'));
         }
         setNewsForm({ headline: '', type: 'Offer', image: '', content: '' });
@@ -779,21 +778,9 @@ const NewsManagement = () => {
             {view === 'list' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {news.map(item => (
+                        // ... News modifications within NewsManagement ...
                         <div key={item._id || item.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col group relative">
-                            <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); handleEditNews(item); }}
-                                    className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-blue-600 hover:text-blue-700 shadow-sm"
-                                >
-                                    <Edit2 size={18} />
-                                </button>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); handleDeleteNews(item._id || item.id); }}
-                                    className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-red-600 hover:text-red-700 shadow-sm"
-                                >
-                                    <Trash2 size={18} />
-                                </button>
-                            </div>
+                            {/* Removed absolute overlay icons */}
                             <div className="h-48 overflow-hidden">
                                 <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                             </div>
@@ -804,9 +791,27 @@ const NewsManagement = () => {
                                     </span>
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{item.title}</h3>
-                                <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-3">
+                                <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-3 mb-4">
                                     {item.content || item.description}
                                 </p>
+
+                                {/* New Footer for Actions */}
+                                <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-2">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleEditNews(item); }}
+                                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                        title={t('Edit')}
+                                    >
+                                        <Edit2 size={18} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteNews(item._id || item.id); }}
+                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                        title={t('Delete')}
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -1856,20 +1861,7 @@ const ServiceManagement = () => {
                                     alt={service.name}
                                     className="w-full h-full object-cover"
                                 />
-                                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                                    <button
-                                        onClick={() => handleEdit(service)}
-                                        className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-blue-600 hover:text-blue-700 shadow-sm"
-                                    >
-                                        <Edit2 size={18} />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(service._id || service.id)}
-                                        className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-red-600 hover:text-red-700 shadow-sm"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
+
                             </div>
                             <div className="p-6">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{service.name}</h3>
@@ -1883,6 +1875,22 @@ const ServiceManagement = () => {
                                         <Phone size={16} />
                                         <span>{service.mobile}</span>
                                     </div>
+                                </div>
+                                <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 justify-end">
+                                    <button
+                                        onClick={() => handleEdit(service)}
+                                        className="px-3 py-1.5 border border-gray-200 dark:border-gray-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center gap-2 text-sm"
+                                    >
+                                        <Edit2 size={16} />
+                                        {t('Edit')}
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(service._id || service.id)}
+                                        className="px-3 py-1.5 border border-gray-200 dark:border-gray-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-2 text-sm"
+                                    >
+                                        <Trash2 size={16} />
+                                        {t('Delete')}
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -2108,7 +2116,6 @@ const ServiceRequestManagement = () => {
                                     title={t('Delete Request')}
                                 >
                                     <Trash2 size={16} />
-                                    <span className="text-sm font-medium">{t('Delete')}</span>
                                 </button>
                             </div>
                         </div>

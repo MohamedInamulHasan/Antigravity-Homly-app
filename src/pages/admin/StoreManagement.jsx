@@ -335,24 +335,6 @@ const StoreManagement = () => {
                                         alt={store.name}
                                         className="w-full h-full object-cover"
                                     />
-                                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                                        {/* Allow edit for store admin too */}
-                                        <button
-                                            onClick={() => handleEditStore(store)}
-                                            className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-blue-600 hover:text-blue-700 shadow-sm"
-                                        >
-                                            <Edit2 size={18} />
-                                        </button>
-                                        {/* Hide delete for store admin? User didn't specify, but usually safer */}
-                                        {!isStoreAdmin && (
-                                            <button
-                                                onClick={() => handleDeleteStore(store.id || store._id)}
-                                                className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full text-red-600 hover:text-red-700 shadow-sm"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
-                                        )}
-                                    </div>
                                 </div>
                                 <div className="p-6">
                                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{store.name}</h3>
@@ -360,12 +342,30 @@ const StoreManagement = () => {
                                         <MapPin size={16} />
                                         {store.address || 'No address'}
                                     </p>
-                                    <button
-                                        onClick={() => handleManageProducts(store)}
-                                        className="w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
-                                    >
-                                        {t('Manage Products')}
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleManageProducts(store)}
+                                            className="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
+                                        >
+                                            {t('Manage Products')}
+                                        </button>
+                                        <button
+                                            onClick={() => handleEditStore(store)}
+                                            className="p-2 border border-gray-200 dark:border-gray-700 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                            title={t('Edit Store')}
+                                        >
+                                            <Edit2 size={20} />
+                                        </button>
+                                        {!isStoreAdmin && (
+                                            <button
+                                                onClick={() => handleDeleteStore(store.id || store._id)}
+                                                className="p-2 border border-gray-200 dark:border-gray-700 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                title={t('Delete Store')}
+                                            >
+                                                <Trash2 size={20} />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -570,7 +570,7 @@ const StoreManagement = () => {
                                                 />
                                             </td>
                                             <td className="p-4 font-medium text-gray-900 dark:text-white">{product.title}</td>
-                                            <td className="p-4 font-medium text-gray-900 dark:text-white">${product.price}</td>
+                                            <td className="p-4 font-medium text-gray-900 dark:text-white">₹{product.price}</td>
                                             <td className="p-4">
                                                 <div className="flex gap-2">
                                                     <button

@@ -76,9 +76,7 @@ const Services = () => {
                                             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
                                             onError={(e) => { e.target.src = 'https://via.placeholder.com/400x250?text=Service'; }}
                                         />
-                                        <div className="absolute top-4 right-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md p-2 rounded-full shadow-sm">
-                                            <Wrench className="text-blue-600 dark:text-blue-400" size={16} />
-                                        </div>
+
                                     </div>
 
                                     {/* Content Section */}

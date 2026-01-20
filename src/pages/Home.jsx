@@ -56,7 +56,50 @@ const Home = () => {
         : [];
     */
 
-    // Group products by category - with safety check
+    // Helper to group products by name
+    const groupProductsByName = (productList) => {
+        if (!productList) return [];
+        const groups = {};
+
+        // Group by name
+        productList.forEach(p => {
+            const key = p.title?.trim().toLowerCase();
+            if (!key) return;
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(p);
+        });
+
+        const result = [];
+        Object.values(groups).forEach(group => {
+            if (group.length > 1) {
+                // Create a "group" product
+                // Select the first product to ensure stable rendering (no flickering)
+                const displayProduct = group[0];
+
+                // Check if ANY store in this group is open
+                const anyStoreOpen = group.some(p => {
+                    const pStoreId = p.storeId?._id || p.storeId;
+                    const pStore = stores.find(s => (s._id || s.id) === pStoreId);
+                    return pStore && isStoreOpen(pStore);
+                });
+
+                result.push({
+                    ...displayProduct,
+                    isGroup: true,
+                    storeCount: group.length,
+                    anyStoreOpen: anyStoreOpen,
+                    // Use a unique ID for the group
+                    _id: `group-${displayProduct._id || displayProduct.id}`,
+                    id: `group-${displayProduct._id || displayProduct.id}`
+                });
+            } else {
+                result.push(group[0]);
+            }
+        });
+        return result;
+    };
+
+    // Group products by category
     const groupedProducts = openStoreProducts.reduce((acc, product) => {
         const category = product.category || 'Other';
         if (!acc[category]) {
@@ -348,7 +391,7 @@ const Home = () => {
                         <CategorySection
                             key={category}
                             category={category}
-                            products={categoryProducts.slice(0, 10)}
+                            products={groupProductsByName(categoryProducts).slice(0, 10)}
                             t={t}
                         />
                     ))}
@@ -401,7 +444,7 @@ const CategorySection = ({ category, products, t }) => {
                     {t(category)}
                 </h2>
                 <Link
-                    to={`/store?category=${encodeURIComponent(category)}`}
+                    to={`/category/${encodeURIComponent(category)}`}
                     className="text-sm md:text-base text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
                 >
                     {t('View All')} →
