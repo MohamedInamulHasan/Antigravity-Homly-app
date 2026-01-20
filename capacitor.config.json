@@ -3,15 +3,24 @@
   "appName": "Homly",
   "webDir": "dist",
   "server": {
-    "url": "https://antigravity-homly-app-hasans-projects-b85470cd.vercel.app",
+    "url": "https://antigravity-homly-app.vercel.app",
     "cleartext": true
   },
   "plugins": {
     "StatusBar": {
       "style": "DARK",
-      "overlaysWebView": true,
-      "backgroundColor": "#ffffffff",
+      "overlaysWebView": false,
+      "backgroundColor": "#000000",
       "visible": false
+    },
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#ffffff",
+      "showSpinner": false,
+      "androidSpinnerStyle": "small",
+      "spinnerColor": "#2563eb",
+      "splashFullScreen": true,
+      "splashImmersive": true
     }
   }
 }

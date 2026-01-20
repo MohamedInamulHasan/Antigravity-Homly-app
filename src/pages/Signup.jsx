@@ -211,7 +211,7 @@ const Signup = () => {
                 <div className="mt-6 text-center">
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                         Already have an account?{' '}
-                        <Link to={redirect ? `/login?redirect=${redirect}` : '/login'} className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
+                        <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
                             Sign in
                         </Link>
                     </p>
