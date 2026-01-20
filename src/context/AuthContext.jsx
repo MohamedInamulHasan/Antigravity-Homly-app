@@ -10,17 +10,30 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const checkUserLoggedIn = async () => {
+            // Optimistic UI: Load from localStorage first
+            const storedUser = localStorage.getItem('userInfo');
+            const storedToken = localStorage.getItem('authToken');
+
+            if (storedUser) {
+                setUser(JSON.parse(storedUser));
+                setLoading(false);
+            }
+
             try {
-                // Verify session with server instead of trust localStorage
+                // Verify session with server (works for both Cookie and Bearer Token)
                 const data = await apiService.getProfile();
+
+                // Update with fresh data from server
                 setUser(data.data);
-                // Keep userInfo in localStorage for non-auth UI sync if needed, or update it
                 localStorage.setItem('userInfo', JSON.stringify(data.data));
             } catch (err) {
-                // If 401/403, we are not logged in
-                setUser(null);
-                localStorage.removeItem('userInfo');
-                localStorage.removeItem('authToken'); // Cleanup legacy token
+                console.warn('Session verification failed:', err.message);
+                // If token exists but failed, it might be expired
+                if (err.response?.status === 401) {
+                    setUser(null);
+                    localStorage.removeItem('userInfo');
+                    localStorage.removeItem('authToken');
+                }
             } finally {
                 setLoading(false);
             }
@@ -33,10 +46,6 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('userInfo');
             localStorage.removeItem('authToken');
             window.dispatchEvent(new Event('userChanged'));
-            // Optional: Redirect to login is handled by protected routes, or we can force it here
-            // if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/signup')) {
-            //     window.location.href = '/login';
-            // }
         };
 
         window.addEventListener('auth:unauthorized', handleUnauthorized);
@@ -52,9 +61,10 @@ export const AuthProvider = ({ children }) => {
             const data = await apiService.login({ email, password });
 
             setUser(data.data);
-            setUser(data.data);
             localStorage.setItem('userInfo', JSON.stringify(data.data));
-            // localStorage.setItem('authToken', data.data.token); // No longer storing token
+            if (data.token) {
+                localStorage.setItem('authToken', data.token); // Store token for Hybrid Auth
+            }
             // Dispatch custom event to notify cart of user change
             window.dispatchEvent(new Event('userChanged'));
             return true;
@@ -75,7 +85,9 @@ export const AuthProvider = ({ children }) => {
 
             setUser(data.data);
             localStorage.setItem('userInfo', JSON.stringify(data.data));
-            // localStorage.setItem('authToken', data.data.token); // No longer storing token
+            if (data.token) {
+                localStorage.setItem('authToken', data.token); // Store token for Hybrid Auth
+            }
             // Dispatch custom event to notify cart of user change
             window.dispatchEvent(new Event('userChanged'));
             return true;

@@ -7,10 +7,14 @@ import axios from 'axios';
 // 2. Localhost (desktop): http://127.0.0.1:5173 -> http://127.0.0.1:5000/api
 // 3. Mobile LAN (dynamic): http://192.168.x.x:5173 -> http://192.168.x.x:5000/api
 const hostname = window.location.hostname;
+const isProduction = hostname.includes('vercel.app') || hostname.includes('onrender.com');
+
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (
-    hostname === 'localhost' || hostname === '127.0.0.1'
-        ? 'http://127.0.0.1:5000/api'
-        : `http://${hostname}:5000/api`
+    isProduction
+        ? 'https://homly-backend-8616.onrender.com/api' // Fallback for Vercel
+        : (hostname === 'localhost' || hostname === '127.0.0.1'
+            ? 'http://127.0.0.1:5000/api'
+            : `http://${hostname}:5000/api`)
 );
 
 // Log the API URL being used (helpful for debugging)
@@ -29,10 +33,13 @@ const api = axios.create({
     withCredentials: true // Important: Send cookies with every request
 });
 
-// Request interceptor (Optional now, assuming cookies handle auth)
+// Request interceptor - Add Bearer Token if available (Hybrid Auth)
 api.interceptors.request.use(
     (config) => {
-        // No need to manually attach token from localStorage anymore
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
         return config;
     },
     (error) => {

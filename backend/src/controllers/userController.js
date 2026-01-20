@@ -27,6 +27,7 @@ const sendTokenResponse = (user, statusCode, res) => {
         .cookie('jwt', token, options)
         .json({
             success: true,
+            token, // Send token for client-side storage (Hybrid Auth)
             data: {
                 _id: user._id,
                 name: user.name,
