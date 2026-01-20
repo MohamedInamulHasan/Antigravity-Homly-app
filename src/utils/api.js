@@ -3,15 +3,15 @@ import axios from 'axios';
 // Get API base URL - Dynamic based on environment
 // Hardcoded for stability - fix dynamic logic if needed later
 // Hardcoded for debugging localhost/mobile issue
-// Dynamic API base URL that adapts to the current hostname
-// This works for:
-// 1. Localhost (desktop): http://127.0.0.1:5173 -> http://127.0.0.1:5000/api
-// 2. Mobile (LAN): http://10.93.16.66:5173 -> http://10.93.16.66:5000/api
+// 1. Production/Configured URL (Vercel/Render)
+// 2. Localhost (desktop): http://127.0.0.1:5173 -> http://127.0.0.1:5000/api
+// 3. Mobile LAN (dynamic): http://192.168.x.x:5173 -> http://192.168.x.x:5000/api
 const hostname = window.location.hostname;
-export const API_BASE_URL = hostname === 'localhost' || hostname === '127.0.0.1'
-    ? 'http://127.0.0.1:5000/api'
-    : `http://${hostname}:5000/api`;
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (
+    hostname === 'localhost' || hostname === '127.0.0.1'
+        ? 'http://127.0.0.1:5000/api'
+        : `http://${hostname}:5000/api`
+);
 
 // Log the API URL being used (helpful for debugging)
 console.log('%c🔗 API Configuration', 'color: #3b82f6; font-weight: bold; font-size: 14px;');

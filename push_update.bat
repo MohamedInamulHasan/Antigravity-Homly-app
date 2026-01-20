@@ -5,7 +5,7 @@ git config --global --add safe.directory "d:/Antigravity-Homly app"
 git config --global --add safe.directory "D:/Antigravity-Homly app"
 git status
 git add .
-git commit -m "Fix: Image streaming for Orders/Stores & Layout fixes"
+git commit -m "Fix: Vercel Production API URL"
 git push
 echo ✅ Done!
 pause
