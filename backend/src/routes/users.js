@@ -11,6 +11,7 @@ import {
     toggleSavedProduct,
     forgotPassword,
     resetPassword,
+    logoutUser,
     testEmailController
 } from '../controllers/userController.js';
 
@@ -22,6 +23,7 @@ router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.post('/forgotpassword', forgotPassword);
 router.put('/resetpassword/:resettoken', resetPassword);
+router.post('/logout', logoutUser);
 router.get('/test-email', testEmailController);
 
 router.route('/profile')
