@@ -1,5 +1,6 @@
 import ServiceRequest from '../models/ServiceRequest.js';
 import Service from '../models/Service.js';
+import { sendServiceRequestNotification } from '../services/emailService.js';
 
 // @desc    Create a new service request
 // @route   POST /api/service-requests
@@ -38,6 +39,15 @@ export const createServiceRequest = async (req, res) => {
         // Populate service details for the response
         await createdRequest.populate('service');
         await createdRequest.populate('user', 'name email mobile');
+
+        // Send notification email
+        try {
+            await sendServiceRequestNotification(createdRequest);
+            console.log('📧 Service request notification sent');
+        } catch (emailError) {
+            console.error('❌ Failed to send service request notification:', emailError);
+            // Don't fail the request if email fails
+        }
 
         res.status(201).json(createdRequest);
     } catch (error) {
