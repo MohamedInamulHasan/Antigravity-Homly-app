@@ -95,15 +95,11 @@ export const loginUser = async (req, res, next) => {
 // @route   POST /api/users/logout
 // @access  Public
 export const logoutUser = (req, res) => {
-    res.cookie('jwt', 'none', {
-        expires: new Date(Date.now() + 10 * 1000),
-        httpOnly: true
+    res.cookie('jwt', '', {
+        httpOnly: true,
+        expires: new Date(0)
     });
-
-    res.status(200).json({
-        success: true,
-        data: {}
-    });
+    res.status(200).json({ message: 'Logged out successfully' });
 };
 
 // @desc    Get user profile
@@ -441,13 +437,4 @@ export const testEmailController = async (req, res) => {
     }
 };
 
-// @desc    Logout user / clear cookie
-// @route   POST /api/users/logout
-// @access  Private
-export const logoutUser = (req, res) => {
-    res.cookie('jwt', '', {
-        httpOnly: true,
-        expires: new Date(0)
-    });
-    res.status(200).json({ message: 'Logged out successfully' });
-};
+

@@ -5,7 +5,7 @@ git config --global --add safe.directory "d:/Antigravity-Homly app"
 git config --global --add safe.directory "D:/Antigravity-Homly app"
 git status
 git add .
-git commit -m "Fix: Logout Persistence, Android Config & Signup Redirect"
+git commit -m "Fix: Duplicate logoutUser function causing server crash"
 git push
 echo ✅ Done!
 pause
