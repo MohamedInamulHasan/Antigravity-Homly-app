@@ -3,7 +3,15 @@
   "appName": "Homly",
   "webDir": "dist",
   "server": {
-    "url": "https://antigravity-homly-kkzpaedbe-hasans-projects-b85470cd.vercel.app/",
+    "url": "https://antigravity-homly-app-hasans-projects-b85470cd.vercel.app",
     "cleartext": true
+  },
+  "plugins": {
+    "StatusBar": {
+      "style": "DARK",
+      "overlaysWebView": true,
+      "backgroundColor": "#ffffffff",
+      "visible": false
+    }
   }
 }
