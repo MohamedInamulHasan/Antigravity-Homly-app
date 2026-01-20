@@ -6,6 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { getStoreName } from '../utils/storeHelpers';
 import { CreditCard, Truck, MapPin, ShieldCheck, ShoppingBag, ArrowLeft, Store } from 'lucide-react';
+import { API_BASE_URL } from '../utils/api';
 
 const Checkout = () => {
     const navigate = useNavigate();
@@ -373,7 +374,8 @@ const Checkout = () => {
                                     <div key={item.id} className="flex gap-4">
                                         <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600">
                                             <img
-                                                src={item.image}
+                                                src={item.image || `${API_BASE_URL}/products/${item._id || item.id}/image`}
+                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/100x100?text=No+Image'; }}
                                                 alt={item.title}
                                                 className="h-full w-full object-cover object-center"
                                             />

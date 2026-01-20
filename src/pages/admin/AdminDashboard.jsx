@@ -1959,12 +1959,12 @@ const ServiceManagement = () => {
 const ServiceRequestManagement = () => {
     // const { fetchServiceRequests, updateServiceRequestStatus, deleteServiceRequest } = useData();
     // NEW HOOKS
-    const { data: fetchServiceRequests = [] } = useServiceRequests(); // Renamed to match usage below if needed, or better refactor logic
+    const { data: serviceRequestsData = [], isLoading } = useServiceRequests();
     const { mutateAsync: updateServiceRequestStatus } = useUpdateServiceRequestStatus();
     const { mutateAsync: deleteServiceRequest } = useDeleteServiceRequest();
 
-    // Shim to adapt data structure if usage below expects a function or array
-    const requests = fetchServiceRequests; // If hook returns data directly
+    // Extract requests array from hook data
+    const requests = serviceRequestsData;
 
     // Logic below expects 'fetchServiceRequests' to be a function?
     // Let's check original code: "const data = await fetchServiceRequests();"
@@ -1978,7 +1978,7 @@ const ServiceRequestManagement = () => {
     // const [loading, setLoading] = useState(true); // Removed - derived from query if needed
 
     /* useEffect / loadRequests removed - handled by useServiceRequests hook */
-    const loading = false; // Placeholder or use hook's isLoading if available
+    const loading = isLoading; // Use actual loading state from hook
 
     const handleStatusUpdate = async (id, newStatus) => {
         try {

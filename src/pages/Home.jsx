@@ -8,6 +8,7 @@ import { useCategories } from '../hooks/queries/useCategories';
 import { useStores } from '../hooks/queries/useStores';
 import { useLanguage } from '../context/LanguageContext';
 import { isStoreOpen } from '../utils/storeHelpers';
+import { API_BASE_URL } from '../utils/api';
 import SimpleProductCard from '../components/SimpleProductCard';
 import PullToRefreshLayout from '../components/PullToRefreshLayout';
 import { API_BASE_URL } from '../utils/api';
@@ -303,7 +304,8 @@ const Home = () => {
                                                 className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                                             >
                                                 <img
-                                                    src={product.image}
+                                                    src={product.image || `${API_BASE_URL}/products/${product._id || product.id}/image`}
+                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/100x100?text=No+Image'; }}
                                                     alt={product.title}
                                                     className="w-12 h-12 rounded-lg object-cover"
                                                 />
