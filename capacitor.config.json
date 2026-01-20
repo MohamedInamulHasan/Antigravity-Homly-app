@@ -1,5 +1,9 @@
 {
   "appId": "com.homly.app",
   "appName": "Homly",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "url": "https://antigravity-homly-kkzpaedbe-hasans-projects-b85470cd.vercel.app/",
+    "cleartext": true
+  }
 }
