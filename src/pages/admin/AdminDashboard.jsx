@@ -1,4 +1,5 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { API_BASE_URL } from '../../utils/api';
+import { useState, useEffect } from 'react';
 import {
     LayoutDashboard,
     Package,
@@ -486,7 +487,12 @@ const ProductManagement = () => {
                                         .map(product => (
                                             <tr key={product.id || product._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                                 <td className="p-4">
-                                                    <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
+                                                    <img
+                                                        src={product.image || `${API_BASE_URL}/products/${product.id || product._id}/image`}
+                                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/100x100?text=No+Image'; }}
+                                                        alt={product.title}
+                                                        className="w-12 h-12 rounded-lg object-cover"
+                                                    />
                                                 </td>
                                                 <td className="p-4 font-medium text-gray-900 dark:text-white">{product.title}</td>
                                                 <td className="p-4 text-gray-500 dark:text-gray-400">{product.category}</td>

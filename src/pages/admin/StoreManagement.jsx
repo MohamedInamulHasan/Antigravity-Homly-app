@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../utils/api';
 import { useState, useEffect } from 'react';
 import {
     Store,
@@ -329,7 +330,12 @@ const StoreManagement = () => {
                             <div key={store.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden group">
                                 <div className="h-48 overflow-hidden relative">
                                     {store.image ? (
-                                        <img src={store.image} alt={store.name} className="w-full h-full object-cover" />
+                                        <img
+                                            src={store.image || `${API_BASE_URL}/stores/${store.id || store._id}/image`}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/300x200?text=No+Store+Image'; }}
+                                            alt={store.name}
+                                            className="w-full h-full object-cover"
+                                        />
                                     ) : (
                                         <div className="w-full h-full bg-gray-200 dark:bg-gray-700"></div>
                                     )}
@@ -560,7 +566,12 @@ const StoreManagement = () => {
                                     }).map(product => (
                                         <tr key={product._id || product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                             <td className="p-4">
-                                                <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
+                                                <img
+                                                    src={product.image || `${API_BASE_URL}/products/${product.id || product._id}/image`}
+                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/100x100?text=No+Image'; }}
+                                                    alt={product.title}
+                                                    className="w-12 h-12 rounded-lg object-cover"
+                                                />
                                             </td>
                                             <td className="p-4 font-medium text-gray-900 dark:text-white">{product.title}</td>
                                             <td className="p-4 font-medium text-gray-900 dark:text-white">${product.price}</td>
