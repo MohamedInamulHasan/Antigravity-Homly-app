@@ -1698,7 +1698,12 @@ const AdsManagement = () => {
                 {ads.map(ad => (
                     <div key={ad._id || ad.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden group relative">
                         <div className="aspect-video relative">
-                            <img src={ad.image} alt={ad.title} className="w-full h-full object-cover" />
+                            <img
+                                src={ad.image || `${API_BASE_URL}/ads/${ad.id || ad._id}/image`}
+                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/300x200?text=No+Ad+Image'; }}
+                                alt={ad.title}
+                                className="w-full h-full object-cover"
+                            />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <button
                                     onClick={() => handleDeleteAd(ad._id || ad.id)}
@@ -1827,7 +1832,12 @@ const ServiceManagement = () => {
                     {services.map(service => (
                         <div key={service._id || service.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden group">
                             <div className="h-48 overflow-hidden relative">
-                                <img src={service.image} alt={service.name} className="w-full h-full object-cover" />
+                                <img
+                                    src={service.image || `${API_BASE_URL}/services/${service.id || service._id}/image`}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/300x200?text=No+Service+Image'; }}
+                                    alt={service.name}
+                                    className="w-full h-full object-cover"
+                                />
                                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                                     <button
                                         onClick={() => handleEdit(service)}
@@ -2018,7 +2028,8 @@ const ServiceRequestManagement = () => {
                             {/* Service Image */}
                             <div className="w-full md:w-32 h-32 flex-shrink-0">
                                 <img
-                                    src={request.service?.image || 'https://via.placeholder.com/150'}
+                                    src={request.service?.image || `${API_BASE_URL}/services/${request.service?._id || request.service?.id}/image`}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/150?text=No+Image'; }}
                                     alt={request.service?.name}
                                     className="w-full h-full object-cover rounded-xl"
                                 />
