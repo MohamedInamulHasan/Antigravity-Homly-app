@@ -329,16 +329,12 @@ const StoreManagement = () => {
                         {displayedStores.map(store => (
                             <div key={store.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden group">
                                 <div className="h-48 overflow-hidden relative">
-                                    {store.image ? (
-                                        <img
-                                            src={store.image || `${API_BASE_URL}/stores/${store.id || store._id}/image`}
-                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/300x200?text=No+Store+Image'; }}
-                                            alt={store.name}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full bg-gray-200 dark:bg-gray-700"></div>
-                                    )}
+                                    <img
+                                        src={store.image || `${API_BASE_URL}/stores/${store.id || store._id}/image`}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/300x200?text=No+Store+Image'; }}
+                                        alt={store.name}
+                                        className="w-full h-full object-cover"
+                                    />
                                     <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                                         {/* Allow edit for store admin too */}
                                         <button
