@@ -11,7 +11,8 @@ export const useServiceRequests = () => {
         queryKey: serviceRequestKeys.lists(),
         queryFn: async () => {
             const response = await apiService.serviceRequests.getAll();
-            return response.data;
+            // API interceptor already returns response.data, so response IS the data
+            return response;
         },
         staleTime: 5 * 60 * 1000,
     });

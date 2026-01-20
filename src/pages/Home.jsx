@@ -11,7 +11,6 @@ import { isStoreOpen } from '../utils/storeHelpers';
 import { API_BASE_URL } from '../utils/api';
 import SimpleProductCard from '../components/SimpleProductCard';
 import PullToRefreshLayout from '../components/PullToRefreshLayout';
-import { API_BASE_URL } from '../utils/api';
 
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);

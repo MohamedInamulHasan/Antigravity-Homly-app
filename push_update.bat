@@ -5,7 +5,7 @@ git config --global --add safe.directory "d:/Antigravity-Homly app"
 git config --global --add safe.directory "D:/Antigravity-Homly app"
 git status
 git add .
-git commit -m "Fix: Search Results, Order Summary Images & Service Request Display"
+git commit -m "Fix: Email Service, Service Requests Display & Search Images"
 git push
 echo ✅ Done!
 pause

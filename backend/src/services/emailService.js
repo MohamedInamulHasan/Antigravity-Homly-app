@@ -1,11 +1,13 @@
 import nodemailer from 'nodemailer';
 
-// Create reusable transporter
+// Create reusable transporter using existing Brevo SMTP configuration
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+    port: process.env.SMTP_PORT || 587,
+    secure: false, // true for 465, false for other ports
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
     }
 });
 
@@ -48,26 +50,102 @@ export const sendOrderNotificationEmail = async (order) => {
     try {
         const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
 
+        // Extract shipping address fields
+        const shippingAddr = order.shippingAddress || {};
+        const customerName = shippingAddr.name || order.user?.name || 'Customer';
+        const customerMobile = shippingAddr.mobile || 'N/A';
+        const customerAddress = shippingAddr.street || 'N/A';
+        const customerCity = shippingAddr.city || 'N/A';
+        const customerZip = shippingAddr.zip || 'N/A';
+
+        // Format phone number for WhatsApp (remove all non-digits, ensure it starts with country code)
+        let whatsappNumber = customerMobile.replace(/[^0-9]/g, '');
+        // If number doesn't start with country code and is 10 digits, assume India (+91)
+        if (whatsappNumber.length === 10) {
+            whatsappNumber = '91' + whatsappNumber;
+        }
+
         const mailOptions = {
             from: `"Homly Orders" <${process.env.EMAIL_USER}>`,
             to: adminEmail,
-            subject: `New Order #${order._id}`,
+            subject: `New Order #${order._id.toString().slice(-8).toUpperCase()}`,
             html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #2563eb;">New Order Received!</h2>
-                    <p><strong>Order ID:</strong> ${order._id}</p>
-                    <p><strong>Customer:</strong> ${order.name}</p>
-                    <p><strong>Mobile:</strong> ${order.mobile}</p>
-                    <p><strong>Address:</strong> ${order.address}, ${order.city} - ${order.zip}</p>
-                    <p><strong>Total:</strong> ₹${order.total}</p>
-                    <p><strong>Delivery Date:</strong> ${order.deliveryDate || 'Not specified'}</p>
-                    <p><strong>Delivery Time:</strong> ${order.deliveryTime || 'Not specified'}</p>
-                    <h3>Items:</h3>
-                    <ul>
-                        ${order.items.map(item => `
-                            <li>${item.title} - Qty: ${item.quantity} - ₹${item.price * item.quantity}</li>
-                        `).join('')}
-                    </ul>
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #2563eb; margin-bottom: 20px;">🎉 New Order Received!</h2>
+                    
+                    <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <p style="margin: 5px 0;"><strong>Order ID:</strong> #${order._id.toString().slice(-8).toUpperCase()}</p>
+                        <p style="margin: 5px 0;"><strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                        <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #f59e0b;">${order.status}</span></p>
+                    </div>
+                    
+                    <div style="background-color: #eff6ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h3 style="margin-top: 0; color: #1f2937;">Customer Details</h3>
+                        <p style="margin: 5px 0;"><strong>Name:</strong> ${customerName}</p>
+                        <p style="margin: 5px 0;"><strong>Mobile:</strong> ${customerMobile}</p>
+                        <p style="margin: 5px 0;"><strong>Address:</strong> ${customerAddress}</p>
+                        <p style="margin: 5px 0;"><strong>City:</strong> ${customerCity}</p>
+                        <p style="margin: 5px 0;"><strong>ZIP Code:</strong> ${customerZip}</p>
+                    </div>
+                    
+                    <h3 style="color: #1f2937;">Order Items</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr style="background-color: #f3f4f6;">
+                                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #e5e7eb;">Item</th>
+                                <th style="padding: 10px; text-align: center; border-bottom: 2px solid #e5e7eb;">Qty</th>
+                                <th style="padding: 10px; text-align: right; border-bottom: 2px solid #e5e7eb;">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${order.items.map(item => `
+                                <tr>
+                                    <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
+                                        <strong>${item.name || item.title || 'Product'}</strong>
+                                        ${item.storeId?.name ? `<br><small style="color: #6b7280;">Store: ${item.storeId.name}</small>` : ''}
+                                    </td>
+                                    <td style="padding: 10px; text-align: center; border-bottom: 1px solid #e5e7eb;">${item.quantity}</td>
+                                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e5e7eb;">₹${(item.price * item.quantity).toFixed(0)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td style="padding: 5px 0;"><strong>Subtotal:</strong></td>
+                                <td style="padding: 5px 0; text-align: right;">₹${(order.subtotal || 0).toFixed(0)}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 5px 0;"><strong>Delivery Charge:</strong></td>
+                                <td style="padding: 5px 0; text-align: right;">₹${(order.shipping || 0).toFixed(0)}</td>
+                            </tr>
+                            ${order.discount > 0 ? `
+                            <tr>
+                                <td style="padding: 5px 0;"><strong>Discount:</strong></td>
+                                <td style="padding: 5px 0; text-align: right; color: #10b981;">-₹${order.discount.toFixed(0)}</td>
+                            </tr>
+                            ` : ''}
+                            <tr style="border-top: 2px solid #e5e7eb;">
+                                <td style="padding: 10px 0;"><strong style="font-size: 18px;">Total:</strong></td>
+                                <td style="padding: 10px 0; text-align: right;"><strong style="font-size: 18px; color: #2563eb;">₹${order.total.toFixed(0)}</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <p style="margin: 5px 0;"><strong>Payment Method:</strong> ${order.paymentMethod?.type || 'Cash on Delivery'}</p>
+                        <p style="margin: 5px 0;"><strong>Delivery Time:</strong> ${order.scheduledDeliveryTime ? new Date(order.scheduledDeliveryTime).toLocaleString() : 'Not specified'}</p>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px;">
+                        <p style="margin-bottom: 15px;"><strong>Contact Customer:</strong></p>
+                        <a href="https://wa.me/${whatsappNumber}?text=Hello%20${encodeURIComponent(customerName)}%21%0A%0AYour%20order%20has%20been%20received%20from%20Homly.%0A%0A*Order%20Details%3A*%0AOrder%20ID%3A%20%23${order._id.toString().slice(-8).toUpperCase()}%0ATotal%20Amount%3A%20₹${order.total.toFixed(0)}%0ADelivery%20Charge%3A%20₹${(order.shipping || 0).toFixed(0)}%0APayment%3A%20${encodeURIComponent(order.paymentMethod?.type || 'Cash on Delivery')}%0A%0A*Delivery%20Address%3A*%0A${encodeURIComponent(customerAddress)}%2C%20${encodeURIComponent(customerCity)}%20-%20${customerZip}%0A%0A*Items%20Ordered%3A*%0A${order.items.map((item, idx) => `${idx + 1}.%20${encodeURIComponent(item.name || item.title || 'Product')}%20x${item.quantity}%20-%20₹${(item.price * item.quantity).toFixed(0)}`).join('%0A')}%0A%0AYour%20order%20is%20being%20processed%20and%20will%20be%20delivered%20soon.%20Thank%20you%20for%20shopping%20with%20Homly%21" 
+                           style="display: inline-block; padding: 12px 24px; background-color: #25D366; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                            📱 Contact via WhatsApp
+                        </a>
+                    </div>
                 </div>
             `
         };
