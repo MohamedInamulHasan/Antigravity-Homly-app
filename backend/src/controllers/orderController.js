@@ -108,7 +108,7 @@ export const getOrders = async (req, res, next) => {
         }
 
         const orders = await Order.find(query)
-            .select('items.product items.name items.storeId items.quantity items.price total status createdAt user shippingAddress paymentMethod') // Removed items.image
+            .select('items.product items.name items.storeId items.quantity items.price total status createdAt user shippingAddress paymentMethod shipping') // Added shipping
             .populate({
                 path: 'items.product',
                 select: 'title', // Removed image from populate

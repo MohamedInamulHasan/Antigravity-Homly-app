@@ -10,13 +10,32 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const checkUserLoggedIn = async () => {
+            console.log('🔍 AuthContext: checkUserLoggedIn started');
             // Optimistic UI: Load from localStorage first
             const storedUser = localStorage.getItem('userInfo');
             const storedToken = localStorage.getItem('authToken');
 
-            if (storedUser) {
-                setUser(JSON.parse(storedUser));
-                setLoading(false);
+            console.log('🔍 AuthContext: Storage check', {
+                hasStoredUser: !!storedUser,
+                hasStoredToken: !!storedToken
+            });
+
+            if (storedUser && storedToken) {
+                try {
+                    // Fix for "undefined" string causing SyntaxError
+                    if (storedUser === 'undefined') {
+                        throw new Error('Stored user is "undefined" string');
+                    }
+                    const parsedUser = JSON.parse(storedUser);
+                    console.log('✅ AuthContext: Optimistic Login Success', parsedUser);
+                    setUser(parsedUser);
+                    setLoading(false);
+                } catch (e) {
+                    console.error('❌ AuthContext: Failed to parse stored user info', e);
+                    // Corrupted data? Clear it.
+                    localStorage.removeItem('userInfo');
+                    // Don't return here, let the server verification attempt to fix it or fail gracefully
+                }
             }
 
             // Fallback: If no token is found locally, do NOT attempt to verify with server.
@@ -24,33 +43,49 @@ export const AuthProvider = ({ children }) => {
             // Exception: If we are on Desktop and rely on Cookies only, this might be strict, 
             // but since we moved to Hybrid Auth, we expect a token.
             if (!storedToken && !storedUser) {
+                console.log('ℹ️ AuthContext: No token/user found. Stopping check.');
                 setLoading(false);
                 return;
             }
 
             try {
+                console.log('⏳ AuthContext: Verifying session with server...');
                 // Verify session with server (works for both Cookie and Bearer Token)
-                const data = await apiService.getProfile();
+                // Add a race condition: If server takes > 5 seconds, fail fast so app loads
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Session verification check timed out')), 5000)
+                );
 
+                const data = await Promise.race([
+                    apiService.getProfile(),
+                    timeoutPromise
+                ]);
+
+                console.log('✅ AuthContext: Server Verification Success', data);
                 // Update with fresh data from server
                 setUser(data.data);
                 localStorage.setItem('userInfo', JSON.stringify(data.data));
             } catch (err) {
-                console.warn('Session verification failed:', err.message);
+                console.warn('⚠️ AuthContext: Session verification failed:', err.message);
                 // If token exists but failed, it might be expired
                 if (err.response?.status === 401) {
+                    console.log('❌ AuthContext: 401 detected during verification. Clearing session.');
                     setUser(null);
                     localStorage.removeItem('userInfo');
                     localStorage.removeItem('authToken');
                 }
             } finally {
+                // Ensure loading is set to false even if optimistic load happened earlier, 
+                // to cover the async verification part if it finished later (though state might already be false)
                 setLoading(false);
+                console.log('🏁 AuthContext: checkUserLoggedIn finished. Loading set to false.');
             }
         };
         checkUserLoggedIn();
 
         // Listen for global 401 unauthorized events from apiService
-        const handleUnauthorized = () => {
+        const handleUnauthorized = (e) => {
+            console.warn('⚠️ Global 401 Unauthorized Event Triggered', e);
             setUser(null);
             localStorage.removeItem('userInfo');
             localStorage.removeItem('authToken');

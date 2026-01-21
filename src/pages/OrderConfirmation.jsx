@@ -55,9 +55,15 @@ const OrderConfirmation = () => {
             })),
             total: finalTotal || ((cartTotal || 0) + finalDeliveryCharge),
             subtotal: cartTotal,
-            shipping: finalDeliveryCharge,
+            // FIX: If delivery is free (0) because of coins, we MUST send the underlying shipping cost (20)
+            // to the backend so it detects "Shipping > 0" and triggers the coin deduction logic.
+            // The backend will then waive the shipping (set to 0) and deduct the coin.
+            // If we send 0, the backend assumes it's already free and skips coin deduction.
+            shipping: finalDeliveryCharge === 0 ? 20 : finalDeliveryCharge,
             tax: 0,
             discount: 0,
+            // If we send shipping 20, we must also send the total as if shipping was 20, so backend validation passes
+            total: finalDeliveryCharge === 0 ? ((cartTotal || 0) + 20) : (finalTotal || ((cartTotal || 0) + finalDeliveryCharge)),
             shippingAddress: {
                 name: formData.name,
                 street: formData.address,

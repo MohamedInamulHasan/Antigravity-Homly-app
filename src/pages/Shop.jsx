@@ -10,7 +10,7 @@ import { API_BASE_URL } from '../utils/api';
 const Shop = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchParams, setSearchParams] = useSearchParams();
-    const { stores, categories: dbCategories } = useData();
+    const { stores, categories: dbCategories, loading } = useData();
     const { t } = useLanguage();
     const navigate = useNavigate();
 
@@ -22,15 +22,12 @@ const Shop = () => {
         ...(dbCategories || []).map(cat => ({ name: cat.name }))
     ];
 
-    if (!stores) {
-        return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-        );
-    }
+    // Non-blocking load: logic handled in return
 
-    const filteredStores = stores.filter(store => {
+    // Safety check for stores array to prevent crash if undefined (though DataContext should init it)
+    const safeStores = stores || [];
+
+    const filteredStores = safeStores.filter(store => {
         const matchesSearch = store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (store.address && store.address.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -93,7 +90,24 @@ const Shop = () => {
                         </div>
                     </div>
 
-                    {filteredStores.length > 0 ? (
+                    {loading?.stores ? (
+                        // Skeleton Loader
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                                <div key={i} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden animate-pulse">
+                                    <div className="h-48 bg-gray-200 dark:bg-gray-700"></div>
+                                    <div className="p-6 space-y-4">
+                                        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                                        <div className="space-y-2">
+                                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+                                        </div>
+                                        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg w-full"></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : filteredStores.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredStores.map((store) => (
                                 <div key={store._id || store.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 group">

@@ -373,10 +373,22 @@ const Home = () => {
 
 
                     {/* Loading State for Products - Inline */}
+                    {/* Loading State for Products - Skeleton Grid */}
                     {loadingProducts && (
-                        <div className="flex flex-col items-center justify-center py-12">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                            <p className="text-gray-500 animate-pulse">{t('Loading products...')}</p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+                                <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-gray-100 dark:border-gray-700 animate-pulse flex flex-col h-full">
+                                    <div className="w-full aspect-square bg-gray-200 dark:bg-gray-700 rounded-xl mb-3"></div>
+                                    <div className="space-y-2 flex-grow">
+                                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mt-2"></div>
+                                    </div>
+                                    <div className="mt-3">
+                                        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg w-full"></div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
 

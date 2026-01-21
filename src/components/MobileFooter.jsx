@@ -1,18 +1,21 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Store, ShoppingCart, User, Package } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const MobileFooter = () => {
     const location = useLocation();
     const { cartCount } = useCart();
+
+    const { user } = useAuth(); // Add auth context
 
     const isActive = (path) => location.pathname === path;
 
     const navItems = [
         { path: '/', icon: Home, label: 'Home' },
         { path: '/store', icon: Store, label: 'Store' },
-        { path: '/orders', icon: Package, label: 'Orders' },
-        { path: '/profile', icon: User, label: 'Profile' },
+        { path: user ? '/orders' : '/login', icon: Package, label: 'Orders' },
+        { path: user ? '/profile' : '/login', icon: User, label: user ? 'Profile' : 'Login' }, // Dynamic label/path
     ];
 
     // Hide footer on specific pages
@@ -29,7 +32,7 @@ const MobileFooter = () => {
                     const active = isActive(item.path);
                     return (
                         <Link
-                            key={item.path}
+                            key={item.label} // Use label as key to avoid duplicates when paths are identical (e.g. /login)
                             to={item.path}
                             className={`relative flex flex-col items-center justify-center w-full h-full space-y-0.5 ${active
                                 ? 'text-blue-600 dark:text-blue-400'

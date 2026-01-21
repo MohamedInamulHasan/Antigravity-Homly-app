@@ -331,20 +331,22 @@ export const DataProvider = ({ children }) => {
         if (initialLoading) {
             // Check if ALL data is loaded (finished fetching, success or fail)
             // We verify loading flags are false.
+            // Check if ALL data is loaded (finished fetching, success or fail)
+            // We verify loading flags are false.
+            // OPTIMIZATION: Do NOT wait for orders. Let them load in background.
+            // This prevents logged-in users from being stuck on splash screen if backend is slow.
             const allDataLoaded =
                 !loading.products &&
                 !loading.stores &&
                 !loading.news &&
                 !loading.ads &&
-                !loading.services &&
                 !loading.categories &&
-                // If we have an auth token, also wait for orders to prevent "Not Found" flash
-                (!localStorage.getItem('authToken') || !loading.orders);
+                !loading.services;
 
             // Determine if we are ready to hide intro
             if (allDataLoaded) {
                 const elapsedTime = Date.now() - mountTime;
-                const minDisplayTime = 2500; // Increased to 2.5 seconds for premium feel
+                const minDisplayTime = 1000; // Reduced to 1s
                 const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
 
                 console.log('✨ All data loaded. Hiding intro in', remainingTime, 'ms');

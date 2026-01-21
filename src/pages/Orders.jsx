@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Package, Search, ChevronRight, Truck, CheckCircle, Clock, RotateCcw, ShoppingBag, Trash2, AlertTriangle, X, Store } from 'lucide-react';
 import { useOrders, useDeleteOrder } from '../hooks/queries/useOrders';
@@ -9,6 +9,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { formatOrderDateTime, formatDeliveryTime } from '../utils/dateUtils';
 import PullToRefreshLayout from '../components/PullToRefreshLayout';
 import { API_BASE_URL } from '../utils/api';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Orders = () => {
     const navigate = useNavigate();
@@ -63,10 +64,45 @@ const Orders = () => {
 
 
 
-    if (loadingOrders) {
+    // Safety timeout to prevent infinite spinner
+    const [showTimeout, setShowTimeout] = useState(false);
+    useEffect(() => {
+        if (loadingOrders) {
+            const timer = setTimeout(() => setShowTimeout(true), 5000); // Reduced to 5s for faster feedback
+            return () => clearTimeout(timer);
+        }
+    }, [loadingOrders]);
+
+    // Helper for emergency logout
+    const handleEmergencyLogout = () => {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('authToken');
+        window.location.href = '/login';
+    };
+
+    // NO BLOCKING LOADER: Allow the page structure to render immediately
+    // We will handle 'loadingOrders' state inside the return block by showing a skeleton or spinner in the list area.
+
+    // Just show timeout logic as a toast/banner if needed, or rely on internal list loading state.
+    if (showTimeout && loadingOrders) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
+                <LoadingSpinner />
+                <p className="mt-4 text-gray-500 text-center">{t('Loading is taking longer than expected...')}</p>
+                <div className="flex flex-col gap-3 mt-6 w-full max-w-xs">
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                    >
+                        {t('Reload Page')}
+                    </button>
+                    <button
+                        onClick={handleEmergencyLogout}
+                        className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        {t('Sign Out')}
+                    </button>
+                </div>
             </div>
         );
     }
@@ -111,7 +147,31 @@ const Orders = () => {
 
                     {/* Orders List */}
                     <div className="space-y-4">
-                        {filteredOrders.length > 0 ? (
+                        {loadingOrders ? (
+                            // Inline Loading State (Skeleton)
+                            <div className="space-y-4">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 animate-pulse">
+                                        <div className="flex gap-4 mb-4">
+                                            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                                            <div className="flex-1 space-y-2">
+                                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+                                                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                                            </div>
+                                            <div className="w-20 h-6 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                                            <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                                        </div>
+                                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between">
+                                            <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                            <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : filteredOrders.length > 0 ? (
                             filteredOrders.map(order => (
                                 <div
                                     key={order._id || order.id}

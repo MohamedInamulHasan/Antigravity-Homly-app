@@ -20,15 +20,17 @@ export const protect = async (req, res, next) => {
             req.user = await User.findById(decoded.id).select('-password');
 
             if (!req.user) {
+                console.error('❌ Auth Failed: User not found in DB for token payload:', decoded);
                 return res.status(401).json({ message: 'Not authorized, user not found' });
             }
 
             next();
         } catch (error) {
-            console.error(error);
+            console.error('❌ Auth Failed: Token verification error:', error.message);
             return res.status(401).json({ message: 'Not authorized, token failed' });
         }
     } else {
+        console.error('❌ Auth Failed: No token provided in cookies or header');
         return res.status(401).json({ message: 'Not authorized, no token' });
     }
 };

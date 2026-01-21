@@ -26,7 +26,7 @@ console.log('---');
 // Create axios instance with base configuration
 const api = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 120000, // 2 mins timeout for both dev and prod
+    timeout: 15000, // 15 seconds timeout (reduced from 2 mins to prevent hanging)
     headers: {
         'Content-Type': 'application/json',
     },
@@ -68,7 +68,7 @@ api.interceptors.response.use(
 
         // Global 401 (Unauthorized) Handler
         if (error.response?.status === 401) {
-            console.warn('Session expired or unauthorized. Dispatching logout event.');
+            console.warn('Session expired or unauthorized. Dispatching logout event. URL:', error.config?.url);
             window.dispatchEvent(new Event('auth:unauthorized'));
         }
 
