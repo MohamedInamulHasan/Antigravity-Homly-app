@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
+import { useUserProfile } from '../hooks/queries/useUsers';
 import { getStoreName } from '../utils/storeHelpers';
 import { CreditCard, Truck, MapPin, ShieldCheck, ShoppingBag, ArrowLeft, Store } from 'lucide-react';
 import { API_BASE_URL } from '../utils/api';
@@ -12,6 +13,7 @@ const Checkout = () => {
     const navigate = useNavigate();
     const { cartItems, cartTotal, clearCart } = useCart();
     const { user, setUser } = useAuth();
+    const { data: userProfile } = useUserProfile(); // Fetch fresh user data with coins
     const { t } = useLanguage();
     const { stores, updateUser, settings } = useData();
     const [formData, setFormData] = useState({
@@ -128,7 +130,10 @@ const Checkout = () => {
             .catch(error => console.error('❌ Failed to update user address:', error));
 
         // Navigate immediately without waiting for API call
-        const deliveryCharge = 20;
+        const currentUser = userProfile?.data || user;
+        const hasCoins = currentUser?.coins > 0;
+        const finalDeliveryCharge = hasCoins ? 0 : 20;
+
         navigate('/order-confirmation', {
             state: {
                 formData: {
@@ -138,7 +143,7 @@ const Checkout = () => {
                 },
                 cartItems,
                 cartTotal,
-                deliveryCharge
+                deliveryCharge: finalDeliveryCharge
             }
         });
     };
@@ -148,7 +153,10 @@ const Checkout = () => {
         return null;
     }
 
-    const deliveryCharge = 20;
+    // Use userProfile for fresh coin data, fallback to user from auth
+    const currentUser = userProfile?.data || user;
+    const hasCoins = currentUser?.coins > 0;
+    const deliveryCharge = hasCoins ? 0 : 20;
     const finalTotal = cartTotal + deliveryCharge;
 
     return (
@@ -404,7 +412,16 @@ const Checkout = () => {
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-gray-600 dark:text-gray-400">{t('Delivery Charge')}</span>
-                                    <span className="font-medium text-gray-900 dark:text-white">₹20</span>
+                                    {hasCoins ? (
+                                        <div className="text-right">
+                                            <span className="font-medium text-green-600 dark:text-green-400">FREE</span>
+                                            <p className="text-xs text-yellow-600 dark:text-yellow-500 flex items-center justify-end gap-1">
+                                                <span>🪙</span> Coin Applied
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <span className="font-medium text-gray-900 dark:text-white">₹20</span>
+                                    )}
                                 </div>
                                 <div className="flex items-center justify-between text-base font-bold pt-2 border-t border-gray-200 dark:border-gray-700">
                                     <span className="text-gray-900 dark:text-white">{t('Total')}</span>

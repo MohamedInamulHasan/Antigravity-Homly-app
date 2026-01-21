@@ -1352,13 +1352,15 @@ const UserManagement = () => {
             mobile: user.mobile || '',
             address: user.address || '',
             role: user.role || 'customer',
-            storeId: user.storeId?._id || user.storeId || '' // Handle populated object or direct ID
+            storeId: user.storeId?._id || user.storeId || '', // Handle populated object or direct ID
+            coins: user.coins || 0
         });
     };
 
     const handleSave = async () => {
         try {
             console.log('Updating user:', { id: editingUser._id || editingUser.id, data: formData });
+            // useUpdateUser hook expects { id, data } payload
             await updateUser({ id: editingUser._id || editingUser.id, data: formData });
             alert(t('User updated successfully!'));
             setEditingUser(null);
@@ -1519,6 +1521,7 @@ const UserManagement = () => {
                                                     {user.storeId.name || 'Store Linked'}
                                                 </div>
                                             )}
+
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             {editingUser && (editingUser._id || editingUser.id) === (user._id || user.id) ? (
@@ -1576,6 +1579,16 @@ const UserManagement = () => {
                                                             />
                                                         </div>
                                                     </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('Bonus Coins')}</label>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={formData.coins}
+                                                            onChange={(e) => setFormData({ ...formData, coins: parseInt(e.target.value) || 0 })}
+                                                            className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                                        />
+                                                    </div>
                                                     <div className="flex gap-2 justify-end">
                                                         <button
                                                             onClick={() => setEditingUser(null)}
@@ -1593,7 +1606,10 @@ const UserManagement = () => {
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="flex gap-2 justify-end">
+                                                <div className="flex gap-2 justify-end items-center">
+                                                    <div className="inline-flex items-center px-2 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs font-medium border border-yellow-200 dark:border-yellow-700 mr-2">
+                                                        <span className="mr-1">🪙</span> {user.coins || 0}
+                                                    </div>
                                                     <button
                                                         onClick={() => handleEdit(user)}
                                                         className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"

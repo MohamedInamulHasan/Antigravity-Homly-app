@@ -1,4 +1,5 @@
 import Order from '../models/Order.js';
+import User from '../models/User.js';
 import { sendOrderNotificationEmail } from '../services/emailService.js';
 
 // @desc    Create new order
@@ -25,16 +26,34 @@ export const createOrder = async (req, res, next) => {
 
         console.log('📦 Creating new order for user:', req.user?._id);
 
+        // Check for bonus coins (Free Delivery)
+        let finalShipping = shipping;
+        let finalTotal = total;
+
+        // Fetch user to check coins (if authenticated)
+        if (req.user?._id) {
+            const user = await User.findById(req.user._id);
+            if (user && user.coins > 0 && Number(shipping) > 0) {
+                console.log(`💰 User ${user._id} used 1 coin for free delivery. Remaining: ${user.coins - 1}`);
+                user.coins -= 1;
+                await user.save();
+
+                // Adjust order totals
+                finalShipping = 0;
+                finalTotal = Number(subtotal) + Number(tax) - Number(discount); // Recalculate total without shipping
+            }
+        }
+
         const order = await Order.create({
             user: req.user?._id, // Optional for guest checkout
             items,
             shippingAddress,
             paymentMethod,
             subtotal,
-            shipping,
+            shipping: finalShipping,
             tax,
             discount,
-            total,
+            total: finalTotal,
             scheduledDeliveryTime
         });
 

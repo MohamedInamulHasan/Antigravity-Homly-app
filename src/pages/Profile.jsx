@@ -76,6 +76,10 @@ const Profile = () => {
                     <div className="flex-1 min-w-0">
                         <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white truncate">{user?.name || 'Guest User'}</h1>
                         <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 truncate">{user?.email || 'Not logged in'}</p>
+                        <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-sm font-medium border border-yellow-200 dark:border-yellow-700">
+                            <span className="mr-1">🪙</span>
+                            {user.coins || 0} Bonus Coin{user.coins !== 1 ? 's' : ''}
+                        </div>
                     </div>
                 </div>
 

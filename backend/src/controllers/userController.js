@@ -35,7 +35,8 @@ const sendTokenResponse = (user, statusCode, res) => {
                 role: user.role,
                 address: user.address,
                 mobile: user.mobile,
-                storeId: user.storeId
+                storeId: user.storeId,
+                coins: user.coins || 0
             }
         });
 };
@@ -121,7 +122,8 @@ export const getUserProfile = async (req, res, next) => {
                     email: user.email,
                     role: user.role,
                     mobile: user.mobile,
-                    address: user.address
+                    address: user.address,
+                    coins: user.coins || 0
                 }
             });
         } else {
@@ -206,6 +208,18 @@ export const updateUserByAdmin = async (req, res, next) => {
             user.storeId = undefined;
         }
 
+        // Debug logging for coin updates
+        console.log('📝 updateUserByAdmin Request:', {
+            id: req.params.id,
+            body: req.body,
+            coinsReceived: req.body.coins
+        });
+
+        if (req.body.coins !== undefined) {
+            console.log(`🪙 Updating coins for user ${user._id}: ${user.coins} -> ${req.body.coins}`);
+            user.coins = Number(req.body.coins);
+        }
+
         if (req.body.password) {
             user.password = req.body.password;
         }
@@ -221,7 +235,8 @@ export const updateUserByAdmin = async (req, res, next) => {
                 role: updatedUser.role,
                 storeId: updatedUser.storeId,
                 mobile: updatedUser.mobile,
-                address: updatedUser.address
+                address: updatedUser.address,
+                coins: updatedUser.coins || 0
             }
         });
     } catch (error) {

@@ -5,6 +5,8 @@ import { useData } from '../context/DataContext';
 import { getStoreName } from '../utils/storeHelpers';
 import { useLanguage } from '../context/LanguageContext';
 import { API_BASE_URL } from '../utils/api';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../context/AuthContext';
 import { CheckCircle, ArrowLeft, ClipboardList, ShoppingBag, MapPin, Store } from 'lucide-react';
 
 const OrderConfirmation = () => {
@@ -13,6 +15,8 @@ const OrderConfirmation = () => {
     const { clearCart } = useCart();
     const { addOrder, stores } = useData();
     const { t } = useLanguage();
+    const { setUser } = useAuth();
+    const queryClient = useQueryClient();
 
     const { formData, cartItems, cartTotal, deliveryCharge } = location.state || {};
     const finalTotal = (cartTotal || 0) + (deliveryCharge || 0);
@@ -88,8 +92,15 @@ const OrderConfirmation = () => {
             setShowConfirmModal(false);
             setShowSuccessModal(true);
 
-            // WhatsApp notification removed as per user request
-            // sendWhatsAppNotification(createdOrder, formData, cartItems, cartTotal);
+            // Instant update: Deduct coin locally if used
+            if (finalDeliveryCharge === 0 && deliveryCharge === 0) {
+                setUser(prev => ({ ...prev, coins: Math.max((prev?.coins || 0) - 1, 0) }));
+                queryClient.invalidateQueries(['user-profile']);
+            }
+
+            // WhatsApp notification (Disabled as per user request to only have it in email)
+            // sendWhatsAppNotification(createdOrder, formData, cartItems, finalTotal, finalDeliveryCharge);
+
             // Email notification is sent automatically from backend
         } catch (error) {
             console.error('❌ Failed to create order:', error);
@@ -106,10 +117,8 @@ const OrderConfirmation = () => {
         }
     };
 
-    /*
-    // WhatsApp notification function - removed as per user request
     // Function to send WhatsApp notification to admin
-    const sendWhatsAppNotification = (order, customerInfo, items, total) => {
+    const sendWhatsAppNotification = (order, customerInfo, items, total, delivery) => {
         // Admin WhatsApp number
         const adminWhatsAppNumber = '919500171980'; // Format: country code + number (no + or spaces)
 
@@ -122,6 +131,8 @@ const OrderConfirmation = () => {
         const deliveryTime = formData.deliveryTime ?
             `\n📅 *Scheduled Delivery:* ${new Date().toLocaleDateString()} at ${formData.deliveryTime}` : '';
 
+        const deliveryText = delivery === 0 ? "FREE (Coin Applied)" : `₹${delivery}`;
+
         const message = `🛒 *NEW ORDER RECEIVED!*\n\n` +
             `📋 *Order ID:* #${orderId}\n\n` +
             `👤 *Customer Details:*\n` +
@@ -130,8 +141,8 @@ const OrderConfirmation = () => {
             `Address: ${customerInfo.address}, ${customerInfo.city}, ${customerInfo.zip}\n` +
             `${deliveryTime}\n\n` +
             `🛍️ *Items Ordered:*\n${itemsList}\n\n` +
-            `💰 *Total Amount:* ₹${(total + 20).toFixed(0)}\n` +
-            `(Subtotal: ₹${total.toFixed(0)} + Delivery: ₹20)\n\n` +
+            `💰 *Total Amount:* ₹${total.toFixed(0)}\n` +
+            `(Subtotal: ₹${(total - delivery).toFixed(0)} + Delivery: ${deliveryText})\n\n` +
             `⏰ *Order Time:* ${new Date().toLocaleString('en-US', {
                 month: 'short',
                 day: 'numeric',
@@ -154,7 +165,6 @@ const OrderConfirmation = () => {
             window.location.href = whatsappUrl;
         }, 1000); // Small delay to ensure order is saved first
     };
-    */
 
     const handleCloseSuccess = () => {
         if (createdOrderId) {
@@ -225,7 +235,16 @@ const OrderConfirmation = () => {
                             </div>
                             <div className="flex justify-between text-gray-600 dark:text-gray-400">
                                 <span>{t('Delivery Charge')}</span>
-                                <span>₹{(deliveryCharge || 20).toFixed(0)}</span>
+                                {(deliveryCharge === 0 || deliveryCharge === null) ? (
+                                    <div className="text-right">
+                                        <span className="font-medium text-green-600 dark:text-green-400">FREE</span>
+                                        <p className="text-xs text-yellow-600 dark:text-yellow-500 flex items-center justify-end gap-1">
+                                            <span>🪙</span> Coin Applied
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <span>₹{(deliveryCharge || 20).toFixed(0)}</span>
+                                )}
                             </div>
                             <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
                                 <span className="text-lg font-bold text-gray-900 dark:text-white">{t('Total')}</span>

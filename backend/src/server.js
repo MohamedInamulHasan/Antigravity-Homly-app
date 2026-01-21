@@ -37,43 +37,10 @@ app.use((req, res, next) => {
 
 // Middleware (Force Restart)
 app.use(cors({
-    origin: (origin, callback) => {
-        const allowedOrigins = [
-            process.env.CLIENT_URL,
-            'http://localhost:5173',
-            'http://localhost:5174',
-            'http://localhost:5175',
-            'http://127.0.0.1:5173',
-            'http://127.0.0.1:5174',
-            'https://localhost',  // Capacitor Android WebView
-            'http://localhost',    // Capacitor Android WebView
-            'http://10.93.16.66:5173', // LAN IP Frontend
-            'http://10.93.16.66:5000' // LAN IP Backend
-        ];
-
-        // Allow requests with no origin (like mobile apps, Capacitor, or curl requests)
-        if (!origin) return callback(null, true);
-
-        // Allow Capacitor apps (they use capacitor:// or file:// protocol or localhost)
-        if (origin.startsWith('capacitor://') ||
-            origin.startsWith('file://') ||
-            origin.startsWith('ionic://') ||
-            origin === 'https://localhost' ||
-            origin === 'http://localhost') {
-            return callback(null, true);
-        }
-
-        // Allow allowed origins, any Vercel app, and the backend itself
-        if (allowedOrigins.includes(origin) ||
-            origin.endsWith('.vercel.app') ||
-            origin.endsWith('.onrender.com')) {
-            return callback(null, true);
-        }
-
-        console.log('CORS blocked origin:', origin);
-        return callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true
+    origin: true, // Allow any origin
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Enable compression for all responses (reduces payload size by 60-80%)
@@ -85,20 +52,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Routes
 app.get('/', (req, res) => {
-    res.json({
-        message: 'Welcome to Homly E-commerce API',
-        version: '1.0.0',
-        endpoints: {
-            products: '/api/products',
-            users: '/api/users',
-            orders: '/api/orders',
-            stores: '/api/stores',
-            news: '/api/news',
-            ads: '/api/ads',
-            categories: '/api/categories',
-            services: '/api/services'
-        }
-    });
+    res.send(`API is running... (Restarted: ${new Date().toISOString()})`);
 });
 
 app.use('/api/products', productRoutes);
@@ -180,7 +134,6 @@ app.get('/api/debug-email', async (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-console.log(`⏳ Attempting to start server on port ${PORT}...`);
 
 app.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);

@@ -1,16 +1,24 @@
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Store } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useUserProfile } from '../hooks/queries/useUsers';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { getStoreName } from '../utils/storeHelpers';
+import { API_BASE_URL } from '../utils/api';
 
 const Cart = () => {
     const { cartItems, removeFromCart, updateQuantity, cartTotal } = useCart();
+    const { user } = useAuth();
+    const { data: userProfile } = useUserProfile(); // Fetch fresh user data with coins
     const { t } = useLanguage();
     const { stores } = useData();
 
-    const deliveryCharge = 20;
+    // Use userProfile for fresh coin data, fallback to user from auth
+    const currentUser = userProfile?.data || user;
+    const hasCoins = currentUser?.coins > 0;
+    const deliveryCharge = hasCoins ? 0 : 20;
     const finalTotal = cartTotal + deliveryCharge;
 
     if (cartItems.length === 0) {
@@ -51,10 +59,10 @@ const Cart = () => {
                             <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 sm:p-6 flex gap-6 transition-all duration-200">
                                 <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600">
                                     <img
-                                        src={item.image || 'https://via.placeholder.com/100x100?text=No+Image'}
+                                        src={item.image || `${API_BASE_URL}/products/${item.id}/image`}
                                         alt={item.title}
                                         className="h-full w-full object-cover object-center"
-                                        onError={(e) => { e.target.src = 'https://via.placeholder.com/100x100?text=No+Image'; }}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/100x100?text=No+Image'; }}
                                     />
                                 </div>
 
@@ -122,7 +130,16 @@ const Cart = () => {
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <p className="text-sm text-gray-600 dark:text-gray-400">{t('Delivery Charge')}</p>
-                                    <p className="text-sm font-medium text-gray-900 dark:text-white">₹{deliveryCharge}</p>
+                                    {hasCoins ? (
+                                        <div className="text-right">
+                                            <span className="text-sm font-medium text-green-600 dark:text-green-400">FREE</span>
+                                            <p className="text-xs text-yellow-600 dark:text-yellow-500 flex items-center justify-end gap-1">
+                                                <span>🪙</span> Coin Applied
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm font-medium text-gray-900 dark:text-white">₹{deliveryCharge}</p>
+                                    )}
                                 </div>
 
                                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4 flex items-center justify-between">
