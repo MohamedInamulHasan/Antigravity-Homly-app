@@ -203,72 +203,77 @@ const ProductDetails = () => {
                                 </div>
 
                                 <div className="prose prose-lg dark:prose-invert max-w-none mb-10">
-                                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                                         {t(product, 'description')}
                                     </p>
                                 </div>
 
-                                {/* Quantity & Total Section */}
-                                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-6 mb-8">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-gray-900 dark:text-white font-medium">{t('Quantity')}</span>
-                                        </div>
-                                        <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
-                                            <button
-                                                onClick={() => {
-                                                    if (cartItem) {
-                                                        updateQuantity(productId, Math.max(0, quantity - 1));
-                                                    }
-                                                }}
-                                                className={`w-10 h-10 flex items-center justify-center text-gray-600 dark:text-gray-400 transition-colors ${quantity <= 0 ? 'opacity-50 cursor-not-allowed' : 'hover:text-blue-600 dark:hover:text-blue-400'}`}
-                                                disabled={quantity <= 0}
-                                            >
-                                                <Minus size={18} />
-                                            </button>
-                                            <span className="w-12 text-center font-bold text-gray-900 dark:text-white">{quantity}</span>
-                                            <button
-                                                onClick={() => {
-                                                    if (cartItem) {
-                                                        updateQuantity(productId, quantity + 1);
-                                                    } else {
+                                {/* Dynamic Quantity & Action Area - Replaces Old Static Section */}
+                                <div className="hidden md:block mb-8">
+                                    <div className="flex items-center gap-4">
+                                        {quantity === 0 ? (
+                                            <div className="w-full flex gap-4">
+                                                <button
+                                                    onClick={() => addToCart(product)}
+                                                    className="flex-1 py-4 px-8 rounded-2xl font-bold text-xl shadow-lg border-2 border-blue-600 text-blue-600 bg-white hover:bg-blue-50 transition-all flex items-center justify-center gap-3"
+                                                >
+                                                    <ShoppingCart size={24} />
+                                                    {t('Add to Cart')}
+                                                </button>
+                                                <button
+                                                    onClick={() => {
                                                         addToCart(product);
-                                                    }
-                                                }}
-                                                className="w-10 h-10 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                                            >
-                                                <Plus size={18} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
-                                        <span className="text-lg font-bold text-gray-900 dark:text-white">{t('Total')}</span>
-                                        <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">₹{Number(totalPrice).toFixed(0)}</span>
+                                                        navigate('/checkout');
+                                                    }}
+                                                    className="flex-1 py-4 px-8 rounded-2xl font-bold text-xl shadow-lg bg-blue-600 text-white hover:bg-blue-700 transition-all flex items-center justify-center gap-3"
+                                                >
+                                                    <ShoppingBag size={24} />
+                                                    {t('Buy Now')}
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="w-full flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                                <div className="flex gap-4">
+                                                    {/* Quantity Control Pill */}
+                                                    <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-2xl border-2 border-blue-600 p-2 px-4 shadow-sm w-40 flex-shrink-0">
+                                                        <button
+                                                            onClick={() => updateQuantity(productId, Math.max(0, quantity - 1))}
+                                                            className="w-10 h-10 flex items-center justify-center text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-colors"
+                                                        >
+                                                            <Minus size={22} strokeWidth={2.5} />
+                                                        </button>
+                                                        <span className="font-bold text-2xl text-gray-900 dark:text-white w-8 text-center">{quantity}</span>
+                                                        <button
+                                                            onClick={() => updateQuantity(productId, quantity + 1)}
+                                                            className="w-10 h-10 flex items-center justify-center text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-colors"
+                                                        >
+                                                            <Plus size={22} strokeWidth={2.5} />
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Buy Now Button (Consistent Look) */}
+                                                    <button
+                                                        onClick={handleCheckout}
+                                                        className="flex-1 py-4 px-6 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                                                    >
+                                                        <ShoppingBag size={24} />
+                                                        {t('Buy Now')}
+                                                    </button>
+                                                </div>
+
+                                                {/* Total Price Display - Below Buttons */}
+                                                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-600">
+                                                    <span className="font-medium text-gray-600 dark:text-gray-300">{t('Total Amount')}</span>
+                                                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                                        ₹{(Number(product.price) * quantity).toFixed(0)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
-                                {/* Desktop Action Button */}
-                                <div className="hidden md:block">
-                                    <button
-                                        onClick={quantity > 0 ? handleCheckout : () => addToCart(product)}
-                                        className={`w-full py-4 px-6 rounded-xl font-bold text-lg shadow-xl flex items-center justify-center gap-2 transition-all transform hover:-translate-y-1 ${quantity > 0
-                                            ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200 dark:shadow-none'
-                                            : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100'
-                                            }`}
-                                    >
-                                        {quantity > 0 ? (
-                                            <>
-                                                <ShoppingBag size={22} />
-                                                {t('Proceed to Checkout')}
-                                            </>
-                                        ) : (
-                                            <>
-                                                <ShoppingCart size={22} />
-                                                {t('Buy Now')}
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
+                                {/* Desktop Action Button - REMOVED (Merged into above section) */}
                             </div>
 
                         </div>
@@ -280,25 +285,65 @@ const ProductDetails = () => {
             {/* Sticky Action Footer - Mobile Only */}
             <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50 md:hidden">
                 <div className="max-w-7xl mx-auto">
-                    <button
-                        onClick={quantity > 0 ? handleCheckout : () => addToCart(product)}
-                        className={`w-[90%] mx-auto block py-2.5 px-4 rounded-xl font-bold text-sm shadow-xl flex items-center justify-center gap-2 transition-all transform hover:-translate-y-1 ${quantity > 0
-                            ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200 dark:shadow-none'
-                            : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100'
-                            }`}
-                    >
-                        {quantity > 0 ? (
-                            <>
-                                <ShoppingBag size={20} />
-                                {t('Proceed to Checkout')}
-                            </>
-                        ) : (
-                            <>
+                    {quantity === 0 ? (
+                        <div className="w-full flex gap-3 px-2">
+                            <button
+                                onClick={() => addToCart(product)}
+                                className="flex-1 py-3 px-4 rounded-xl font-bold text-base shadow-lg border border-blue-600 text-blue-600 bg-white flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                            >
                                 <ShoppingCart size={20} />
+                                {t('Add to Cart')}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    addToCart(product);
+                                    navigate('/checkout');
+                                }}
+                                className="flex-1 py-3 px-4 rounded-xl font-bold text-base shadow-lg bg-blue-600 text-white flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                            >
+                                <ShoppingBag size={20} />
                                 {t('Buy Now')}
-                            </>
-                        )}
-                    </button>
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="w-full flex flex-col gap-3">
+                            <div className="flex gap-3 px-2">
+                                {/* Mobile Quantity Pill */}
+                                <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 p-1 w-32 flex-shrink-0">
+                                    <button
+                                        onClick={() => updateQuantity(productId, Math.max(0, quantity - 1))}
+                                        className="w-10 h-10 flex items-center justify-center text-blue-600 bg-white dark:bg-gray-800 rounded-lg shadow-sm"
+                                    >
+                                        <Minus size={18} strokeWidth={2.5} />
+                                    </button>
+                                    <span className="font-bold text-lg text-gray-900 dark:text-white">{quantity}</span>
+                                    <button
+                                        onClick={() => updateQuantity(productId, quantity + 1)}
+                                        className="w-10 h-10 flex items-center justify-center text-blue-600 bg-white dark:bg-gray-800 rounded-lg shadow-sm"
+                                    >
+                                        <Plus size={18} strokeWidth={2.5} />
+                                    </button>
+                                </div>
+
+                                {/* Mobile Buy Now Button (Consistent) */}
+                                <button
+                                    onClick={handleCheckout}
+                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-sm shadow-lg flex items-center justify-center gap-2 bg-blue-600 text-white active:scale-95 transition-transform"
+                                >
+                                    <ShoppingBag size={20} />
+                                    {t('Buy Now')}
+                                </button>
+                            </div>
+
+                            {/* Mobile Total Price - Below Buttons */}
+                            <div className="mx-2 flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-600">
+                                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{t('Total')}:</span>
+                                <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                    ₹{(Number(product.price) * quantity).toFixed(0)}
+                                </span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

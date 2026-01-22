@@ -42,8 +42,6 @@ const Shop = () => {
         setSearchParams({ category: categoryName });
     };
 
-
-
     return (
         <PullToRefreshLayout>
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
@@ -110,67 +108,74 @@ const Shop = () => {
                     ) : filteredStores.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredStores.map((store) => (
-                                <div key={store._id || store.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 group">
-                                    <div className="relative h-48 overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                <div key={store._id || store.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100 dark:border-gray-700 group flex flex-col">
+                                    {/* Image Section - Reduced Height */}
+                                    <div className="relative h-48 overflow-hidden">
                                         <img
                                             src={store.image || `${API_BASE_URL}/stores/${store._id || store.id}/image`}
                                             alt={store.name}
-                                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 ease-out"
                                             loading="lazy"
                                             onError={(e) => {
                                                 e.target.onerror = null;
-                                                e.target.src = "https://via.placeholder.com/400x300?text=No+Store+Image";
+                                                e.target.src = "https://via.placeholder.com/400x300?text=Store";
                                             }}
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                        {/* Store Status Overlay */}
-                                        {!isStoreOpen(store) && (
-                                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
-                                                <span className="bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg transform -rotate-12 border-2 border-white">
-                                                    {t('STORE CLOSED')}
-                                                </span>
-                                            </div>
-                                        )}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
-                                        {/* Store Status Badge - Only for Open stores now, or keep separate? 
-                                            User asked for 'Store Closed tag like in home page', so the overlay above handles it.
-                                            We can keep the badge for 'Open' status, but hide the 'Closed' badge since we have the overlay.
-                                         */}
-                                        <div className="absolute top-3 right-3 z-20">
-                                            {isStoreOpen(store) && (
-                                                <span className="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg">
-                                                    {t('Open')}
+                                        {/* Status & Type Badges */}
+                                        <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-2">
+                                            {isStoreOpen(store) ? (
+                                                <span className="px-2.5 py-1 bg-green-500 text-white text-[10px] uppercase font-bold tracking-wider rounded-md shadow-sm">
+                                                    OPEN
+                                                </span>
+                                            ) : (
+                                                <span className="px-2.5 py-1 bg-red-500 text-white text-[10px] uppercase font-bold tracking-wider rounded-md shadow-sm">
+                                                    CLOSED
                                                 </span>
                                             )}
                                         </div>
+
+                                        {/* Store Type Badge (Bottom Left of Image) */}
+                                        {store.type && (
+                                            <div className="absolute bottom-3 left-3 z-10">
+                                                <span className="px-2.5 py-1 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm text-gray-800 dark:text-white text-xs font-semibold rounded-lg shadow-sm">
+                                                    {store.type}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="p-6">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div>
-                                                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{t(store, 'name')}</h2>
-                                                <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-2">
-                                                    <MapPin size={16} className="mr-1 flex-shrink-0" />
-                                                    <span className="line-clamp-1">{store.address || 'No address'}</span>
-                                                </div>
-                                                {store.type && (
-                                                    <span className="inline-block px-2 py-1 text-xs font-semibold text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 rounded-md">
-                                                        {store.type}
-                                                    </span>
-                                                )}
+
+                                    {/* Content Section - Compact Layout */}
+                                    <div className="p-5 flex flex-col gap-4">
+                                        {/* Header: Name and Address */}
+                                        <div>
+                                            <h2 className="text-xl font-bold text-gray-900 dark:text-white leading-tight mb-1 truncate">
+                                                {t(store, 'name')}
+                                            </h2>
+                                            <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
+                                                <MapPin size={14} className="mr-1 flex-shrink-0" />
+                                                <span className="truncate">{store.address || t('No address')}</span>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-2 mb-6">
-                                            <div className="flex items-center text-gray-600 dark:text-gray-300 text-sm">
-                                                <Clock size={16} className="mr-2 text-blue-500" />
-                                                <span>{store.timing || '9:00 AM - 9:00 PM'}</span>
+                                        {/* Info Grid: Time and Phone */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2 flex items-center gap-2">
+                                                <Clock size={14} className="text-blue-500 shrink-0" />
+                                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
+                                                    {store.timing || '9 - 9'}
+                                                </span>
                                             </div>
-                                            <div className="flex items-center text-gray-600 dark:text-gray-300 text-sm">
-                                                <Phone size={16} className="mr-2 text-blue-500" />
-                                                <span>{store.mobile}</span>
+                                            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2 flex items-center gap-2">
+                                                <Phone size={14} className="text-purple-500 shrink-0" />
+                                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
+                                                    {store.mobile}
+                                                </span>
                                             </div>
                                         </div>
 
+                                        {/* Action Button - No Gap */}
                                         <button
                                             onClick={() => {
                                                 if (isStoreOpen(store)) {
@@ -179,12 +184,19 @@ const Shop = () => {
                                                     alert(t('This store is currently closed.'));
                                                 }
                                             }}
-                                            className={`block w-full text-center py-3 rounded-lg font-medium transition-all duration-300 shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${isStoreOpen(store)
-                                                ? 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg focus:ring-blue-500'
-                                                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                                            className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${isStoreOpen(store)
+                                                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg active:scale-95'
+                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed border border-gray-200 dark:border-gray-600'
                                                 }`}
                                         >
-                                            {isStoreOpen(store) ? t('Visit Store') : t('Closed')}
+                                            {isStoreOpen(store) ? (
+                                                <>
+                                                    <span>{t('Visit Store')}</span>
+                                                    <Store size={16} />
+                                                </>
+                                            ) : (
+                                                t('Currently Closed')
+                                            )}
                                         </button>
                                     </div>
                                 </div>

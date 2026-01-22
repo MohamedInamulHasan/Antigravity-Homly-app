@@ -67,44 +67,47 @@ const Services = () => {
                             </div>
                         ) : services.length > 0 ? (
                             services.map((service, index) => (
-                                <div key={service._id || index} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 overflow-hidden group flex flex-col h-full">
-                                    {/* Image Section */}
-                                    <div className="relative h-56 overflow-hidden bg-gray-100 dark:bg-gray-900">
+                                <div key={service._id || index} className="relative h-[340px] rounded-3xl overflow-hidden group shadow-md hover:shadow-2xl transition-all duration-300">
+                                    {/* Full Background Image */}
+                                    <div className="absolute inset-0">
                                         <img
                                             src={service.image}
                                             alt={service.name}
-                                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
                                             onError={(e) => { e.target.src = 'https://via.placeholder.com/400x250?text=Service'; }}
                                         />
-
+                                        {/* Gradient Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
                                     </div>
 
-                                    {/* Content Section */}
-                                    <div className="p-5 flex flex-col flex-grow">
-                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 line-clamp-1">{service.name}</h3>
+                                    {/* Content Overlay */}
+                                    <div className="absolute inset-x-0 bottom-0 p-6 flex flex-col justify-end h-full">
 
-                                        <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-3 line-clamp-2">
-                                            {service.description}
-                                        </p>
-
-                                        {/* info rows - Compact spacing */}
-                                        <div className="space-y-2 mb-4">
-                                            <div className="flex items-start gap-2.5 w-full group/loc leading-snug">
-                                                <div className="mt-0.5 p-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg shrink-0">
-                                                    <MapPin size={14} className="text-blue-600 dark:text-blue-400" />
-                                                </div>
-                                                <span className="text-sm text-gray-600 dark:text-gray-300 font-medium truncate pt-0.5">{service.address}</span>
-                                            </div>
+                                        {/* Icon Decoration */}
+                                        <div className="absolute top-6 right-6 p-2 bg-white/10 backdrop-blur-md rounded-xl text-white/80 border border-white/20">
+                                            <Wrench size={24} />
                                         </div>
 
-                                        {/* Action Button - Button pushed to bottom */}
-                                        <div className="pt-0 mt-auto">
+                                        <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                            <h3 className="text-2xl font-bold text-white mb-2 leading-tight drop-shadow-md">{service.name}</h3>
+
+                                            <p className="text-gray-200 text-sm leading-relaxed mb-4 line-clamp-2 opacity-90">
+                                                {service.description}
+                                            </p>
+
+                                            {/* Info Badge */}
+                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-lg border border-white/10 text-white/90 text-xs font-medium mb-5">
+                                                <MapPin size={12} className="text-blue-400" />
+                                                <span className="truncate max-w-[200px]">{service.address}</span>
+                                            </div>
+
+                                            {/* Action Button */}
                                             <button
                                                 onClick={() => handleRequestService(service)}
-                                                className="w-full py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 active:scale-95 duration-200"
+                                                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-blue-900/40 flex items-center justify-center gap-2 active:scale-95 duration-200 border border-white/10"
                                             >
-                                                <span>{t('Book Now')}</span>
-                                                <ArrowLeft className="rotate-180 w-4 h-4" />
+                                                <span>{t('Book Service')}</span>
+                                                <CheckCircle size={18} />
                                             </button>
                                         </div>
                                     </div>

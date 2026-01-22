@@ -6,12 +6,12 @@ import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { useUserProfile } from '../hooks/queries/useUsers';
 import { getStoreName } from '../utils/storeHelpers';
-import { CreditCard, Truck, MapPin, ShieldCheck, ShoppingBag, ArrowLeft, Store } from 'lucide-react';
+import { CreditCard, Truck, MapPin, ShieldCheck, ShoppingBag, ArrowLeft, Store, Trash2 } from 'lucide-react';
 import { API_BASE_URL } from '../utils/api';
 
 const Checkout = () => {
     const navigate = useNavigate();
-    const { cartItems, cartTotal, clearCart } = useCart();
+    const { cartItems, cartTotal, clearCart, removeFromCart } = useCart();
     const { user, setUser } = useAuth();
     const { data: userProfile } = useUserProfile(); // Fetch fresh user data with coins
     const { t } = useLanguage();
@@ -379,7 +379,7 @@ const Checkout = () => {
 
                             <div className="space-y-4 mb-6">
                                 {cartItems.map((item) => (
-                                    <div key={item.id} className="flex gap-4">
+                                    <div key={item.id} className="flex gap-4 group">
                                         <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600">
                                             <img
                                                 src={item.image || `${API_BASE_URL}/products/${item._id || item.id}/image`}
@@ -401,6 +401,14 @@ const Checkout = () => {
                                             <p className="text-sm text-gray-500 dark:text-gray-400">{t('Qty')}: {item.quantity}</p>
                                             <p className="text-sm font-medium text-gray-900 dark:text-white">₹{(item.price * item.quantity).toFixed(0)}</p>
                                         </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeFromCart(item.id)}
+                                            className="self-center p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100"
+                                            aria-label={t('Remove item')}
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
                                     </div>
                                 ))}
                             </div>

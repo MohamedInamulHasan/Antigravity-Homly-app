@@ -57,6 +57,25 @@ export const createOrder = async (req, res, next) => {
             scheduledDeliveryTime
         });
 
+        // Update user profile with latest shipping address for autofill
+        if (req.user?._id) {
+            try {
+                await User.findByIdAndUpdate(req.user._id, {
+                    mobile: shippingAddress.mobile,
+                    address: {
+                        street: shippingAddress.street,
+                        city: shippingAddress.city,
+                        state: shippingAddress.state,
+                        zip: shippingAddress.zip,
+                        country: shippingAddress.country || 'India'
+                    }
+                });
+            } catch (err) {
+                console.error('Failed to auto-save user address:', err);
+                // Don't fail the order if address save fails
+            }
+        }
+
         console.log('✅ Order created successfully:', order._id);
 
         // Populate store and user details for email
@@ -190,6 +209,25 @@ export const updateOrderStatus = async (req, res, next) => {
         if (!order) {
             res.status(404);
             throw new Error('Order not found');
+        }
+
+        // Check if we are cancelling the order
+        if (req.body.status === 'Cancelled' && order.status !== 'Cancelled') {
+            console.log(`❌ Cancelling order ${order._id}. Current shipping: ${order.shipping}, Status: ${order.status}`);
+            // Check if coins were used (implied by shipping === 0)
+            if (order.shipping === 0) {
+                const user = await User.findById(order.user);
+                if (user) {
+                    const oldCoins = user.coins || 0;
+                    user.coins = oldCoins + 1;
+                    await user.save();
+                    console.log(`💰 Refunded 1 coin to user ${user._id} | ${oldCoins} -> ${user.coins} | Order: ${order._id}`);
+                } else {
+                    console.error(`⚠️ User ${order.user} not found for coin refund.`);
+                }
+            } else {
+                console.log(`ℹ️ No coin refund needed (Shipping: ${order.shipping}).`);
+            }
         }
 
         order.status = req.body.status || order.status;

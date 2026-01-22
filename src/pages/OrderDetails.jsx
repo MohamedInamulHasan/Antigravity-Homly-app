@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, Truck, CheckCircle, Clock, MapPin, CreditCard, RotateCcw, Store } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { apiService, API_BASE_URL } from '../utils/api';
 import { getStoreName } from '../utils/storeHelpers';
@@ -11,7 +12,9 @@ const OrderDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { t } = useLanguage();
-    const { orders, loading, stores } = useData();
+    const { orders, loading, stores, cancelOrder } = useData();
+    const { refreshUser } = useAuth();
+    const [cancelConfirmation, setCancelConfirmation] = useState(false);
 
     const [singleOrder, setSingleOrder] = useState(null);
     const [loadingSingle, setLoadingSingle] = useState(true);
@@ -117,6 +120,26 @@ const OrderDetails = () => {
         }
     };
 
+    const confirmCancelOrder = async () => {
+        try {
+            // Use context method to update global state without reload
+            const updatedOrder = await cancelOrder(order._id || order.id);
+
+            if (updatedOrder) {
+                if (singleOrder) {
+                    setSingleOrder({ ...singleOrder, status: 'Cancelled' });
+                }
+                // Refresh user to update coin balance
+                refreshUser();
+                setCancelConfirmation(false);
+            }
+        } catch (error) {
+            console.error('Failed to cancel order:', error);
+            alert(t('Failed to cancel order. Please try again.'));
+            setCancelConfirmation(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 pb-24 transition-colors duration-200">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -150,9 +173,11 @@ const OrderDetails = () => {
                                 </p>
                             )}
                         </div>
-                        <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(order.status)}`}>
-                            {getStatusIcon(order.status)}
-                            {t(order.status)}
+                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+                            <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(order.status)}`}>
+                                {getStatusIcon(order.status)}
+                                {t(order.status)}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -293,6 +318,45 @@ const OrderDetails = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Cancel Button - Footer Area */}
+                {order.status === 'Processing' && (
+                    <div className="mt-8 flex justify-center">
+                        <button
+                            onClick={() => setCancelConfirmation(true)}
+                            className="w-full sm:w-auto px-8 py-3 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl font-bold text-base transition-colors border-2 border-red-100 dark:border-red-800 flex items-center justify-center gap-2"
+                        >
+                            <RotateCcw size={20} />
+                            {t('Cancel Order')}
+                        </button>
+                    </div>
+                )}
+
+                {/* Cancel Confirmation Modal */}
+                {cancelConfirmation && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('Cancel Order?')}</h3>
+                            <p className="text-gray-600 dark:text-gray-300 mb-6">
+                                {t('Are you sure you want to cancel this order? This action cannot be undone.')}
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setCancelConfirmation(false)}
+                                    className="flex-1 py-3 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors"
+                                >
+                                    {t('No, Keep Order')}
+                                </button>
+                                <button
+                                    onClick={confirmCancelOrder}
+                                    className="flex-1 py-3 text-white bg-red-600 hover:bg-red-700 rounded-xl font-bold shadow-lg shadow-red-200 dark:shadow-red-900/20 transition-colors"
+                                >
+                                    {t('Yes, Cancel')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

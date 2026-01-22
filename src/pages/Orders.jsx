@@ -201,7 +201,7 @@ const Orders = () => {
                                                     {getStatusIcon(order.status)}
                                                     <span className="ml-1">{t(order.status)}</span>
                                                 </div>
-                                                {!['Shipped', 'Delivered'].includes(order.status) && (
+                                                {!['Processing', 'Shipped', 'Delivered'].includes(order.status) && (
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
