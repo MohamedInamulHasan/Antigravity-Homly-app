@@ -24,21 +24,46 @@ const News = () => {
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('News & Offers')}</h1>
                     <div className="w-5" /> {/* Spacer for alignment */}
                 </div>
-
                 <div className="space-y-6">
                     {newsItems.map((item) => (
-                        <div key={item.id} className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden border border-gray-100 dark:border-gray-700/50 group flex flex-col md:flex-row h-full md:h-64">
-                            {/* Image Section */}
-                            <div className="relative h-48 md:h-full md:w-2/5 shrink-0 overflow-hidden">
-                                <img
-                                    src={item.image}
-                                    alt={item.title}
-                                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-80" />
+                        <div key={item.id} className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 transform overflow-hidden border border-gray-100 dark:border-gray-700/50 group flex flex-col md:flex-row h-full">
+                            {/* Image Section - Now with Slider */}
+                            <div className="relative h-64 md:h-auto md:w-2/5 shrink-0 overflow-hidden group/slider">
+                                {item.images && item.images.length > 1 ? (
+                                    <div className="h-full w-full relative">
+                                        <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide h-full w-full">
+                                            {item.images.map((img, idx) => (
+                                                <div key={idx} className="min-w-full h-full snap-center">
+                                                    <img
+                                                        src={img}
+                                                        alt={`${item.title} - ${idx + 1}`}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                                            {item.images.map((_, idx) => (
+                                                <div key={idx} className="w-1.5 h-1.5 rounded-full bg-white/70" />
+                                            ))}
+                                        </div>
+                                        <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                                            {item.images.length} photos
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="h-full w-full relative">
+                                        <img
+                                            src={item.image}
+                                            alt={item.title}
+                                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-80" />
+                                    </div>
+                                )}
 
                                 {/* Category Badge */}
-                                <div className="absolute top-4 left-4 z-10">
+                                <div className="absolute top-4 left-4 z-10 pointer-events-none">
                                     <span className="px-3 py-1 bg-blue-600/90 backdrop-blur-md text-white text-xs font-bold rounded-full uppercase tracking-wider shadow-lg border border-blue-400/30">
                                         {t(item, 'category')}
                                     </span>
@@ -65,18 +90,18 @@ const News = () => {
                                     {t(item, 'title')}
                                 </h2>
 
-                                <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm md:text-base line-clamp-3 md:line-clamp-none">
-                                    {item.content ? t(item, 'content') : t(item, 'description')}
-                                </p>
-
-                                {/* "Read More" or Line Decoration */}
-                                <div className="mt-4 md:mt-6 w-12 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full group-hover:w-24 transition-all duration-300"></div>
+                                {/* Full content without line-clamp */}
+                                <div className="prose prose-sm dark:prose-invert max-w-none">
+                                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                                        {item.content ? t(item, 'content') : t(item, 'description')}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

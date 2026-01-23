@@ -41,6 +41,10 @@ const productSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    isAvailable: {
+        type: Boolean,
+        default: true
+    },
     storeId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Store',

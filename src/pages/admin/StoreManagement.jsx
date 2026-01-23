@@ -292,16 +292,33 @@ const StoreManagement = () => {
             {/* Header */}
             {/* Dynamic Header for all views */}
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {view === 'list' ? (!isStoreAdmin ? t('Manage Stores') : t('My Store')) :
-                        view === 'form' ? (editingStore ? t('Edit Store') : t('Add New Store')) :
-                            view === 'storeProducts' ? `${selectedStore?.name || ''} - ${t('Products')}` :
-                                view === 'addProductToStore' ? (editingProduct ? t('Edit Product') : `${t('Add Product to')} ${selectedStore?.name || ''}`) :
-                                    t('Manage Stores')}
-                </h2>
+                <div className="flex items-center gap-2">
+                    {view !== 'list' && !(isStoreAdmin && view === 'storeProducts') && (
+                        <button
+                            onClick={() => {
+                                if (view === 'addProductToStore') {
+                                    setView('storeProducts');
+                                } else {
+                                    setView('list');
+                                }
+                            }}
+                            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-700 dark:text-gray-200"
+                            title={t('Back')}
+                        >
+                            <ArrowLeft size={24} />
+                        </button>
+                    )}
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {view === 'list' ? (!isStoreAdmin ? t('Manage Stores') : t('My Store')) :
+                            view === 'form' ? (editingStore ? t('Edit Store') : t('Add New Store')) :
+                                view === 'storeProducts' ? `${selectedStore?.name || ''} - ${t('Products')}` :
+                                    view === 'addProductToStore' ? (editingProduct ? t('Edit Product') : `${t('Add Product to')} ${selectedStore?.name || ''}`) :
+                                        t('Manage Stores')}
+                    </h2>
+                </div>
 
-                {/* Action Buttons */}
                 <div className="flex gap-2">
+
                     {view === 'list' && !isStoreAdmin && (
                         <button
                             onClick={() => {
@@ -326,21 +343,6 @@ const StoreManagement = () => {
                         </button>
                     )}
 
-                    {view !== 'list' && !(isStoreAdmin && view === 'storeProducts') && (
-                        <button
-                            onClick={() => {
-                                if (view === 'addProductToStore') {
-                                    setView('storeProducts');
-                                } else {
-                                    setView('list');
-                                }
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                        >
-                            <ArrowLeft size={20} />
-                            {t('Back')}
-                        </button>
-                    )}
                 </div>
             </div>
 
@@ -414,14 +416,6 @@ const StoreManagement = () => {
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-4">
-                            {!isStoreAdmin && (
-                                <button
-                                    onClick={handleBackToList}
-                                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                                >
-                                    <ArrowLeft size={20} className="text-gray-500 dark:text-gray-400" />
-                                </button>
-                            )}
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                                 {editingStore ? (isStoreAdmin ? t('My Store Settings') : t('Edit Store')) : t('Add New Store')}
                             </h2>
@@ -570,6 +564,7 @@ const StoreManagement = () => {
                                         <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Image')}</th>
                                         <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Title')}</th>
                                         <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Price')}</th>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Status')}</th>
                                         <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Actions')}</th>
                                     </tr>
                                 </thead>
@@ -590,6 +585,35 @@ const StoreManagement = () => {
                                             </td>
                                             <td className="p-4 font-medium text-gray-900 dark:text-white">{product.title}</td>
                                             <td className="p-4 font-medium text-gray-900 dark:text-white">₹{product.price}</td>
+                                            <td className="p-4">
+                                                <button
+                                                    onClick={async () => {
+                                                        try {
+                                                            const newStatus = !product.isAvailable; // If undefined, !undefined is true (so it becomes true), but we want default true. 
+                                                            // Actually product.isAvailable default is true. If it's undefined, we assume it's true.
+                                                            // So if undefined, current is true, new is false.
+                                                            // Wait, if undefined, !undefined is true. 
+                                                            // Let's be explicit: current = product.isAvailable !== false.
+                                                            const currentStatus = product.isAvailable !== false;
+                                                            await updateProduct({
+                                                                id: product._id || product.id,
+                                                                data: { ...product, isAvailable: !currentStatus }
+                                                            });
+                                                        } catch (error) {
+                                                            console.error('Failed to toggle availability:', error);
+                                                            alert(t('Failed to update status'));
+                                                        }
+                                                    }}
+                                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${product.isAvailable !== false ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
+                                                        }`}
+                                                    title={product.isAvailable !== false ? t('Available') : t('Out of Stock')}
+                                                >
+                                                    <span
+                                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${product.isAvailable !== false ? 'translate-x-6' : 'translate-x-1'
+                                                            }`}
+                                                    />
+                                                </button>
+                                            </td>
                                             <td className="p-4">
                                                 <div className="flex gap-2">
                                                     <button

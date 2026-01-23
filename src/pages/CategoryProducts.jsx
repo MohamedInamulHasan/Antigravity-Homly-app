@@ -6,6 +6,7 @@ import SimpleProductCard from '../components/SimpleProductCard';
 import PullToRefreshLayout from '../components/PullToRefreshLayout';
 import { ChevronLeft } from 'lucide-react';
 import { API_BASE_URL } from '../utils/api';
+import ProductCard from '../components/ProductCard';
 
 const CategoryProducts = () => {
     const { categoryName } = useParams();
@@ -13,6 +14,7 @@ const CategoryProducts = () => {
     const { t } = useLanguage();
 
     const [searchQuery, setSearchQuery] = useState('');
+    const [isFastPurchase, setIsFastPurchase] = useState(false);
     const navigate = useNavigate();
 
     const products = Array.isArray(rawProducts) ? rawProducts : (rawProducts?.data || []);
@@ -35,13 +37,27 @@ const CategoryProducts = () => {
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20 transition-colors duration-200">
                 {/* Header */}
                 <div className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-10">
-                    <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-                        <Link to="/" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                            <ChevronLeft className="text-gray-600 dark:text-white" size={24} />
-                        </Link>
-                        <h1 className="text-xl font-bold text-gray-900 dark:text-white capitalize">
-                            {t(categoryName)}
-                        </h1>
+                    <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <Link to="/" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                                <ChevronLeft className="text-gray-600 dark:text-white" size={24} />
+                            </Link>
+                            <h1 className="text-xl font-bold text-gray-900 dark:text-white capitalize truncate">
+                                {t(categoryName)}
+                            </h1>
+                        </div>
+
+                        <button
+                            onClick={() => setIsFastPurchase(!isFastPurchase)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all active:scale-95 ${isFastPurchase
+                                ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-200 dark:ring-blue-900'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
+                                }`}
+                        >
+                            <span>⚡</span>
+                            <span className="hidden sm:inline">{t('Fast Purchase')}</span>
+                            <span className="sm:hidden">{t('Fast')}</span>
+                        </button>
                     </div>
                 </div>
 
@@ -77,18 +93,6 @@ const CategoryProducts = () => {
                             {searchQuery.trim() && (
                                 <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto z-30">
                                     {(() => {
-                                        // Use categoryProducts (which are already filtered by category) for the dropdown source
-                                        // Note: categoryProducts in the main body is ALREADY filtered by searchQuery due to previous edit.
-                                        // But for the dropdown, we generally want "suggestions" which might be distinct from the grid filter?
-                                        // Actually, if the main grid overwrites instantly, the dropdown is redundant visually? 
-                                        // BUT user asked for "show the products like in the home page". Home page has dropdown.
-                                        // Let's use the 'products' (raw category list) and filter it here specifically for the dropdown to ensure it shows top 5.
-
-                                        // Re-calculate category-only products (without search query filter) to be safe or use the existing list?
-                                        // The existing 'categoryProducts' variable I created includes the SEARCH filter. 
-                                        // If I use that, it's fine, but if I want the dropdown to be the primary interaction...
-                                        // Let's just use the filtered list.
-
                                         const filteredDropdown = categoryProducts.slice(0, 5);
 
                                         if (filteredDropdown.length === 0) {
@@ -137,7 +141,11 @@ const CategoryProducts = () => {
                     ) : categoryProducts.length > 0 ? (
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                             {categoryProducts.map(product => (
-                                <SimpleProductCard key={product._id || product.id} product={product} />
+                                isFastPurchase ? (
+                                    <ProductCard key={product._id || product.id} product={product} />
+                                ) : (
+                                    <SimpleProductCard key={product._id || product.id} product={product} />
+                                )
                             ))}
                         </div>
                     ) : (

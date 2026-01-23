@@ -14,6 +14,10 @@ const newsSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add a news image']
     },
+    images: {
+        type: [String],
+        default: []
+    },
     category: {
         type: String,
         enum: ['Agriculture', 'Market', 'Technology', 'Health', 'General', 'Offer', 'News', 'Deal'],

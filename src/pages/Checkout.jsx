@@ -63,7 +63,22 @@ const Checkout = () => {
     }
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+
+        // Validation logic for specific fields
+        if (name === 'mobile') {
+            // Only allow numbers and max 10 digits
+            if (/^\d*$/.test(value) && value.length <= 10) {
+                setFormData({ ...formData, [name]: value });
+            }
+        } else if (name === 'zip') {
+            // Only allow numbers and max 6 digits
+            if (/^\d*$/.test(value) && value.length <= 6) {
+                setFormData({ ...formData, [name]: value });
+            }
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -207,6 +222,9 @@ const Checkout = () => {
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                                         placeholder={t('Enter your mobile number')}
+                                        maxLength={10}
+                                        inputMode="numeric"
+                                        pattern="\d{10}"
                                     />
                                 </div>
                                 <div className="md:col-span-2">
@@ -244,6 +262,9 @@ const Checkout = () => {
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                                         placeholder={t('Enter ZIP code')}
+                                        maxLength={6}
+                                        inputMode="numeric"
+                                        pattern="\d{6}"
                                     />
                                 </div>
 

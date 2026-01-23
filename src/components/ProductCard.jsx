@@ -20,27 +20,36 @@ const ProductCard = ({ product }) => {
         toggleSaveProduct(productId);
     };
 
+    const isAvailable = product.isAvailable !== false; // Default to true if undefined
+
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full border border-gray-100 dark:border-gray-700 relative group">
-            <Link to={`/product/${productId}`} className="flex-1 block">
+        <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full border border-gray-100 dark:border-gray-700 relative group ${!isAvailable ? 'opacity-75' : ''}`}>
+            <Link to={`/product/${productId}`} className={`flex-1 block ${!isAvailable ? 'pointer-events-none' : ''}`}>
                 <div className="relative pb-[100%] overflow-hidden">
                     <img
                         src={product.image || `${API_BASE_URL}/products/${productId}/image`}
                         alt={t(product, 'title')}
                         loading="lazy"
-                        className="absolute top-0 left-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                        className={`absolute top-0 left-0 w-full h-full object-cover transform transition-transform duration-300 ${isAvailable ? 'group-hover:scale-105' : 'grayscale'}`}
                         onError={(e) => { e.target.src = 'https://via.placeholder.com/300x300?text=No+Image'; }}
                     />
                     {/* Heart Button */}
                     <button
                         onClick={handleToggleSave}
-                        className="absolute top-2 right-2 p-2 rounded-full bg-white/80 dark:bg-black/40 hover:bg-white dark:hover:bg-black/60 transition-colors shadow-sm z-10"
+                        className="absolute top-2 right-2 p-2 rounded-full bg-white/80 dark:bg-black/40 hover:bg-white dark:hover:bg-black/60 transition-colors shadow-sm z-10 pointer-events-auto"
                     >
                         <Bookmark
                             size={18}
                             className={`${isSaved ? 'text-blue-600 fill-current' : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'}`}
                         />
                     </button>
+                    {!isAvailable && (
+                        <div className="absolute inset-0 bg-black/10 flex items-center justify-center backdrop-blur-[1px]">
+                            <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
+                                {t('Out of Stock')}
+                            </span>
+                        </div>
+                    )}
                 </div>
                 <div className="p-4 pb-0">
                     <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-white mb-1 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{t(product, 'title')}</h3>
@@ -56,6 +65,7 @@ const ProductCard = ({ product }) => {
                                 onClick={() => updateQuantity(productId, cartItem.quantity - 1)}
                                 className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white hover:bg-blue-700 focus:outline-none rounded-full transition-colors shadow-sm"
                                 aria-label="Decrease quantity"
+                                disabled={!isAvailable}
                             >
                                 <Minus size={16} />
                             </button>
@@ -64,6 +74,7 @@ const ProductCard = ({ product }) => {
                                 onClick={() => updateQuantity(productId, cartItem.quantity + 1)}
                                 className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white hover:bg-blue-700 focus:outline-none rounded-full transition-colors shadow-sm"
                                 aria-label="Increase quantity"
+                                disabled={!isAvailable}
                             >
                                 <Plus size={16} />
                             </button>
@@ -71,11 +82,15 @@ const ProductCard = ({ product }) => {
                     ) : (
                         <button
                             onClick={() => addToCart(product)}
-                            className="w-full bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 flex items-center justify-center gap-2"
-                            aria-label="Add to cart"
+                            disabled={!isAvailable}
+                            className={`w-full p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 flex items-center justify-center gap-2 ${isAvailable
+                                ? 'bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500'
+                                : 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                                }`}
+                            aria-label={isAvailable ? "Add to cart" : "Out of stock"}
                         >
                             <Plus size={20} />
-                            <span className="text-sm font-medium">Add</span>
+                            <span className="text-sm font-medium">{isAvailable ? 'Add' : 'Out of Stock'}</span>
                         </button>
                     )}
                 </div>

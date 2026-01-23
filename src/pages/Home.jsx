@@ -178,13 +178,13 @@ const Home = () => {
                         </svg>
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                        {t('Connection Failed')}
+                        {t('No Internet Connection')}
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400 max-w-md mb-8">
-                        {t('We surely missed the server! Please make sure the backend is running.')}
+                        {t('Please check your internet connection and try again.')}
                         <br />
                         <span className="text-sm font-mono mt-2 block bg-gray-100 dark:bg-gray-800 p-2 rounded">
-                            {errorProducts?.message || 'Unknown Error'}
+                            {errorProducts?.message || 'Network Error'}
                         </span>
                     </p>
                     <button

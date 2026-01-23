@@ -1,6 +1,8 @@
 import Order from '../models/Order.js';
 import User from '../models/User.js';
 import { sendOrderNotificationEmail } from '../services/emailService.js';
+import { sendOrderTelegramNotification } from '../services/telegramService.js';
+
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -90,6 +92,12 @@ export const createOrder = async (req, res, next) => {
         sendOrderNotificationEmail(order)
             .then(result => console.log('📧 Email service result:', result))
             .catch(err => console.error('❌ Failed to send email notification:', err));
+
+        // Send Telegram notification to admin (non-blocking)
+        console.log('📱 Attempting to send Telegram notification...');
+        sendOrderTelegramNotification(order)
+            .then(result => console.log('📱 Telegram service result:', result))
+            .catch(err => console.error('❌ Failed to send Telegram notification:', err));
 
         res.status(201).json({
             success: true,

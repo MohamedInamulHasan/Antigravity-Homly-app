@@ -325,6 +325,58 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    // Background Refresh (Silent - No Loading Spinners)
+    const backgroundRefresh = async () => {
+        // console.log('🔄 Silent Background Refresh...'); // Commented out to reduce console noise
+        try {
+            // Check auth status for sensitive data
+            const hasToken = !!localStorage.getItem('authToken');
+            const isAdmin = true; // Placeholder
+
+            const [productsRes, storesRes, newsRes, adsRes, categoriesRes, usersRes, servicesRes, ordersRes] = await Promise.all([
+                apiService.getProducts({ limit: 50, page: 1 }).catch(e => ({ success: false, data: [] })),
+                apiService.getStores().catch(e => ({ success: false, data: [] })),
+                apiService.getNews().catch(e => ({ success: false, data: [] })),
+                apiService.getAds().catch(e => ({ success: false, data: [] })),
+                apiService.categories.getAll().catch(e => ({ success: false, data: [] })),
+                isAdmin ? apiService.getAllUsers().catch(e => ({ success: false, data: [] })) : Promise.resolve({ success: true, data: [] }),
+                apiService.services.getAll().catch(e => ({ success: false, data: [] })),
+                hasToken ? apiService.getOrders().catch(e => ({ success: false, data: [] })) : Promise.resolve({ success: true, data: [] })
+            ]);
+
+            // Only update state if data exists and is different (React handles ref checks, but ensuring non-empty helps)
+            if (productsRes.success && productsRes.data) setProducts(productsRes.data);
+            if (storesRes.success && storesRes.data) setStores(storesRes.data);
+            if (newsRes.success && newsRes.data) setNews(newsRes.data);
+            if (adsRes.success && adsRes.data) setAds(adsRes.data);
+            if (categoriesRes.success && categoriesRes.data) setCategories(categoriesRes.data);
+            if (isAdmin && usersRes.success && usersRes.data) setUsers(usersRes.data);
+            if (servicesRes.success && servicesRes.data) setServices(servicesRes.data);
+            if (hasToken && ordersRes.success && ordersRes.data) setOrders(ordersRes.data);
+
+        } catch (e) {
+            console.error("Silent background refresh failed:", e);
+        }
+    };
+
+    // Auto-Refresh Interval
+    useEffect(() => {
+        // Initial 2s delay to let startup finish
+        const initialTimer = setTimeout(() => {
+            backgroundRefresh();
+
+            // Start interval loop
+            const intervalId = setInterval(() => {
+                backgroundRefresh();
+            }, 5000); // Poll every 5 seconds for snappier updates
+
+            // Cleanup
+            return () => clearInterval(intervalId);
+        }, 2000);
+
+        return () => clearTimeout(initialTimer);
+    }, []);
+
     // Unified database loading check
     useEffect(() => {
         // Only run this check if we are currently loading initially
@@ -344,17 +396,17 @@ export const DataProvider = ({ children }) => {
                 !loading.services;
 
             // Determine if we are ready to hide intro
-            if (allDataLoaded) {
-                const elapsedTime = Date.now() - mountTime;
-                const minDisplayTime = 1000; // Reduced to 1s
-                const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
-
-                console.log('✨ All data loaded. Hiding intro in', remainingTime, 'ms');
-
-                setTimeout(() => {
-                    setInitialLoading(false);
-                }, remainingTime);
-            }
+            // if (allDataLoaded) {
+            //     const elapsedTime = Date.now() - mountTime;
+            //     const minDisplayTime = 1000; // Reduced to 1s
+            //     const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+            //
+            //     console.log('✨ All data loaded. Hiding intro in', remainingTime, 'ms');
+            //
+            //     setTimeout(() => {
+            //         setInitialLoading(false);
+            //     }, remainingTime);
+            // }
         }
 
         if (!loading.products && products.length > 0) {

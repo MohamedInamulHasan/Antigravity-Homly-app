@@ -690,22 +690,36 @@ const NewsManagement = () => {
         headline: '',
         type: 'Offer',
         image: '',
+        sliderImages: [],
         content: '',
     });
 
     const { uploadImage, uploading: uploadingNews } = useCloudinaryUpload();
 
-    const handleNewsImageUpload = async (e) => {
-        const file = e.target.files[0];
-        if (file) {
+    const handleNewsImageUpload = async (e, isSlider = false) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
             try {
-                const imageUrl = await uploadImage(file);
-                setNewsForm({ ...newsForm, image: imageUrl });
+                if (isSlider) {
+                    const promises = files.map(file => uploadImage(file));
+                    const urls = await Promise.all(promises);
+                    setNewsForm(prev => ({ ...prev, sliderImages: [...prev.sliderImages, ...urls] }));
+                } else {
+                    const imageUrl = await uploadImage(files[0]);
+                    setNewsForm(prev => ({ ...prev, image: imageUrl }));
+                }
             } catch (error) {
                 console.error('Error uploading news image:', error);
                 alert(t('Failed to upload image. Please try another image.'));
             }
         }
+    };
+
+    const removeNewsSliderImage = (index) => {
+        setNewsForm(prev => ({
+            ...prev,
+            sliderImages: prev.sliderImages.filter((_, i) => i !== index)
+        }));
     };
 
     const handleEditNews = (item) => {
@@ -714,6 +728,7 @@ const NewsManagement = () => {
             headline: item.title, // Map title to headline
             type: item.category, // Map category to type
             image: item.image,
+            sliderImages: item.images || [],
             content: item.content || item.description, // Map content to content form field
         });
         setView('form');
@@ -737,6 +752,7 @@ const NewsManagement = () => {
             title: newsForm.headline,
             category: newsForm.type,
             image: newsForm.image,
+            images: newsForm.sliderImages.length > 0 ? newsForm.sliderImages : (newsForm.image ? [newsForm.image] : []),
             content: newsForm.content
         };
 
@@ -762,7 +778,7 @@ const NewsManagement = () => {
                     onClick={() => {
                         if (view === 'list') {
                             setEditingNews(null);
-                            setNewsForm({ headline: '', type: 'Offer', image: '', content: '' });
+                            setNewsForm({ headline: '', type: 'Offer', image: '', sliderImages: [], content: '' });
                             setView('form');
                         } else {
                             setView('list');
