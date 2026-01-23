@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../../utils/api';
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import {
     Store,
     Plus,
@@ -589,11 +590,6 @@ const StoreManagement = () => {
                                                 <button
                                                     onClick={async () => {
                                                         try {
-                                                            const newStatus = !product.isAvailable; // If undefined, !undefined is true (so it becomes true), but we want default true. 
-                                                            // Actually product.isAvailable default is true. If it's undefined, we assume it's true.
-                                                            // So if undefined, current is true, new is false.
-                                                            // Wait, if undefined, !undefined is true. 
-                                                            // Let's be explicit: current = product.isAvailable !== false.
                                                             const currentStatus = product.isAvailable !== false;
                                                             await updateProduct({
                                                                 id: product._id || product.id,
@@ -604,13 +600,15 @@ const StoreManagement = () => {
                                                             alert(t('Failed to update status'));
                                                         }
                                                     }}
-                                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${product.isAvailable !== false ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
+                                                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${product.isAvailable !== false ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
                                                         }`}
                                                     title={product.isAvailable !== false ? t('Available') : t('Out of Stock')}
                                                 >
-                                                    <span
-                                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${product.isAvailable !== false ? 'translate-x-6' : 'translate-x-1'
-                                                            }`}
+                                                    <motion.span
+                                                        layout
+                                                        transition={{ type: "spring", stiffness: 700, damping: 30 }}
+                                                        animate={{ x: product.isAvailable !== false ? 22 : 2 }}
+                                                        className="inline-block h-5 w-5 transform rounded-full bg-white shadow-md"
                                                     />
                                                 </button>
                                             </td>
