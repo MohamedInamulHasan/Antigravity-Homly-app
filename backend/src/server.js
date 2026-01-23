@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import errorHandler from './middleware/errorHandler.js';
 import connectDB from './config/database.js';
+import axios from 'axios'; // For Keep-Warm mechanism
 
 // Import routes
 import productRoutes from './routes/products.js';
@@ -138,4 +139,25 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
     console.log(`Resource: http://0.0.0.0:${PORT}`);
+
+    // KEEP-WARM MECHANISM (Prevent Free Tier Sleep)
+    // Ping the server every 5 minutes (300,000 ms)
+    const KEEP_ALIVE_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+    const keepAlive = () => {
+        if (process.env.NODE_ENV === 'production') {
+            const url = `https://homly-backend-8616.onrender.com/`;
+            axios.get(url)
+                .then(() => console.log(`🔥 [Keep-Warm] Ping successful: ${new Date().toISOString()}`))
+                .catch(error => console.error(`⚠️ [Keep-Warm] Ping failed: ${error.message}`));
+        } else {
+            console.log('ℹ️ [Keep-Warm] Skipping ping in development mode');
+        }
+    };
+
+    // Run immediately on start, then periodically
+    if (process.env.NODE_ENV === 'production') {
+        setTimeout(keepAlive, 10000); // Wait 10s after start
+        setInterval(keepAlive, KEEP_ALIVE_INTERVAL);
+    }
 });
