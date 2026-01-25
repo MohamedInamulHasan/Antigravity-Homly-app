@@ -328,20 +328,6 @@ const Home = () => {
                                 </svg>
                             </form>
 
-                            {/* Fast Mode Toggle Icon - Small */}
-                            <button
-                                onClick={() => setFastMode(!fastMode)}
-                                className={`mt-2 ml-auto p-2 rounded-full transition-all flex items-center gap-1.5 text-xs font-medium ${fastMode
-                                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md'
-                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                                    }`}
-                                title={fastMode ? t('Fast Mode ON') : t('Fast Mode')}
-                            >
-                                <Zap size={14} className={fastMode ? 'fill-white' : ''} />
-                                <span className="pr-1">{fastMode ? t('ON') : t('Fast')}</span>
-                            </button>
-
-
                             {/* Search Results Dropdown */}
                             {searchQuery.trim() && (
                                 <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto z-30">
@@ -389,6 +375,22 @@ const Home = () => {
                         </div>
                     </div>
                 </section>
+
+                {/* Fast Mode Toggle - Below Search Bar */}
+                <div className="md:hidden px-4 -mt-2 mb-4">
+                    <button
+                        onClick={() => setFastMode(!fastMode)}
+                        className={`p-2 rounded-full transition-all flex items-center gap-1.5 text-xs font-medium ${fastMode
+                                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                            }`}
+                        title={fastMode ? t('Fast Mode ON') : t('Fast Mode')}
+                    >
+                        <Zap size={14} className={fastMode ? 'fill-white' : ''} />
+                        <span className="pr-1">{fastMode ? t('ON') : t('Fast')}</span>
+                    </button>
+                </div>
+
 
                 {/* Main Content Container */}
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
