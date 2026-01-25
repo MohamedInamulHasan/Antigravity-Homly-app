@@ -200,6 +200,11 @@ const ProductDetails = () => {
 
                                 <div className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8 flex items-baseline gap-2">
                                     ₹{Number(product.price).toFixed(0)}
+                                    {product.unit && (
+                                        <span className="text-base md:text-xl font-medium text-gray-500 dark:text-gray-400">
+                                            / {product.unit}
+                                        </span>
+                                    )}
                                 </div>
 
                                 <div className="prose prose-lg dark:prose-invert max-w-none mb-10">

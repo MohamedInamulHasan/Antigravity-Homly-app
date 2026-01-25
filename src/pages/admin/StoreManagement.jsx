@@ -674,6 +674,17 @@ const StoreManagement = () => {
                                     required
                                 />
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Mention (e.g., kg, packs)')}</label>
+                                <input
+                                    type="text"
+                                    value={productForm.unit}
+                                    onChange={(e) => setProductForm({ ...productForm, unit: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder={t('e.g., 1 kg, 500g, 1 Pack')}
+                                />
+                            </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('Category')}</label>
                                 <select

@@ -88,19 +88,21 @@ const Cart = () => {
                                     </div>
 
                                     <div className="flex flex-1 items-end justify-between text-sm">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full shadow-sm p-1">
                                             <button
                                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                className="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-500 transition-all active:scale-95"
                                             >
-                                                <Minus size={14} />
+                                                <Minus size={16} strokeWidth={2.5} />
                                             </button>
-                                            <span className="font-medium text-gray-900 dark:text-white w-4 text-center">{item.quantity}</span>
+                                            <div className="w-8 text-center font-bold text-gray-900 dark:text-white text-lg">
+                                                {item.quantity}
+                                            </div>
                                             <button
                                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all active:scale-95"
                                             >
-                                                <Plus size={14} />
+                                                <Plus size={16} strokeWidth={2.5} />
                                             </button>
                                         </div>
 

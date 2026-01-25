@@ -396,17 +396,17 @@ export const DataProvider = ({ children }) => {
                 !loading.services;
 
             // Determine if we are ready to hide intro
-            // if (allDataLoaded) {
-            //     const elapsedTime = Date.now() - mountTime;
-            //     const minDisplayTime = 1000; // Reduced to 1s
-            //     const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
-            //
-            //     console.log('✨ All data loaded. Hiding intro in', remainingTime, 'ms');
-            //
-            //     setTimeout(() => {
-            //         setInitialLoading(false);
-            //     }, remainingTime);
-            // }
+            if (allDataLoaded) {
+                const elapsedTime = Date.now() - mountTime;
+                const minDisplayTime = 1000; // Reduced to 1s
+                const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+
+                console.log('✨ All data loaded. Hiding intro in', remainingTime, 'ms');
+
+                setTimeout(() => {
+                    setInitialLoading(false);
+                }, remainingTime);
+            }
         }
 
         if (!loading.products && products.length > 0) {

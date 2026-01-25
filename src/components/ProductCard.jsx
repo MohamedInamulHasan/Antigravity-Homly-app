@@ -50,15 +50,23 @@ const ProductCard = ({ product }) => {
                             </span>
                         </div>
                     )}
+                    {/* Unit Tag */}
+                    {product.unit && (
+                        <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded shadow-sm z-10 pointer-events-none">
+                            {product.unit}
+                        </div>
+                    )}
                 </div>
                 <div className="p-4 pb-0">
-                    <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-white mb-1 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{t(product, 'title')}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">{t(product, 'description')}</p>
+                    <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">
+                        {t(product, 'title')}
+                    </h3>
+
                 </div>
             </Link>
             <div className="p-4 pt-2 mt-auto">
                 <div className="flex flex-col gap-3">
-                    <span className="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-400">₹{Number(product.price || 0).toFixed(2)}</span>
+                    <span className="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-400">₹{Number(product.price || 0).toFixed(0)}</span>
                     {cartItem ? (
                         <div className="flex items-center justify-between w-full gap-2" onClick={(e) => e.stopPropagation()}>
                             <button

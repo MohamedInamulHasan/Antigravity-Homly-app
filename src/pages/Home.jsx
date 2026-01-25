@@ -76,11 +76,16 @@ const Home = () => {
                 // Select the first product to ensure stable rendering (no flickering)
                 const displayProduct = group[0];
 
+                // Calculate price range
+                const prices = group.map(p => Number(p.price));
+                const minPrice = Math.min(...prices);
+                const maxPrice = Math.max(...prices);
+
                 // Check if ANY store in this group is open
                 const anyStoreOpen = group.some(p => {
                     const pStoreId = p.storeId?._id || p.storeId;
                     const pStore = stores.find(s => (s._id || s.id) === pStoreId);
-                    return pStore && isStoreOpen(pStore);
+                    return pStore ? isStoreOpen(pStore) : true;
                 });
 
                 result.push({
@@ -88,6 +93,8 @@ const Home = () => {
                     isGroup: true,
                     storeCount: group.length,
                     anyStoreOpen: anyStoreOpen,
+                    minPrice: minPrice,
+                    maxPrice: maxPrice,
                     // Use a unique ID for the group
                     _id: `group-${displayProduct._id || displayProduct.id}`,
                     id: `group-${displayProduct._id || displayProduct.id}`

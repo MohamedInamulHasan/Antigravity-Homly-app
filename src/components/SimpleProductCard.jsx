@@ -6,7 +6,7 @@ import { useData } from '../context/DataContext';
 import { API_BASE_URL } from '../utils/api';
 import { isStoreOpen } from '../utils/storeHelpers';
 
-const SimpleProductCard = ({ product }) => {
+const SimpleProductCard = ({ product, isFastPurchase }) => {
     const { t } = useLanguage();
     const { stores } = useData();
     const { cartItems } = useCart();
@@ -36,7 +36,7 @@ const SimpleProductCard = ({ product }) => {
     if (product.isGroup) {
         return (
             <Link
-                to={`/product-group/${encodeURIComponent(product.title)}`}
+                to={`/product-group/${encodeURIComponent(product.title)}${isFastPurchase ? '?fast=true' : ''}`}
                 className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 flex flex-col h-full border border-gray-100 dark:border-gray-700 ${product.anyStoreOpen ? 'hover:shadow-lg' : 'opacity-75 grayscale-[0.5]'}`}
             >
                 <div className="relative pb-[100%] overflow-hidden">
@@ -58,15 +58,43 @@ const SimpleProductCard = ({ product }) => {
                 </div>
                 <div className="p-3 flex flex-col justify-between flex-1">
                     <div>
-                        <h3 className="text-sm md:text-base font-semibold text-gray-800 dark:text-white mb-1 line-clamp-2">
-                            {t(product, 'title')}
-                        </h3>
+                        {(() => {
+                            const fullTitle = t(product, 'title');
+                            const bracketIndex = fullTitle.indexOf('(');
+                            let mainTitle = fullTitle;
+                            let bracketContent = '';
+
+                            if (bracketIndex !== -1) {
+                                mainTitle = fullTitle.substring(0, bracketIndex).trim();
+                                bracketContent = fullTitle.substring(bracketIndex).trim();
+                            }
+
+                            // Dynamic sizing logic
+                            const isMainTitleLong = mainTitle.length > 20;
+                            const isBracketLong = bracketContent.length > 20;
+
+                            return (
+                                <div className="mb-1">
+                                    <h3 className={`${isMainTitleLong ? 'text-xs md:text-sm' : 'text-sm md:text-base'} font-semibold text-gray-800 dark:text-white leading-tight truncate`}>
+                                        {mainTitle}
+                                    </h3>
+                                    {bracketContent && (
+                                        <span className={`block ${isBracketLong ? 'text-[10px]' : 'text-xs'} text-gray-500 dark:text-gray-400 font-medium mt-0.5 truncate`}>
+                                            {bracketContent}
+                                        </span>
+                                    )}
+                                </div>
+                            );
+                        })()}
                         <p className="text-xs text-blue-600 dark:text-blue-400 font-bold truncate mb-2">
-                            +{product.storeCount} {t('stores')}
+                            +{product.storeCount} {t('options')}
                         </p>
                     </div>
-                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                        {t('View All')}
+                    <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                        {product.minPrice !== undefined && product.maxPrice !== undefined && product.minPrice !== product.maxPrice
+                            ? `₹${product.minPrice.toFixed(0)} - ₹${product.maxPrice.toFixed(0)}`
+                            : `₹${Number(product.price || 0).toFixed(0)}`
+                        }
                     </span>
                 </div>
             </Link>
@@ -118,12 +146,43 @@ const SimpleProductCard = ({ product }) => {
                         {cartQuantity}
                     </div>
                 )}
+                {/* Unit Tag */}
+                {product.unit && (
+                    <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded shadow-sm z-10">
+                        {product.unit}
+                    </div>
+                )}
             </div>
             <div className="p-3 flex flex-col justify-between flex-1">
                 <div>
-                    <h3 className="text-sm md:text-base font-semibold text-gray-800 dark:text-white mb-1 line-clamp-2">
-                        {t(product, 'title')}
-                    </h3>
+                    {(() => {
+                        const fullTitle = t(product, 'title');
+                        const bracketIndex = fullTitle.indexOf('(');
+                        let mainTitle = fullTitle;
+                        let bracketContent = '';
+
+                        if (bracketIndex !== -1) {
+                            mainTitle = fullTitle.substring(0, bracketIndex).trim();
+                            bracketContent = fullTitle.substring(bracketIndex).trim();
+                        }
+
+                        // Dynamic sizing logic
+                        const isMainTitleLong = mainTitle.length > 20;
+                        const isBracketLong = bracketContent.length > 20;
+
+                        return (
+                            <div className="mb-1">
+                                <h3 className={`${isMainTitleLong ? 'text-xs md:text-sm' : 'text-sm md:text-base'} font-semibold text-gray-800 dark:text-white leading-tight truncate`}>
+                                    {mainTitle}
+                                </h3>
+                                {bracketContent && (
+                                    <span className={`block ${isBracketLong ? 'text-[10px]' : 'text-xs'} text-gray-500 dark:text-gray-400 font-medium mt-0.5 truncate`}>
+                                        {bracketContent}
+                                    </span>
+                                )}
+                            </div>
+                        );
+                    })()}
                     {product.storeId && (
                         <div className="flex items-center gap-1 mb-2">
                             <Store size={12} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
@@ -134,7 +193,7 @@ const SimpleProductCard = ({ product }) => {
                     )}
                 </div>
                 <span className={`text-lg font-bold ${isStoreOpenCheck && isAvailable ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`}>
-                    ₹{Number(product.price || 0).toFixed(2)}
+                    ₹{Number(product.price || 0).toFixed(0)}
                 </span>
             </div>
         </Link>

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useProducts } from '../hooks/queries/useProducts';
+import { useStores } from '../hooks/queries/useStores';
 import { useLanguage } from '../context/LanguageContext';
+import { isStoreOpen } from '../utils/storeHelpers';
 import SimpleProductCard from '../components/SimpleProductCard';
 import PullToRefreshLayout from '../components/PullToRefreshLayout';
 import { ChevronLeft } from 'lucide-react';
@@ -11,6 +13,7 @@ import ProductCard from '../components/ProductCard';
 const CategoryProducts = () => {
     const { categoryName } = useParams();
     const { data: rawProducts = [], isLoading } = useProducts();
+    const { data: rawStores = [] } = useStores();
     const { t } = useLanguage();
 
     const [searchQuery, setSearchQuery] = useState('');
@@ -18,6 +21,7 @@ const CategoryProducts = () => {
     const navigate = useNavigate();
 
     const products = Array.isArray(rawProducts) ? rawProducts : (rawProducts?.data || []);
+    const stores = Array.isArray(rawStores) ? rawStores : (rawStores?.data || []);
 
     // Filter products by category AND search query
     const categoryProducts = products.filter(product => {
@@ -28,6 +32,51 @@ const CategoryProducts = () => {
 
         return matchesCategory && matchesSearch;
     });
+
+    // Helper to group products by name (Adapted from Home.jsx)
+    const groupProductsByName = (productList) => {
+        if (!productList) return [];
+        const groups = {};
+
+        productList.forEach(p => {
+            const key = p.title?.trim().toLowerCase();
+            if (!key) return;
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(p);
+        });
+
+        const result = [];
+        Object.values(groups).forEach(group => {
+            if (group.length > 1) {
+                const displayProduct = group[0];
+                const prices = group.map(p => Number(p.price));
+                const minPrice = Math.min(...prices);
+                const maxPrice = Math.max(...prices);
+                const anyStoreOpen = group.some(p => {
+                    const pStoreId = p.storeId?._id || p.storeId;
+                    const pStore = stores.find(s => (s._id || s.id) === pStoreId);
+                    return pStore ? isStoreOpen(pStore) : true;
+                });
+
+                result.push({
+                    ...displayProduct,
+                    isGroup: true,
+                    storeCount: group.length,
+                    anyStoreOpen: anyStoreOpen,
+                    minPrice: minPrice,
+                    maxPrice: maxPrice,
+                    _id: `group-${displayProduct._id || displayProduct.id}`,
+                    id: `group-${displayProduct._id || displayProduct.id}`
+                });
+            } else {
+                result.push(group[0]);
+            }
+        });
+        return result;
+    };
+
+    // Always group products by name
+    const displayProducts = groupProductsByName(categoryProducts);
 
     // Get category image from first product
     const categoryImage = categoryProducts.length > 0 ? categoryProducts[0].image : null;
@@ -138,13 +187,13 @@ const CategoryProducts = () => {
                         <div className="flex justify-center items-center h-64">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                         </div>
-                    ) : categoryProducts.length > 0 ? (
+                    ) : displayProducts.length > 0 ? (
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                            {categoryProducts.map(product => (
-                                isFastPurchase ? (
+                            {displayProducts.map(product => (
+                                (isFastPurchase && !product.isGroup) ? (
                                     <ProductCard key={product._id || product.id} product={product} />
                                 ) : (
-                                    <SimpleProductCard key={product._id || product.id} product={product} />
+                                    <SimpleProductCard key={product._id || product.id} product={product} isFastPurchase={isFastPurchase} />
                                 )
                             ))}
                         </div>
