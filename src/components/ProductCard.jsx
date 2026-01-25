@@ -25,7 +25,7 @@ const ProductCard = ({ product }) => {
     return (
         <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full border border-gray-100 dark:border-gray-700 relative group ${!isAvailable ? 'opacity-75' : ''}`}>
             <Link to={`/product/${productId}`} className={`flex-1 block ${!isAvailable ? 'pointer-events-none' : ''}`}>
-                <div className="relative pb-[100%] overflow-hidden">
+                <div className="relative pb-[100%] overflow-hidden bg-white">
                     <img
                         src={product.image || `${API_BASE_URL}/products/${productId}/image`}
                         alt={t(product, 'title')}

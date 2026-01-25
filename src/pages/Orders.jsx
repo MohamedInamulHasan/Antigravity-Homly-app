@@ -219,7 +219,7 @@ const Orders = () => {
                                         <div className="divide-y divide-gray-50 dark:divide-gray-700">
                                             {order.items.slice(0, 2).map((item, idx) => (
                                                 <div key={idx} className="py-3 flex items-center gap-3">
-                                                    <div className="h-12 w-12 rounded-lg bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
+                                                    <div className="h-12 w-12 rounded-lg bg-white overflow-hidden flex-shrink-0">
                                                         <img
                                                             src={(item.product?._id || item.product) ? `${API_BASE_URL}/products/${item.product._id || item.product}/image` : (item.image || "https://via.placeholder.com/150?text=No+Image")}
                                                             alt={item.name}

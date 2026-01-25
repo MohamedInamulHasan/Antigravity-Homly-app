@@ -39,7 +39,7 @@ const SimpleProductCard = ({ product, isFastPurchase }) => {
                 to={`/product-group/${encodeURIComponent(product.title)}${isFastPurchase ? '?fast=true' : ''}`}
                 className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 flex flex-col h-full border border-gray-100 dark:border-gray-700 ${product.anyStoreOpen ? 'hover:shadow-lg' : 'opacity-75 grayscale-[0.5]'}`}
             >
-                <div className="relative pb-[100%] overflow-hidden">
+                <div className="relative pb-[100%] overflow-hidden bg-white">
                     <img
                         src={product.image || `${API_BASE_URL}/products/${product._id.replace('group-', '')}/image`}
                         alt={t(product, 'title')}
@@ -117,7 +117,7 @@ const SimpleProductCard = ({ product, isFastPurchase }) => {
             className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 flex flex-col h-full border border-gray-100 dark:border-gray-700 ${isStoreOpenCheck && isAvailable ? 'hover:shadow-lg' : 'opacity-75 grayscale-[0.5] cursor-not-allowed'
                 }`}
         >
-            <div className="relative pb-[100%] overflow-hidden">
+            <div className="relative pb-[100%] overflow-hidden bg-white">
                 <img
                     src={product.image || `${API_BASE_URL}/products/${productId}/image`}
                     alt={t(product, 'title')}

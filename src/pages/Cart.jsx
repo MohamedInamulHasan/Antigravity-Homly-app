@@ -57,7 +57,7 @@ const Cart = () => {
                     <div className="lg:col-span-2 space-y-4">
                         {cartItems.map((item) => (
                             <div key={item.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 sm:p-6 flex gap-6 transition-all duration-200">
-                                <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600">
+                                <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600 bg-white">
                                     <img
                                         src={item.image || `${API_BASE_URL}/products/${item.id}/image`}
                                         alt={item.title}

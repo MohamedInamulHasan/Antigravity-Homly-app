@@ -207,7 +207,7 @@ const OrderConfirmation = () => {
                                 {cartItems.map((item) => (
                                     <div key={item.id} className="flex justify-between items-center">
                                         <div className="flex items-center gap-4">
-                                            <div className="h-16 w-16 rounded-xl bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                                            <div className="h-16 w-16 rounded-xl bg-white overflow-hidden">
                                                 <img
                                                     src={(item._id || item.id || item.product) ? `${API_BASE_URL}/products/${item._id || item.id || item.product}/image` : "https://via.placeholder.com/150?text=No+Image"}
                                                     alt={item.title}

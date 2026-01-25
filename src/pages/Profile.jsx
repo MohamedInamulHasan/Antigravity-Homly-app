@@ -23,8 +23,8 @@ const Profile = () => {
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
     // Calculate real-time order statistics
-    const totalOrders = orders.length;
     const processingOrders = orders.filter(order => order.status === 'Processing').length;
+    const shippedOrders = orders.filter(order => order.status === 'Shipped').length;
     const deliveredOrders = orders.filter(order => order.status === 'Delivered').length;
     const cancelledOrders = orders.filter(order => order.status === 'Cancelled').length;
 
@@ -98,13 +98,13 @@ const Profile = () => {
                     </div>
                     <div className="p-6">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{totalOrders}</p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400 font-medium mt-1">{t('Total Orders')}</p>
-                            </div>
                             <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
                                 <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{processingOrders}</p>
                                 <p className="text-xs text-gray-600 dark:text-gray-400 font-medium mt-1">{t('Processing')}</p>
+                            </div>
+                            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{shippedOrders}</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 font-medium mt-1">{t('Shipped')}</p>
                             </div>
                             <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
                                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">{deliveredOrders}</p>

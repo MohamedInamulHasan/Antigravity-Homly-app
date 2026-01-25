@@ -401,7 +401,7 @@ const Checkout = () => {
                             <div className="space-y-4 mb-6">
                                 {cartItems.map((item) => (
                                     <div key={item.id} className="flex gap-4 group">
-                                        <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600">
+                                        <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600 bg-white">
                                             <img
                                                 src={item.image || `${API_BASE_URL}/products/${item._id || item.id}/image`}
                                                 onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/100x100?text=No+Image'; }}

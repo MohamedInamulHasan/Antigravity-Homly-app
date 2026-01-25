@@ -133,7 +133,7 @@ const ProductDetails = () => {
                                 style={{ scrollBehavior: 'smooth' }}
                             >
                                 {images.map((img, idx) => (
-                                    <div key={idx} className="min-w-full h-full snap-center flex items-center justify-center">
+                                    <div key={idx} className="min-w-full h-full snap-center flex items-center justify-center bg-white">
                                         <img
                                             src={img || 'https://via.placeholder.com/400x400?text=No+Image'}
                                             alt={`${product.title} - ${t('View')} ${idx + 1}`}

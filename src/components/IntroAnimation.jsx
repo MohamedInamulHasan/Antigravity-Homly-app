@@ -95,7 +95,7 @@ const IntroAnimation = () => {
                     transition={{ duration: 0.5 }}
                 >
                     <div className="relative flex items-center justify-center">
-                        <div className="flex items-center gap-1 md:gap-3">
+                        <div className="flex items-center">
                             {/* H */}
                             <motion.span
                                 custom={0}
@@ -107,87 +107,26 @@ const IntroAnimation = () => {
                                 H
                             </motion.span>
 
-                            {/* Center Icon (O) with Ripple */}
-                            <div className="relative flex items-center justify-center w-16 h-16 md:w-24 md:h-24">
-                                {/* Ripples */}
-                                <motion.div
-                                    className="absolute inset-0 bg-blue-300 rounded-full z-0"
-                                    variants={rippleVariants}
-                                    animate="animate"
-                                />
-                                <motion.div
-                                    className="absolute inset-0 bg-blue-400 rounded-full z-0"
-                                    variants={rippleVariants}
-                                    animate="animate"
-                                    transition={{ delay: 0.5, duration: 1.5, repeat: Infinity, ease: "easeOut" }} // Staggered ripple
-                                />
-
-                                {/* Custom Box Icon */}
-                                <motion.div
-                                    initial="hidden"
-                                    animate="visible"
-                                    variants={boxVariants}
-                                    className="relative z-10"
-                                >
-                                    <svg
-                                        width="80"
-                                        height="80"
-                                        viewBox="0 0 100 100"
-                                        className="w-16 h-16 md:w-24 md:h-24 drop-shadow-2xl"
-                                    >
-                                        {/* 3D Box Design */}
-                                        {/* Top face */}
-                                        <path
-                                            d="M50 10 L80 25 L50 40 L20 25 Z"
-                                            fill="#3b82f6"
-                                            stroke="#1e40af"
-                                            strokeWidth="2"
-                                        />
-                                        {/* Left face */}
-                                        <path
-                                            d="M20 25 L20 65 L50 80 L50 40 Z"
-                                            fill="#2563eb"
-                                            stroke="#1e40af"
-                                            strokeWidth="2"
-                                        />
-                                        {/* Right face */}
-                                        <path
-                                            d="M50 40 L50 80 L80 65 L80 25 Z"
-                                            fill="#1d4ed8"
-                                            stroke="#1e40af"
-                                            strokeWidth="2"
-                                        />
-                                        {/* Tape on top */}
-                                        <path
-                                            d="M50 10 L50 40"
-                                            stroke="#fbbf24"
-                                            strokeWidth="3"
-                                        />
-                                        {/* Highlight */}
-                                        <path
-                                            d="M50 15 L70 27 L50 35"
-                                            fill="none"
-                                            stroke="white"
-                                            strokeWidth="1.5"
-                                            opacity="0.4"
-                                        />
-                                    </svg>
-                                </motion.div>
-                            </div>
+                            {/* O */}
+                            <motion.span
+                                custom={1}
+                                initial="hidden"
+                                animate="visible"
+                                variants={letterVariants}
+                                className="text-7xl md:text-9xl font-bold tracking-tighter text-blue-900"
+                            >
+                                o
+                            </motion.span>
 
                             {/* M L Y */}
                             {['m', 'l', 'y'].map((char, index) => (
                                 <motion.span
                                     key={char}
-                                    custom={index + 2} // +2 because H is 0, Box is sort of 1
+                                    custom={index + 2}
                                     initial="hidden"
                                     animate="visible"
-                                    variants={letterVariants} // Uppercase logic or lowercase depending on design. User said "HMLY", I'll stick to case-matching slightly or just bold caps.
-                                    // User said "HMLY" caps, but code had "mly". Let's do lower case to match previous or Caps as "H M L Y".
-                                    // User prompt: "He letters fade up HMLY then the O".
-                                    // Let's stick to "mly" lower case to match "Homly" brand usually seen? Or user typed HMLY.
-                                    // I'll make them match the H style: "m", "l", "y" looks good for Homly brand usually.
-                                    className="text-7xl md:text-9xl font-bold tracking-tighter text-blue-900 pb-2 md:pb-4" // pb to align baseline with Box better
+                                    variants={letterVariants}
+                                    className="text-7xl md:text-9xl font-bold tracking-tighter text-blue-900"
                                 >
                                     {char}
                                 </motion.span>
