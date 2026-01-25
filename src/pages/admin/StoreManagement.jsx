@@ -20,6 +20,7 @@ import { useStores, useCreateStore, useUpdateStore, useDeleteStore } from '../..
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '../../hooks/queries/useProducts';
 import { useCategories } from '../../hooks/queries/useCategories';
 import useCloudinaryUpload from '../../hooks/useCloudinaryUpload';
+import { useQueryClient } from '@tanstack/react-query';
 
 const StoreManagement = () => {
     const { user } = useAuth();
@@ -39,6 +40,7 @@ const StoreManagement = () => {
     const { mutateAsync: deleteProduct } = useDeleteProduct();
 
     const { uploadImage, uploading: uploadingImage } = useCloudinaryUpload();
+    const queryClient = useQueryClient();
 
     const isStoreAdmin = user?.role === 'store_admin';
     const myStore = isStoreAdmin ? stores.find(s => s._id === user.storeId || s.id === user.storeId) : null;
@@ -589,13 +591,34 @@ const StoreManagement = () => {
                                             <td className="p-4">
                                                 <button
                                                     onClick={async () => {
+                                                        const currentStatus = product.isAvailable !== false;
+                                                        const productId = product._id || product.id;
+
+                                                        // Optimistic update - instant UI response
+                                                        queryClient.setQueryData(['products'], (old) => {
+                                                            const oldData = Array.isArray(old) ? old : (old?.data || []);
+                                                            return oldData.map(p =>
+                                                                (p._id || p.id) === productId
+                                                                    ? { ...p, isAvailable: !currentStatus }
+                                                                    : p
+                                                            );
+                                                        });
+
                                                         try {
-                                                            const currentStatus = product.isAvailable !== false;
                                                             await updateProduct({
-                                                                id: product._id || product.id,
+                                                                id: productId,
                                                                 data: { ...product, isAvailable: !currentStatus }
                                                             });
                                                         } catch (error) {
+                                                            // Rollback on error
+                                                            queryClient.setQueryData(['products'], (old) => {
+                                                                const oldData = Array.isArray(old) ? old : (old?.data || []);
+                                                                return oldData.map(p =>
+                                                                    (p._id || p.id) === productId
+                                                                        ? { ...p, isAvailable: currentStatus }
+                                                                        : p
+                                                                );
+                                                            });
                                                             console.error('Failed to toggle availability:', error);
                                                             alert(t('Failed to update status'));
                                                         }

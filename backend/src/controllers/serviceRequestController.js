@@ -1,6 +1,7 @@
 import ServiceRequest from '../models/ServiceRequest.js';
 import Service from '../models/Service.js';
 import { sendServiceRequestNotification } from '../services/emailService.js';
+import { sendServiceRequestTelegramNotification } from '../services/telegramService.js';
 
 // @desc    Create a new service request
 // @route   POST /api/service-requests
@@ -47,6 +48,15 @@ export const createServiceRequest = async (req, res) => {
         } catch (emailError) {
             console.error('❌ Failed to send service request notification:', emailError);
             // Don't fail the request if email fails
+        }
+
+        // Send Telegram notification
+        try {
+            await sendServiceRequestTelegramNotification(createdRequest);
+            console.log('📱 Service request Telegram notification sent');
+        } catch (telegramError) {
+            console.error('❌ Failed to send service request Telegram notification:', telegramError);
+            // Don't fail the request if Telegram fails
         }
 
         res.status(201).json(createdRequest);

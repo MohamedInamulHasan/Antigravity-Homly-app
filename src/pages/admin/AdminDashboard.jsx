@@ -48,6 +48,8 @@ import { useAds, useCreateAd, useDeleteAd } from '../../hooks/queries/useAds';
 import { useServices, useCreateService, useDeleteService, useUpdateService } from '../../hooks/queries/useServices';
 import { useServiceRequests, useUpdateServiceRequestStatus, useDeleteServiceRequest } from '../../hooks/queries/useServiceRequests';
 import { useOrders, useUpdateOrderStatus, useDeleteOrder } from '../../hooks/queries/useOrders';
+import { motion } from 'framer-motion';
+import { useQueryClient } from '@tanstack/react-query';
 
 const AdminDashboard = () => {
     const { user } = useData(); // Get current user
@@ -330,6 +332,7 @@ const ProductManagement = () => {
     const { mutateAsync: addProduct } = useCreateProduct();
     const { mutateAsync: updateProduct } = useUpdateProduct();
     const { mutateAsync: deleteProduct } = useDeleteProduct();
+    const queryClient = useQueryClient();
 
     const { t } = useLanguage();
     const [view, setView] = useState('list'); // 'list' or 'form'
@@ -491,6 +494,7 @@ const ProductManagement = () => {
                                         <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Title')}</th>
                                         <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Category')}</th>
                                         <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Price')}</th>
+                                        <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Availability')}</th>
                                         <th className="p-4 text-sm font-medium text-gray-500 dark:text-gray-400">{t('Actions')}</th>
                                     </tr>
                                 </thead>
@@ -515,6 +519,53 @@ const ProductManagement = () => {
                                                 <td className="p-4 font-medium text-gray-900 dark:text-white">{product.title}</td>
                                                 <td className="p-4 text-gray-500 dark:text-gray-400">{product.category}</td>
                                                 <td className="p-4 font-medium text-gray-900 dark:text-white">₹{product.price}</td>
+                                                <td className="p-4">
+                                                    <button
+                                                        onClick={async () => {
+                                                            const currentStatus = product.isAvailable !== false;
+                                                            const productId = product._id || product.id;
+
+                                                            // Optimistic update - instant UI response
+                                                            queryClient.setQueryData(['products'], (old) => {
+                                                                const oldData = Array.isArray(old) ? old : (old?.data || []);
+                                                                return oldData.map(p =>
+                                                                    (p._id || p.id) === productId
+                                                                        ? { ...p, isAvailable: !currentStatus }
+                                                                        : p
+                                                                );
+                                                            });
+
+                                                            try {
+                                                                await updateProduct({
+                                                                    id: productId,
+                                                                    data: { ...product, isAvailable: !currentStatus }
+                                                                });
+                                                            } catch (error) {
+                                                                // Rollback on error
+                                                                queryClient.setQueryData(['products'], (old) => {
+                                                                    const oldData = Array.isArray(old) ? old : (old?.data || []);
+                                                                    return oldData.map(p =>
+                                                                        (p._id || p.id) === productId
+                                                                            ? { ...p, isAvailable: currentStatus }
+                                                                            : p
+                                                                    );
+                                                                });
+                                                                console.error('Failed to toggle availability:', error);
+                                                                alert(t('Failed to update status'));
+                                                            }
+                                                        }}
+                                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${product.isAvailable !== false ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
+                                                            }`}
+                                                        title={product.isAvailable !== false ? t('Available') : t('Out of Stock')}
+                                                    >
+                                                        <motion.span
+                                                            layout
+                                                            transition={{ type: "spring", stiffness: 700, damping: 30 }}
+                                                            animate={{ x: product.isAvailable !== false ? 22 : 2 }}
+                                                            className="inline-block h-5 w-5 transform rounded-full bg-white shadow-md"
+                                                        />
+                                                    </button>
+                                                </td>
                                                 <td className="p-4">
                                                     <div className="flex gap-2">
                                                         <button

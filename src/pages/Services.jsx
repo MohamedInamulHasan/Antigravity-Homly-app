@@ -106,7 +106,7 @@ const Services = () => {
                                                 onClick={() => handleRequestService(service)}
                                                 className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-blue-900/40 flex items-center justify-center gap-2 active:scale-95 duration-200 border border-white/10"
                                             >
-                                                <span>{t('Book Service')}</span>
+                                                <span>{t('Request Service')}</span>
                                                 <CheckCircle size={18} />
                                             </button>
                                         </div>

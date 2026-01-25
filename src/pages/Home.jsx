@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingCart, Zap } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext.jsx'; // Keep for now if other things need it, or remove if unused.
 import { useProducts } from '../hooks/queries/useProducts';
@@ -15,6 +15,7 @@ import PullToRefreshLayout from '../components/PullToRefreshLayout';
 const Home = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
+    const [fastMode, setFastMode] = useState(false);
 
     // React Query Hooks
     const { data: rawProducts = [], isLoading: loadingProducts, error: errorProducts } = useProducts();
@@ -327,6 +328,20 @@ const Home = () => {
                                 </svg>
                             </form>
 
+                            {/* Fast Mode Toggle Icon - Small */}
+                            <button
+                                onClick={() => setFastMode(!fastMode)}
+                                className={`mt-2 ml-auto p-2 rounded-full transition-all flex items-center gap-1.5 text-xs font-medium ${fastMode
+                                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-md'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                                    }`}
+                                title={fastMode ? t('Fast Mode ON') : t('Fast Mode')}
+                            >
+                                <Zap size={14} className={fastMode ? 'fill-white' : ''} />
+                                <span className="pr-1">{fastMode ? t('ON') : t('Fast')}</span>
+                            </button>
+
+
                             {/* Search Results Dropdown */}
                             {searchQuery.trim() && (
                                 <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto z-30">
@@ -412,6 +427,7 @@ const Home = () => {
                             category={category}
                             products={groupProductsByName(categoryProducts).slice(0, 10)}
                             t={t}
+                            fastMode={fastMode}
                         />
                     ))}
                 </div>
@@ -421,7 +437,7 @@ const Home = () => {
 };
 
 // Category Section Component
-const CategorySection = ({ category, products, t }) => {
+const CategorySection = ({ category, products, t, fastMode }) => {
     const scrollContainerRef = useRef(null);
 
     const scroll = (direction) => {
@@ -502,7 +518,7 @@ const CategorySection = ({ category, products, t }) => {
                             key={product._id || product.id}
                             className="flex-none w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] snap-start"
                         >
-                            <SimpleProductCard product={product} />
+                            <SimpleProductCard product={product} isFastPurchase={fastMode} />
                         </div>
                     ))}
                 </div>

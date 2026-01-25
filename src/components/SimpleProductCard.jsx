@@ -1,16 +1,18 @@
-import { Plus, Minus, Store, ShoppingCart } from 'lucide-react';
+import { Plus, Minus, Store, ShoppingCart, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { API_BASE_URL } from '../utils/api';
 import { isStoreOpen } from '../utils/storeHelpers';
+import { useState } from 'react';
 
 const SimpleProductCard = ({ product, isFastPurchase }) => {
     const { t } = useLanguage();
     const { stores } = useData();
-    const { cartItems } = useCart();
+    const { cartItems, addToCart, removeFromCart, updateQuantity } = useCart();
     const productId = product._id || product.id;
+    const [showQuantity, setShowQuantity] = useState(false);
 
     // Look up store name from stores context
     const storeIdStr = product.storeId?._id || product.storeId;
@@ -22,13 +24,61 @@ const SimpleProductCard = ({ product, isFastPurchase }) => {
     const cartQuantity = cartItem ? cartItem.quantity : 0;
 
     // Check if store is open
-    // Use the helper logic for consistency
     const isStoreOpenCheck = store ? isStoreOpen(store) : true;
 
     const handleClick = (e) => {
         if (!isStoreOpenCheck) {
             e.preventDefault();
             alert(t('This store is currently closed.'));
+        }
+    };
+
+    const handleFastPurchaseClick = (e) => {
+        e.preventDefault();
+        if (!isAvailable || !isStoreOpenCheck) return;
+
+        if (cartQuantity > 0) {
+            // If already in cart, show quantity controls
+            setShowQuantity(true);
+        } else {
+            // Add to cart with quantity 1
+            addToCart({
+                id: productId,
+                title: product.title,
+                price: product.price,
+                image: product.image,
+                storeId: product.storeId,
+                quantity: 1
+            });
+            setShowQuantity(true);
+        }
+    };
+
+    const handleIncrement = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (cartQuantity > 0) {
+            updateQuantity(productId, cartQuantity + 1);
+        } else {
+            addToCart({
+                id: productId,
+                title: product.title,
+                price: product.price,
+                image: product.image,
+                storeId: product.storeId,
+                quantity: 1
+            });
+        }
+    };
+
+    const handleDecrement = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (cartQuantity > 1) {
+            updateQuantity(productId, cartQuantity - 1);
+        } else if (cartQuantity === 1) {
+            removeFromCart(productId);
+            setShowQuantity(false);
         }
     };
 
@@ -195,6 +245,29 @@ const SimpleProductCard = ({ product, isFastPurchase }) => {
                 <span className={`text-lg font-bold ${isStoreOpenCheck && isAvailable ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`}>
                     ₹{Number(product.price || 0).toFixed(0)}
                 </span>
+
+                {/* Fast Purchase Quantity Controls - Below Price */}
+                {isFastPurchase && isStoreOpenCheck && isAvailable && (
+                    <div className="mt-2" onClick={(e) => e.preventDefault()}>
+                        <div className="flex items-center justify-center gap-2 bg-blue-600 rounded-lg px-2 py-1.5">
+                            <button
+                                onClick={handleDecrement}
+                                className="p-1 hover:bg-blue-700 rounded transition-colors"
+                            >
+                                <Minus size={16} className="text-white" />
+                            </button>
+                            <span className="text-white font-bold text-base min-w-[30px] text-center">
+                                {cartQuantity}
+                            </span>
+                            <button
+                                onClick={handleIncrement}
+                                className="p-1 hover:bg-blue-700 rounded transition-colors"
+                            >
+                                <Plus size={16} className="text-white" />
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </Link>
     );
