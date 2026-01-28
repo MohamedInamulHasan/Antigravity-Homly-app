@@ -96,7 +96,7 @@ export const LanguageProvider = ({ children }) => {
         'Order ID': { en: 'Order ID', ta: 'ஆர்டர் ஐடி' },
         'Date': { en: 'Date', ta: 'தேதி' },
         'Status': { en: 'Status', ta: 'நிலை' },
-        'Manage and track your recent orders': { en: 'Manage and track your recent orders', ta: 'உங்கள் சமீபத்திய ஆர்டர்களை நிர்வகிக்கவும் மற்றும் கண்காணிக்கவும்' },
+
         'View Details': { en: 'View Details', ta: 'விவரங்களைக் காண்க' },
         'more items': { en: 'more items', ta: 'மேலும் பொருட்கள்' },
         'Delete Order': { en: 'Delete Order', ta: 'ஆர்டரை நீக்கு' },
