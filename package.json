@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npm run dev --prefix Homly-App-Clean",
-    "build": "cd Homly-App-Clean && npm install && npm run build && cd .. && cp -r Homly-App-Clean/dist dist",
+    "build": "npm run build --prefix Homly-App-Clean",
     "lint": "npm run lint --prefix Homly-App-Clean",
     "preview": "npm run preview --prefix Homly-App-Clean"
   },
