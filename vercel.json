@@ -8,14 +8,5 @@
             "src": "/.*",
             "dest": "/index.html"
         }
-    ],
-    "builds": [
-        {
-            "src": "Homly-App-Clean/package.json",
-            "use": "@vercel/static-build",
-            "config": {
-                "distDir": "dist"
-            }
-        }
     ]
 }
