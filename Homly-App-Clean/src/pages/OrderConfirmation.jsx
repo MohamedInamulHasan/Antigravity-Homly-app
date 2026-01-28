@@ -54,7 +54,7 @@ const OrderConfirmation = () => {
                 storeId: item.storeId?._id || item.storeId || null,
                 unit: item.unit // Pass unit to backend
             })),
-            total: finalTotal || ((cartTotal || 0) + finalDeliveryCharge),
+
             subtotal: cartTotal,
             // FIX: If delivery is free (0) because of coins, we MUST send the underlying shipping cost (20)
             // to the backend so it detects "Shipping > 0" and triggers the coin deduction logic.
