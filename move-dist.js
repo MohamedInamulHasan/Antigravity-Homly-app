@@ -5,21 +5,31 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const source = path.join(__dirname, 'Homly-App-Clean', 'dist');
+const sourceBase = path.join(__dirname, 'Homly-App-Clean');
+const source = path.join(sourceBase, 'dist');
 const dest = path.join(__dirname, 'dist');
 
-console.log(`Starting Move: ${source} -> ${dest}`);
+console.log(`[INFO] Current Directory: ${__dirname}`);
+console.log(`[INFO] Source Base: ${sourceBase}`);
+console.log(`[INFO] Target Source: ${source}`);
+console.log(`[INFO] Destination: ${dest}`);
 
 try {
     if (fs.existsSync(dest)) {
-        console.log('Cleaning destination...');
+        console.log('[ACTION] Cleaning destination...');
         fs.rmSync(dest, { recursive: true, force: true });
     }
     fs.mkdirSync(dest);
 
     if (!fs.existsSync(source)) {
-        console.error(`ERROR: Source directory not found: ${source}`);
-        console.error('Did the build fail?');
+        console.error(`[ERROR] Source directory not found: ${source}`);
+        console.log('[DEBUG] Listing contents of Homly-App-Clean:');
+        try {
+            const files = fs.readdirSync(sourceBase);
+            console.log(files.join('\n'));
+        } catch (dirErr) {
+            console.error(`[CRITICAL] Could not read Homly-App-Clean: ${dirErr.message}`);
+        }
         process.exit(1);
     }
 
@@ -32,18 +42,15 @@ try {
                 copyRecursiveSync(path.join(src, childItemName), path.join(destPath, childItemName));
             });
         } else {
-            console.log(`Copying file: ${path.basename(src)}`);
+            console.log(`[COPY] ${path.basename(src)}`);
             fs.copyFileSync(src, destPath);
         }
     }
 
     copyRecursiveSync(source, dest);
-    console.log('SUCCESS: Build moved to root dist folder.');
-
-    // Create a vercel.json for serving if it doesn't exist or needs forcing
-    // (Actually handled by repo file, but good to know we are set)
+    console.log('[SUCCESS] Build output successfully moved to root dist folder.');
 
 } catch (err) {
-    console.error('FAILED to move files:', err);
+    console.error('[FATAL] Script execution failed:', err);
     process.exit(1);
 }
