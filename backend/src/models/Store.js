@@ -7,9 +7,9 @@ const storeSchema = new mongoose.Schema({
         trim: true
     },
     type: {
-        type: String,
+        type: [String],
         required: [true, 'Please add a store type'],
-        trim: true
+        default: ['General Store']
     },
     address: {
         type: String,

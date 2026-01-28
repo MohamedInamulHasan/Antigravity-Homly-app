@@ -1,6 +1,6 @@
 import Order from '../models/Order.js';
 import User from '../models/User.js';
-import { sendOrderNotificationEmail } from '../services/emailService.js';
+import { sendOrderNotificationEmail, sendOrderConfirmationToUser } from '../services/emailService.js';
 import { sendOrderTelegramNotification } from '../services/telegramService.js';
 
 
@@ -81,28 +81,29 @@ export const createOrder = async (req, res, next) => {
         console.log('✅ Order created successfully:', order._id);
 
         // Populate store and user details for email
-        // We need deep population for store name in items
+        // We need deep population for store name and product details (unit) in items
         await order.populate([
             { path: 'items.storeId', select: 'name' },
+            { path: 'items.product', select: 'title unit', model: 'Product' },
             { path: 'user', select: 'name email' }
         ]);
 
-        // Send email notification to admin (non-blocking)
-        console.log('📧 Attempting to send order notification email...');
-        sendOrderNotificationEmail(order)
-            .then(result => console.log('📧 Email service result:', result))
-            .catch(err => console.error('❌ Failed to send email notification:', err));
 
-        // Send Telegram notification to admin (non-blocking)
-        console.log('📱 Attempting to send Telegram notification...');
-        sendOrderTelegramNotification(order)
-            .then(result => console.log('📱 Telegram service result:', result))
-            .catch(err => console.error('❌ Failed to send Telegram notification:', err));
 
         res.status(201).json({
             success: true,
             data: order
         });
+
+        // Send notifications AFTER response to prevent timeout
+        // Send email notification to admin
+        sendOrderNotificationEmail(order).catch(err => console.error('❌ Failed to send admin email:', err));
+
+        // Send order confirmation to customer
+        sendOrderConfirmationToUser(order).catch(err => console.error('❌ Failed to send customer email:', err));
+
+        // Send Telegram notification to admin
+        sendOrderTelegramNotification(order).catch(err => console.error('❌ Failed to send Telegram:', err));
     } catch (error) {
         next(error);
     }
@@ -138,7 +139,8 @@ export const getOrders = async (req, res, next) => {
             .select('items.product items.name items.storeId items.quantity items.price total status createdAt user shippingAddress paymentMethod shipping') // Added shipping
             .populate({
                 path: 'items.product',
-                select: 'title', // Removed image from populate
+                select: 'title unit', // Added unit to populate
+                model: 'Product', // Explicitly specify model for Mixed type
                 options: { lean: true } // Populate efficiently
             })
             .populate({
@@ -170,7 +172,7 @@ export const getOrders = async (req, res, next) => {
 export const getOrder = async (req, res, next) => {
     try {
         const order = await Order.findById(req.params.id)
-            .populate('items.product', 'title price') // Removed image
+            .populate({ path: 'items.product', select: 'title price unit', model: 'Product' }) // Added unit and model
             .populate('items.storeId', 'name')
             .lean();
 

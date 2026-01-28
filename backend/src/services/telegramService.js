@@ -22,7 +22,7 @@ export const sendOrderTelegramNotification = async (order) => {
 
         // Format delivery charge
         const deliveryCharge = order.shipping || 0;
-        const deliveryText = deliveryCharge === 0 ? 'FREE (Coin Applied)' : `₹${deliveryCharge}`;
+        const deliveryText = deliveryCharge === 0 ? 'FREE (🪙 Coin Applied)' : `₹${deliveryCharge}`;
 
         // Format scheduled delivery time
         let deliveryTimeText = 'Not specified';
@@ -38,27 +38,25 @@ export const sendOrderTelegramNotification = async (order) => {
             });
         }
 
+        const discountText = order.discount > 0 ? `<b>Discount:</b> -₹${order.discount.toFixed(0)}\n` : '';
+
         // Construct the message with MarkdownV2 or HTML
         // Using HTML for simpler bolding usually
         const message = `
-📦 <b>New Order Received!</b>
-------------------------
-<b>Order ID:</b> #${order._id.toString().slice(-8).toUpperCase()}
-<b>Amount:</b> ₹${order.total.toFixed(0)}
-<b>Delivery Charge:</b> ${deliveryText}
-<b>Payment:</b> ${order.paymentMethod?.type || 'COD'}
-<b>Scheduled Delivery:</b> ${deliveryTimeText}
+🔔 <b>NEW ORDER #${order._id.toString().slice(-8).toUpperCase()}</b>
 
-👤 <b>Customer:</b>
-${customerName}
-📞 ${phone}
-📍 ${address}
+👤 ${customerName} | 📞 ${phone}
+📍 ${shippingAddr.city || 'City'}, ${shippingAddr.zip || 'Zip'}
 
-🛒 <b>Items:</b>
-${order.items.map(item => `- ${item.quantity}x ${item.name || item.product?.title || 'Item'}\n  🏪 Store: ${item.storeId?.name || 'Homly'}`).join('\n\n')}
+👇 <b>ORDER DETAILS</b> 👇
+${order.items.map((item, index) => `
+${index + 1}. <b>${item.name || item.product?.title || 'Item'} (${item.unit || item.product?.unit || 'unit'})</b>
+   QTY: ${item.quantity}  |  🏪 ${item.storeId?.name || 'Homly'}`).join('\n')}
 
-------------------------
-<i>Homly Order Alert</i>
+💵 <b>BILLING</b>
+Subtotal: ₹${(order.subtotal || 0).toFixed(0)}
+Delivery: ${deliveryText}
+${discountText}<b>TOTAL: ₹${order.total.toFixed(0)}</b> (${order.paymentMethod?.type || 'COD'})
 `.trim();
 
         // Telegram API URL

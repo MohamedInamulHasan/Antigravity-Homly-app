@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "dev": "npm run dev --prefix Homly-App-Clean",
+    "build": "npm run build --prefix Homly-App-Clean",
+    "lint": "npm run lint --prefix Homly-App-Clean",
+    "preview": "npm run preview --prefix Homly-App-Clean"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",

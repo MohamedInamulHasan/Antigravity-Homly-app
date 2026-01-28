@@ -1,6 +1,6 @@
 import ServiceRequest from '../models/ServiceRequest.js';
 import Service from '../models/Service.js';
-import { sendServiceRequestNotification } from '../services/emailService.js';
+import { sendServiceRequestNotification, sendServiceRequestConfirmationToUser } from '../services/emailService.js';
 import { sendServiceRequestTelegramNotification } from '../services/telegramService.js';
 
 // @desc    Create a new service request
@@ -41,25 +41,23 @@ export const createServiceRequest = async (req, res) => {
         await createdRequest.populate('service');
         await createdRequest.populate('user', 'name email mobile');
 
+        res.status(201).json(createdRequest);
+
+        // Send notifications AFTER response (Non-blocking)
         // Send notification email
-        try {
-            await sendServiceRequestNotification(createdRequest);
-            console.log('📧 Service request notification sent');
-        } catch (emailError) {
-            console.error('❌ Failed to send service request notification:', emailError);
-            // Don't fail the request if email fails
-        }
+        sendServiceRequestNotification(createdRequest)
+            .then(() => console.log('📧 Service request notification sent'))
+            .catch(err => console.error('❌ Failed to send service request email:', err));
+
+        // Send Customer Confirmation Email
+        sendServiceRequestConfirmationToUser(createdRequest)
+            .then(() => console.log('📧 Service request customer confirmation sent'))
+            .catch(err => console.error('❌ Failed to send service request customer email:', err));
 
         // Send Telegram notification
-        try {
-            await sendServiceRequestTelegramNotification(createdRequest);
-            console.log('📱 Service request Telegram notification sent');
-        } catch (telegramError) {
-            console.error('❌ Failed to send service request Telegram notification:', telegramError);
-            // Don't fail the request if Telegram fails
-        }
-
-        res.status(201).json(createdRequest);
+        sendServiceRequestTelegramNotification(createdRequest)
+            .then(() => console.log('📱 Service request Telegram notification sent'))
+            .catch(err => console.error('❌ Failed to send service request Telegram:', err));
     } catch (error) {
         console.error('Error creating service request:', error);
         res.status(500).json({ message: 'Server Error', error: error.message });

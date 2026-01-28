@@ -89,54 +89,60 @@ export const sendOrderNotificationEmail = async (order) => {
                         <p style="margin: 5px 0;"><strong>ZIP Code:</strong> ${customerZip}</p>
                     </div>
                     
-                    <h3 style="color: #1f2937;">Order Items</h3>
-                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                        <thead>
-                            <tr style="background-color: #f3f4f6;">
-                                <th style="padding: 10px; text-align: left; border-bottom: 2px solid #e5e7eb;">Item</th>
-                                <th style="padding: 10px; text-align: center; border-bottom: 2px solid #e5e7eb;">Qty</th>
-                                <th style="padding: 10px; text-align: right; border-bottom: 2px solid #e5e7eb;">Price</th>
-                            </tr>
-                        </thead>
+                    <h3 style="color: #1f2937; margin-top: 30px;">Order Items</h3>
+                    <table style="width: 100%; border-collapse: separate; border-spacing: 0 10px; margin-bottom: 20px;">
                         <tbody>
                             ${order.items.map(item => `
-                                <tr>
-                                    <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
-                                        <strong>${item.name || item.title || 'Product'}</strong>
-                                        ${item.storeId?.name ? `<br><small style="color: #6b7280;">Store: ${item.storeId.name}</small>` : ''}
+                                <tr style="background-color: #f9fafb;">
+                                    <td style="padding: 15px; border-radius: 8px 0 0 8px;">
+                                        <div style="font-weight: bold; font-size: 16px; color: #111827;">${item.name || item.title || 'Product'}</div>
+                                        <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Unit: ${item.unit || item.product?.unit || 'N/A'}</div>
+                                        ${item.storeId?.name ? `<div style="color: #9ca3af; font-size: 12px; margin-top: 2px;">Store: ${item.storeId.name}</div>` : ''}
                                     </td>
-                                    <td style="padding: 10px; text-align: center; border-bottom: 1px solid #e5e7eb;">${item.quantity}</td>
-                                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e5e7eb;">₹${(item.price * item.quantity).toFixed(0)}</td>
+                                    <td style="padding: 15px; text-align: center;">
+                                        <div style="font-weight: bold; color: #4b5563;">x${item.quantity}</div>
+                                    </td>
+                                    <td style="padding: 15px; text-align: right; border-radius: 0 8px 8px 0; font-weight: bold; color: #111827;">
+                                        ₹${(item.price * item.quantity).toFixed(0)}
+                                    </td>
                                 </tr>
                             `).join('')}
                         </tbody>
                     </table>
-                    
-                    <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                        <table style="width: 100%;">
                             <tr>
-                                <td style="padding: 5px 0;"><strong>Subtotal:</strong></td>
-                                <td style="padding: 5px 0; text-align: right;">₹${(order.subtotal || 0).toFixed(0)}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 5px 0;"><strong>Delivery Charge:</strong></td>
-                                <td style="padding: 5px 0; text-align: right;">
-                                    ${order.shipping === 0
-                    ? '<span style="color: #10b981;">FREE (Coin Applied)</span>'
-                    : `₹${(order.shipping || 0).toFixed(0)}`}
-                                </td>
-                            </tr>
-                            ${order.discount > 0 ? `
-                            <tr>
-                                <td style="padding: 5px 0;"><strong>Discount:</strong></td>
-                                <td style="padding: 5px 0; text-align: right; color: #10b981;">-₹${order.discount.toFixed(0)}</td>
-                            </tr>
-                            ` : ''}
-                            <tr style="border-top: 2px solid #e5e7eb;">
-                                <td style="padding: 10px 0;"><strong style="font-size: 18px;">Total:</strong></td>
-                                <td style="padding: 10px 0; text-align: right;"><strong style="font-size: 18px; color: #2563eb;">₹${order.total.toFixed(0)}</strong></td>
+                                <td colspan="2" style="padding: 2px 0;"></td>
                             </tr>
                         </table>
+                        
+                        <div style="margin-left: auto; max-width: 250px;">
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td style="padding: 6px 0; color: #6b7280; text-align: right;">Subtotal:</td>
+                                    <td style="padding: 6px 0; text-align: right; color: #111827; font-weight: 500;">₹${(order.subtotal || 0).toFixed(0)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 6px 0; color: #6b7280; text-align: right;">Delivery:</td>
+                                    <td style="padding: 6px 0; text-align: right; color: #111827; font-weight: 500;">
+                                        ${order.shipping === 0 ? '<span style="color: #10b981;">FREE</span>' : `₹${(order.shipping || 0).toFixed(0)}`}
+                                    </td>
+                                </tr>
+                                ${order.discount > 0 ? `
+                                <tr>
+                                    <td style="padding: 6px 0; color: #10b981; text-align: right;">Discount:</td>
+                                    <td style="padding: 6px 0; text-align: right; color: #10b981; font-weight: 500;">-₹${order.discount.toFixed(0)}</td>
+                                </tr>
+                                ` : ''}
+                                <tr>
+                                    <td colspan="2" style="padding: 8px 0;">
+                                        <div style="border-top: 1px solid #e5e7eb;"></div>
+                                    </td>
+                                </tr>
+                                <tr style="background-color: #2563eb; color: white;">
+                                    <td style="padding: 10px 15px; text-align: right; border-radius: 6px 0 0 6px; font-weight: bold;">TOTAL:</td>
+                                    <td style="padding: 10px 15px; text-align: right; border-radius: 0 6px 6px 0; font-weight: bold; font-size: 18px;">₹${order.total.toFixed(0)}</td>
+                                </tr>
+                            </table>
+                        </div>
                     </div>
                     
                     <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
@@ -161,6 +167,119 @@ export const sendOrderNotificationEmail = async (order) => {
     } catch (error) {
         console.error('❌ Failed to send order notification email:', error);
         throw error;
+    }
+};
+
+export const sendOrderConfirmationToUser = async (order) => {
+    try {
+        const userEmail = order.user?.email;
+        if (!userEmail) {
+            console.log('ℹ️ No user email found for order confirmation');
+            return null;
+        }
+
+        const shippingAddr = order.shippingAddress || {};
+        const customerName = shippingAddr.name || order.user?.name || 'Customer';
+
+        const mailOptions = {
+            from: `"Homly" <${process.env.EMAIL_USER}>`,
+            to: userEmail,
+            subject: `Order Confirmation - #${order._id.toString().slice(-8).toUpperCase()}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #2563eb; margin: 0;">Homly</h1>
+                        <p style="color: #6b7280; margin: 5px 0;">Your Home, Delivered.</p>
+                    </div>
+
+                    <h2 style="color: #1f2937;">Hi ${customerName},</h2>
+                    <p style="color: #4b5563; line-height: 1.5;">Thank you for your order! We've received it and are getting it ready for you.</p>
+
+                    <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 5px 0;"><strong>Order ID:</strong> #${order._id.toString().slice(-8).toUpperCase()}</p>
+                        <p style="margin: 5px 0;"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                    </div>
+
+                    <h3 style="color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">Order Summary</h3>
+                    
+                    <table style="width: 100%; border-collapse: separate; border-spacing: 0 10px; margin-bottom: 20px;">
+                        <tbody>
+                            ${order.items.map(item => `
+                                <tr style="background-color: #f9fafb;">
+                                    <td style="padding: 15px; border-radius: 8px 0 0 8px;">
+                                        <div style="font-weight: bold; font-size: 16px; color: #111827;">${item.name || item.title || 'Product'}</div>
+                                        <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">Unit: ${item.unit || item.product?.unit || 'N/A'}</div>
+                                    </td>
+                                    <td style="padding: 15px; text-align: center;">
+                                        <div style="font-weight: bold; color: #4b5563;">x${item.quantity}</div>
+                                    </td>
+                                    <td style="padding: 15px; text-align: right; border-radius: 0 8px 8px 0; font-weight: bold; color: #111827;">
+                                        ₹${(item.price * item.quantity).toFixed(0)}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+
+                    <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <tr>
+                                <td colspan="2" style="padding: 2px 0;"></td>
+                            </tr>
+                        </table>
+                        
+                        <div style="margin-left: auto; max-width: 250px;">
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td style="padding: 6px 0; color: #6b7280; text-align: right;">Subtotal:</td>
+                                    <td style="padding: 6px 0; text-align: right; color: #111827; font-weight: 500;">₹${(order.subtotal || 0).toFixed(0)}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 6px 0; color: #6b7280; text-align: right;">Delivery:</td>
+                                    <td style="padding: 6px 0; text-align: right; color: #111827; font-weight: 500;">
+                                        ${order.shipping === 0 ? '<span style="color: #10b981;">FREE</span>' : `₹${(order.shipping || 0).toFixed(0)}`}
+                                    </td>
+                                </tr>
+                                ${order.discount > 0 ? `
+                                <tr>
+                                    <td style="padding: 6px 0; color: #10b981; text-align: right;">Discount:</td>
+                                    <td style="padding: 6px 0; text-align: right; color: #10b981; font-weight: 500;">-₹${order.discount.toFixed(0)}</td>
+                                </tr>
+                                ` : ''}
+                                <tr>
+                                    <td colspan="2" style="padding: 8px 0;">
+                                        <div style="border-top: 1px solid #e5e7eb;"></div>
+                                    </td>
+                                </tr>
+                                <tr style="background-color: #2563eb; color: white;">
+                                    <td style="padding: 10px 15px; text-align: right; border-radius: 6px 0 0 6px; font-weight: bold;">TOTAL:</td>
+                                    <td style="padding: 10px 15px; text-align: right; border-radius: 0 6px 6px 0; font-weight: bold; font-size: 18px;">₹${order.total.toFixed(0)}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                        <h3 style="margin-top: 0; color: #1f2937; font-size: 16px;">Delivery Details</h3>
+                        <p style="margin: 5px 0; color: #4b5563;">${customerName}</p>
+                        <p style="margin: 5px 0; color: #4b5563;">${customerAddress}</p>
+                        <p style="margin: 5px 0; color: #4b5563;">${customerCity} - ${customerZip}</p>
+                        <p style="margin: 10px 0 0 0; color: #4b5563;"><strong>Mobile:</strong> ${customerMobile}</p>
+                    </div>
+
+                    <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px;">
+                        Need help? Reply to this email or contact us at support@homly.com
+                    </p>
+                </div>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('✅ User order confirmation email sent:', info.messageId);
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        console.error('❌ Failed to send user confirmation email:', error);
+        // Don't throw logic error here, just log it so other flows continue
+        return { success: false, error };
     }
 };
 
@@ -208,5 +327,46 @@ export const sendServiceRequestNotification = async (request) => {
     } catch (error) {
         console.error('❌ Failed to send service request notification email:', error);
         throw error;
+    }
+};
+
+export const sendServiceRequestConfirmationToUser = async (request) => {
+    try {
+        const userEmail = request.user?.email;
+        if (!userEmail) {
+            console.log('ℹ️ No user email found for service request confirmation');
+            return null;
+        }
+
+        const mailOptions = {
+            from: `"Homly Services" <${process.env.EMAIL_USER}>`,
+            to: userEmail,
+            subject: `Service Request Received - ${request.service.name}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #2563eb;">Service Request Received</h2>
+                    <p>Hi ${request.user.name},</p>
+                    <p>We received your request for <strong>${request.service.name}</strong>.</p>
+                    
+                    <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p><strong>Service:</strong> ${request.service.name}</p>
+                        <p><strong>Description:</strong> ${request.service.description}</p>
+                        <p><strong>Status:</strong> <span style="color: #ea580c;">${request.status || 'Pending'}</span></p>
+                    </div>
+
+                    <p>Our team will review your request and contact you shortly at <strong>${request.user.mobile}</strong>.</p>
+                    
+                    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+                    <p style="color: #6b7280; font-size: 14px;">If you have any questions, please reply to this email.</p>
+                </div>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('✅ Service request confirmation email sent to user:', info.messageId);
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        console.error('❌ Failed to send service request user confirmation:', error);
+        return { success: false, error };
     }
 };
